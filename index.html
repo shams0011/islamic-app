@@ -231,17 +231,6 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
   <div id="view-books">
     <div class="sec-title"><div class="sec-gem"></div>সিহাহ সিত্তাহ<div class="sec-gem"></div></div>
 
-    <!-- Proxy setup -->
-    <div class="proxy-banner" id="proxy-banner">
-      <div class="proxy-banner-title">⚙️ সব হাদিস লোড করতে Vercel URL দিন</div>
-      <div class="proxy-banner-text">hadith-proxy ফোল্ডারটি Vercel এ deploy করুন, তারপর নিচে URL দিন। না দিলে ৩৫টি হাদিস দেখাবে।</div>
-      <div class="proxy-input-row">
-        <input class="proxy-input" id="proxy-url-input" placeholder="https://your-proxy.vercel.app">
-        <button class="proxy-save-btn" onclick="saveProxy()">সংযুক্ত</button>
-      </div>
-      <div class="proxy-status" id="proxy-status"></div>
-    </div>
-
     <div class="book-grid" id="book-grid"></div>
   </div>
 
@@ -338,30 +327,20 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
 
 <script>
 /* ══ CONFIG ══ */
-// Direct CDN — no proxy needed!
-const CDN = 'https://cdn.statically.io/gh/fawazahmed0/hadith-api/1/editions';
-const CDN_KEYS = {
-  bukhari:'ben-bukhari', muslim:'ben-muslim',
-  tirmizi:'ben-tirmidhi', abudawud:'ben-abudawud',
-  nasai:'ben-nasai', ibnmajah:'ben-ibnmajah'
-};
-document.getElementById('proxy-banner').style.display='none';
-
+// Hadith data hosted locally in hadith-data/ folder — no external CDN needed!
 const BOOKS = [
-  {id:"bukhari", arabic:"صحيح البخاري", name:"সহিহ বুখারী",    count:"৭৫৬৩"},
-  {id:"muslim",  arabic:"صحيح مسلم",   name:"সহিহ মুসলিম",    count:"৭৪৭০"},
-  {id:"tirmizi", arabic:"جامع الترمذي",name:"জামে তিরমিযী",  count:"৩৯৫৬"},
+  {id:"bukhari", arabic:"صحيح البخاري", name:"সহিহ বুখারী",    count:"৭৫৮৯"},
+  {id:"muslim",  arabic:"صحيح مسلم",   name:"সহিহ মুসলিম",    count:"৭৫৬৩"},
+  {id:"tirmizi", arabic:"جامع الترمذي",name:"জামে তিরমিযী",  count:"৩৯৯৮"},
   {id:"abudawud",arabic:"سنن أبي داود",name:"সুনান আবু দাউদ",count:"৫২৭৪"},
-  {id:"nasai",   arabic:"سنن النسائي", name:"সুনান নাসাঈ",   count:"৫৭৫৮"},
-  {id:"ibnmajah",arabic:"سنن ابن ماجه",name:"সুনান ইবনে মাজাহ",count:"৪৩৪১"},
+  {id:"nasai",   arabic:"سنن النسائي", name:"সুনান নাসাঈ",   count:"৫৭৬৫"},
+  {id:"ibnmajah",arabic:"سنن ابن ماجه",name:"সুনান ইবনে মাজাহ",count:"৪৩৪৩"},
 ];
-
-// API key map: our id → alquranbd key
-const BOOK_KEYS = {bukhari:'bukhari',muslim:'muslim',tirmizi:'tirmidi',abudawud:'abuDaud',nasai:'nasai',ibnmajah:'ibnMajah'};
 
 let selBook='bukhari', selBookName='সহিহ বুখারী';
 let selChapter=null, selChapterName='';
 let currentHadiths=[], currentPage=1, totalPages=1;
+let bookDataCache={};
 
 /* ══ CLOCK ══ */
 function tick(){
@@ -380,33 +359,6 @@ function showTab(id,btn){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
-}
-
-/* ══ PROXY ══ */
-async function saveProxy(){
-  const url = document.getElementById('proxy-url-input').value.trim().replace(/\/$/,'');
-  if(!url){ alert('URL দিন'); return; }
-  const st = document.getElementById('proxy-status');
-  st.className='proxy-status'; st.textContent='পরীক্ষা করা হচ্ছে...'; st.style.display='block';
-  try{
-    const r = await fetch(`${url}/api/hadith/bukhari`);
-    if(!r.ok) throw new Error();
-    PROXY = url;
-    localStorage.setItem('hadith_proxy', url);
-    st.className='proxy-status ok'; st.textContent='✅ সংযুক্ত! এখন সব হাদিস লোড হবে।';
-    document.getElementById('proxy-banner').style.borderColor='rgba(92,184,122,.3)';
-  }catch{
-    st.className='proxy-status err'; st.textContent='❌ সংযোগ ব্যর্থ। Vercel URL সঠিক কিনা দেখুন।';
-  }
-}
-
-/* ══ API ══ */
-async function apiGet(path){
-  // Use jsdelivr CDN directly
-  const url = `${CDN}/${path}.min.json`;
-  const r = await fetch(url);
-  if(!r.ok) throw new Error('CDN error: '+r.status);
-  return r.json();
 }
 
 /* ══ BOOKS ══ */
@@ -430,34 +382,17 @@ async function loadChapters(){
   const el=document.getElementById('chapter-list');
   el.innerHTML=loading('অধ্যায় লোড হচ্ছে...');
   try{
-    const cdnKey = CDN_KEYS[selBook];
-    const url = `${CDN}/${cdnKey}.min.json`;
-    const r = await fetch(url);
-    if(!r.ok) throw new Error('error '+r.status);
-    const data = await r.json();
-    const hadiths = data.hadiths || [];
-    const sections = (data.metadata && data.metadata.sections) || {};
-    window._allHadiths = hadiths;
-    window._sections = sections;
-    // sections is {"0":"", "1":"Revelation", ...} — build chapter list with counts
-    const chList = Object.keys(sections)
-      .filter(k => k !== '0' && sections[k])
-      .map(k => {
-        const no = parseInt(k);
-        const count = hadiths.filter(h => (h.reference && h.reference.book === no)).length;
-        return {no, name: sections[k], count};
-      })
-      .filter(ch => ch.count > 0);
-    if(!chList.length){
-      // fallback: no chapter grouping available, show all hadiths as one list
-      el.innerHTML = `<div class="chapter-item" onclick="openChapterCDN(0,'সব হাদিস')">
-        <div><div class="ch-name">সব হাদিস দেখুন</div><div class="ch-count">${hadiths.length} হাদিস</div></div>
-        <div style="color:var(--text3);font-size:18px">›</div></div>`;
-      return;
+    let data = bookDataCache[selBook];
+    if(!data){
+      const r = await fetch(`${selBook}.json`);
+      if(!r.ok) throw new Error('error '+r.status);
+      data = await r.json();
+      bookDataCache[selBook] = data;
     }
-    el.innerHTML=chList.map(ch=>`
-      <div class="chapter-item" onclick="openChapterCDN(${ch.no},'${esc(ch.name)}')">
-        <div><div class="ch-name">${ch.name}</div><div class="ch-count">${ch.count} হাদিস</div></div>
+    const chapters = data.chapters || [];
+    el.innerHTML=chapters.map(ch=>`
+      <div class="chapter-item" onclick="openChapter(${ch.no},'${esc(ch.name)}')">
+        <div><div class="ch-name">${ch.name}</div><div class="ch-count">${ch.hadiths.length} হাদিস</div></div>
         <div style="color:var(--text3);font-size:18px">›</div>
       </div>`).join('');
   }catch(e){
@@ -465,68 +400,47 @@ async function loadChapters(){
   }
 }
 
-function openChapterCDN(no, name){
-  selChapter=no; selChapterName=name; currentPage=1;
+function openChapter(no, name){
+  selChapter=no; selChapterName=name;
   show('view-hadiths');
   document.getElementById('h-title').innerHTML=`<div class="sec-gem"></div>${name}<div class="sec-gem"></div>`;
-  const all = window._allHadiths||[];
-  currentHadiths = no===0 ? all : all.filter(h=>h.reference && h.reference.book===no);
+  const data = bookDataCache[selBook];
+  const chapter = (data.chapters||[]).find(c=>c.no===no);
+  currentHadiths = chapter ? chapter.hadiths : [];
+  document.getElementById('h-search').value='';
   renderHadiths(currentHadiths);
   document.getElementById('pagination').innerHTML='';
-}
-
-function openChapter(no, name){
-  selChapter=no; selChapterName=name; currentPage=1;
-  show('view-hadiths');
-  document.getElementById('h-title').innerHTML=`<div class="sec-gem"></div>${name}<div class="sec-gem"></div>`;
-  loadHadiths();
-}
-
-async function loadHadiths(){
-  // Now handled by openChapterCDN
 }
 
 function renderHadiths(list){
   const q=(document.getElementById('h-search').value||'').toLowerCase();
   let filtered=list;
-  if(q) filtered=list.filter(h=>(h.hadithBengali||'').toLowerCase().includes(q)||(h.hadithArabic||'').includes(q));
+  if(q) filtered=list.filter(h=>(h.t||'').toLowerCase().includes(q));
   if(!filtered.length){
     document.getElementById('hadith-list').innerHTML=`<div style="text-align:center;padding:40px;color:var(--text3);font-size:14px">কোনো হাদিস পাওয়া যায়নি</div>`;
     return;
   }
-  document.getElementById('hadith-list').innerHTML=filtered.map((h,i)=>`
+  document.getElementById('hadith-list').innerHTML=filtered.map((h)=>`
     <div class="hadith-card" onclick="openModal(${list.indexOf(h)})">
-      ${h.arabic ? `<div class="h-arabic">${h.arabic}</div>` : ''}
-      <div class="h-text">${h.bengali||h.text||''}</div>
+      <div class="h-text">${h.t||''}</div>
       <div class="h-meta">
         <span class="badge bg">${selBookName}</span>
-        <span class="badge bt">#${h.hadithnumber||h.hadithNo||''}</span>
+        <span class="badge bt">#${h.n||''}</span>
       </div>
       <div class="h-hint">👆 বিস্তারিত দেখতে ট্যাপ করুন</div>
     </div>`).join('');
   document.getElementById('h-search').oninput=()=>renderHadiths(currentHadiths);
 }
 
-function renderPagination(pages){
-  if(pages.length<=1){document.getElementById('pagination').innerHTML='';return;}
-  document.getElementById('pagination').innerHTML=pages.map(p=>`
-    <button class="page-btn${p.pageNo+1===currentPage?' active':''}"
-      onclick="currentPage=${p.pageNo+1};loadHadiths()">
-      ${p.pageNo+1}
-    </button>`).join('');
-}
-
 function openModal(i){
   const h=currentHadiths[i];
   document.getElementById('m-book').textContent=selBookName;
-  const arEl = document.getElementById('m-arabic');
-  if(h.arabic){ arEl.textContent=h.arabic; arEl.style.display='block'; }
-  else { arEl.style.display='none'; }
-  document.getElementById('m-text').textContent=h.bengali||h.text||'';
-  document.getElementById('m-narrator').textContent=h.narrator||'-';
-  document.getElementById('m-num').textContent='#'+(h.hadithnumber||h.hadithNo||'');
+  document.getElementById('m-arabic').style.display='none';
+  document.getElementById('m-text').textContent=h.t||'';
+  document.getElementById('m-narrator').textContent='-';
+  document.getElementById('m-num').textContent='#'+(h.n||'');
   document.getElementById('m-chapter').textContent=selChapterName;
-  document.getElementById('m-topic').textContent=h.grade||'-';
+  document.getElementById('m-topic').textContent='-';
   document.getElementById('modal').classList.add('open');
 }
 
@@ -542,9 +456,7 @@ function goChapters(){ show('view-chapters'); }
 function loading(msg){
   return `<div class="loading-wrap"><div class="loading-dots"><div class="ld"></div><div class="ld"></div><div class="ld"></div></div><div class="loading-text">${msg}</div></div>`;
 }
-function noProxy(){
-  return `<div style="text-align:center;padding:32px 16px;color:var(--text3);font-size:14px;line-height:1.7">Vercel Proxy URL সেট করুন<br>উপরের হলুদ বাক্সে URL দিন।</div>`;
-}
+function esc(s){ return (s||'').replace(/'/g,"&#39;"); }
 function esc(s){ return (s||'').replace(/'/g,"&#39;"); }
 
 /* ══ AI CHAT ══ */
