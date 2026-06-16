@@ -339,10 +339,10 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
 <script>
 /* ══ CONFIG ══ */
 // Direct CDN — no proxy needed!
-const CDN = 'https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions';
+const CDN = 'https://cdn.statically.io/gh/fawazahmed0/hadith-api/1/editions';
 const CDN_KEYS = {
-  bukhari:'ben-bukhari1', muslim:'ben-muslim1',
-  tirmizi:'ben-tirmidhi1', abudawud:'ben-abudawud',
+  bukhari:'ben-bukhari', muslim:'ben-muslim',
+  tirmizi:'ben-tirmidhi', abudawud:'ben-abudawud',
   nasai:'ben-nasai', ibnmajah:'ben-ibnmajah'
 };
 document.getElementById('proxy-banner').style.display='none';
@@ -435,18 +435,26 @@ async function loadChapters(){
     const r = await fetch(url);
     if(!r.ok) throw new Error('error '+r.status);
     const data = await r.json();
-    // CDN returns {hadiths: [...]} grouped by chapter
     const hadiths = data.hadiths || [];
-    // Group by chapter
-    const chapters = {};
-    hadiths.forEach(h => {
-      const ch = h.chapterno || 1;
-      if(!chapters[ch]) chapters[ch] = {no:ch, name: h.chapter||('অধ্যায় '+ch), count:0};
-      chapters[ch].count++;
-    });
-    // Store hadiths globally
+    const sections = (data.metadata && data.metadata.sections) || {};
     window._allHadiths = hadiths;
-    const chList = Object.values(chapters);
+    window._sections = sections;
+    // sections is {"0":"", "1":"Revelation", ...} — build chapter list with counts
+    const chList = Object.keys(sections)
+      .filter(k => k !== '0' && sections[k])
+      .map(k => {
+        const no = parseInt(k);
+        const count = hadiths.filter(h => (h.reference && h.reference.book === no)).length;
+        return {no, name: sections[k], count};
+      })
+      .filter(ch => ch.count > 0);
+    if(!chList.length){
+      // fallback: no chapter grouping available, show all hadiths as one list
+      el.innerHTML = `<div class="chapter-item" onclick="openChapterCDN(0,'সব হাদিস')">
+        <div><div class="ch-name">সব হাদিস দেখুন</div><div class="ch-count">${hadiths.length} হাদিস</div></div>
+        <div style="color:var(--text3);font-size:18px">›</div></div>`;
+      return;
+    }
     el.innerHTML=chList.map(ch=>`
       <div class="chapter-item" onclick="openChapterCDN(${ch.no},'${esc(ch.name)}')">
         <div><div class="ch-name">${ch.name}</div><div class="ch-count">${ch.count} হাদিস</div></div>
@@ -461,8 +469,8 @@ function openChapterCDN(no, name){
   selChapter=no; selChapterName=name; currentPage=1;
   show('view-hadiths');
   document.getElementById('h-title').innerHTML=`<div class="sec-gem"></div>${name}<div class="sec-gem"></div>`;
-  // Filter hadiths for this chapter
-  currentHadiths = (window._allHadiths||[]).filter(h=>(h.chapterno||1)===no);
+  const all = window._allHadiths||[];
+  currentHadiths = no===0 ? all : all.filter(h=>h.reference && h.reference.book===no);
   renderHadiths(currentHadiths);
   document.getElementById('pagination').innerHTML='';
 }
@@ -488,7 +496,7 @@ function renderHadiths(list){
   }
   document.getElementById('hadith-list').innerHTML=filtered.map((h,i)=>`
     <div class="hadith-card" onclick="openModal(${list.indexOf(h)})">
-      <div class="h-arabic">${h.arabic||''}</div>
+      ${h.arabic ? `<div class="h-arabic">${h.arabic}</div>` : ''}
       <div class="h-text">${h.bengali||h.text||''}</div>
       <div class="h-meta">
         <span class="badge bg">${selBookName}</span>
@@ -511,7 +519,9 @@ function renderPagination(pages){
 function openModal(i){
   const h=currentHadiths[i];
   document.getElementById('m-book').textContent=selBookName;
-  document.getElementById('m-arabic').textContent=h.arabic||'';
+  const arEl = document.getElementById('m-arabic');
+  if(h.arabic){ arEl.textContent=h.arabic; arEl.style.display='block'; }
+  else { arEl.style.display='none'; }
   document.getElementById('m-text').textContent=h.bengali||h.text||'';
   document.getElementById('m-narrator').textContent=h.narrator||'-';
   document.getElementById('m-num').textContent='#'+(h.hadithnumber||h.hadithNo||'');
