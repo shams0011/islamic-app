@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ইসলামিক AI</title>
+<!-- VERSION: v5-colorize-geolocation-timesync -->
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -193,12 +194,15 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
   <div class="app-eyebrow">☪ Islamic AI • ইসলামিক এআই</div>
   <div class="app-bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
   <div class="header-row">
-    <div class="header-loc"><div class="live-dot"></div>বগুড়া, বাংলাদেশ</div>
+    <div class="header-loc"><div class="live-dot"></div><span id="loc-name">বগুড়া, বাংলাদেশ</span></div>
     <span id="clock">--:--:--</span>
   </div>
 </div>
 
 <div class="next-prayer">
+  <div id="cur-prayer-tag" style="display:none;font-size:12px;color:var(--teal);margin-bottom:8px;display:flex;align-items:center;gap:5px">
+    <div class="p-active-dot"></div><span id="cur-prayer-text"></span>
+  </div>
   <div class="np-row">
     <div><div class="np-label">পরবর্তী নামাজ</div><div class="np-name">যুহর</div><div class="np-arabic">الظهر</div></div>
     <div class="np-right"><div class="np-cd-label">বাকি আছে</div><div id="countdown">--:--:--</div></div>
@@ -348,16 +352,280 @@ let selChapter=null, selChapterName='';
 let currentHadiths=[], currentPage=1, totalPages=1;
 let bookDataCache={};
 
-/* ══ CLOCK ══ */
-function tick(){
-  const now=new Date();
-  document.getElementById('clock').textContent=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
-  const t=new Date();t.setHours(12,3,0,0);
-  let d=t-now;if(d<0)d+=864e5;
-  const p=n=>String(Math.floor(n)).padStart(2,'0');
-  document.getElementById('countdown').textContent=p(d/36e5)+':'+p((d%36e5)/6e4)+':'+p((d%6e4)/1e3);
+/* ══ PRAYER TIME CALCULATION — auto-detects user's location ══ */
+let LAT = 24.8465, LON = 89.3773, TZ = 6; // default: Bogra, Bangladesh (fallback)
+
+function detectLocation(){
+  // Timezone offset from browser (in hours, e.g. +6 for Bangladesh)
+  TZ = -new Date().getTimezoneOffset()/60;
+
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        LAT = pos.coords.latitude;
+        LON = pos.coords.longitude;
+        PRAYER_TIMES_TODAY = getPrayerTimes(getNow());
+        updatePrayerDisplay();
+        updateLocationName(LAT, LON);
+      },
+      err => {
+        // Permission denied or unavailable — keep default location but try IP-based fallback
+        detectLocationByIP();
+      },
+      {timeout:8000, maximumAge:3600000}
+    );
+  } else {
+    detectLocationByIP();
+  }
 }
-setInterval(tick,1000);tick();
+
+async function detectLocationByIP(){
+  try{
+    const r = await fetch('https://ipapi.co/json/');
+    if(!r.ok) throw new Error();
+    const d = await r.json();
+    if(d.latitude && d.longitude){
+      LAT = d.latitude; LON = d.longitude;
+      if(d.utc_offset){
+        const off = d.utc_offset; // format like "+0600"
+        const sign = off[0]==='-'?-1:1;
+        TZ = sign*(parseInt(off.slice(1,3))+parseInt(off.slice(3,5))/60);
+      }
+      PRAYER_TIMES_TODAY = getPrayerTimes(getNow());
+      updatePrayerDisplay();
+      const locEl = document.getElementById('loc-name');
+      if(locEl) locEl.textContent = [d.city, d.country_name].filter(Boolean).join(', ');
+    }
+  }catch(e){ /* keep default Bogra fallback silently */ }
+}
+
+async function updateLocationName(lat, lon){
+  try{
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=10`);
+    if(!r.ok) throw new Error();
+    const d = await r.json();
+    const addr = d.address || {};
+    const city = addr.city || addr.town || addr.village || addr.county || '';
+    const country = addr.country || '';
+    const locEl = document.getElementById('loc-name');
+    if(locEl && (city||country)) locEl.textContent = [city, country].filter(Boolean).join(', ');
+  }catch(e){ /* keep whatever was there */ }
+}
+
+function julianDate(date){
+  const y=date.getUTCFullYear(), m=date.getUTCMonth()+1, d=date.getUTCDate();
+  let yy=y, mm=m;
+  if(mm<=2){ yy--; mm+=12; }
+  const a=Math.floor(yy/100), b=2-a+Math.floor(a/4);
+  return Math.floor(365.25*(yy+4716))+Math.floor(30.6001*(mm+1))+d+b-1524.5;
+}
+
+function sunPosition(jd){
+  const D=jd-2451545.0;
+  const g=(357.529+0.98560028*D)%360;
+  const q=(280.459+0.98564736*D)%360;
+  const L=q+1.915*Math.sin(g*Math.PI/180)+0.020*Math.sin(2*g*Math.PI/180);
+  const e=23.439-0.00000036*D;
+  const RA=Math.atan2(Math.cos(e*Math.PI/180)*Math.sin(L*Math.PI/180),Math.cos(L*Math.PI/180))*180/Math.PI/15;
+  const eqt=q/15-((RA%24)+24)%24;
+  const decl=Math.asin(Math.sin(e*Math.PI/180)*Math.sin(L*Math.PI/180))*180/Math.PI;
+  return {eqt, decl};
+}
+
+function timeForAngle(jd, angle, lat, lon, tz, ccw){
+  const {eqt, decl} = sunPosition(jd);
+  const d2r=Math.PI/180;
+  const cosH=(-Math.sin(angle*d2r)-Math.sin(lat*d2r)*Math.sin(decl*d2r))/(Math.cos(lat*d2r)*Math.cos(decl*d2r));
+  if(cosH>1||cosH<-1) return null;
+  const H=Math.acos(cosH)*180/Math.PI/15;
+  const noon=12-lon/15+tz-eqt;
+  return ccw? noon-H : noon+H;
+}
+
+function asrTime(jd, lat, lon, tz){
+  const {eqt, decl} = sunPosition(jd);
+  const d2r=Math.PI/180;
+  const a=Math.atan(1/(1+Math.tan(Math.abs(lat-decl)*d2r)))*180/Math.PI;
+  const cosH=(Math.sin(a*d2r)-Math.sin(lat*d2r)*Math.sin(decl*d2r))/(Math.cos(lat*d2r)*Math.cos(decl*d2r));
+  if(cosH>1||cosH<-1) return null;
+  const H=Math.acos(cosH)*180/Math.PI/15;
+  const noon=12-lon/15+tz-eqt;
+  return noon+H;
+}
+
+function fmtHM(hours){
+  if(hours===null||isNaN(hours)) return '--:--';
+  hours=((hours%24)+24)%24;
+  const h=Math.floor(hours), m=Math.round((hours-h)*60);
+  const hh=String(m===60?h+1:h).padStart(2,'0');
+  const mm=String(m===60?0:m).padStart(2,'0');
+  return hh+':'+mm;
+}
+
+function getPrayerTimes(date){
+  const jd=julianDate(date);
+  const fajr=timeForAngle(jd,18,LAT,LON,TZ,true);
+  const sunrise=timeForAngle(jd,0.833,LAT,LON,TZ,true);
+  const {eqt}=sunPosition(jd);
+  const dhuhr=12-LON/15+TZ-eqt+2/60; // +2min for zawal safety margin
+  const asr=asrTime(jd,LAT,LON,TZ);
+  const sunset=timeForAngle(jd,0.833,LAT,LON,TZ,false);
+  const maghrib=sunset;
+  const isha=timeForAngle(jd,17,LAT,LON,TZ,false);
+  return {fajr,sunrise,dhuhr,asr,maghrib,isha};
+}
+
+let PRAYER_TIMES_TODAY = getPrayerTimes(new Date());
+
+function updatePrayerDisplay(){
+  const pt = PRAYER_TIMES_TODAY;
+  const rows = document.querySelectorAll('#tab-prayer .prayer-row .p-time');
+  if(rows[0]) rows[0].textContent = fmtHM(pt.fajr);
+  if(rows[1]) rows[1].textContent = fmtHM(pt.dhuhr);
+  if(rows[2]) rows[2].textContent = fmtHM(pt.asr);
+  if(rows[3]) rows[3].textContent = fmtHM(pt.maghrib);
+  if(rows[4]) rows[4].textContent = fmtHM(pt.isha);
+  const spTimes = document.querySelectorAll('.sp-time');
+  if(spTimes[0]) spTimes[0].textContent = fmtHM(pt.sunrise);
+  if(spTimes[1]) spTimes[1].textContent = fmtHM(pt.maghrib);
+  // Tahajjud: midpoint between Isha and Fajr (next day)
+  let tahajjud = (pt.isha + (pt.fajr+24))/2;
+  if(spTimes[2]) spTimes[2].textContent = fmtHM(tahajjud);
+  if(spTimes[3]) spTimes[3].textContent = fmtHM(pt.fajr - 10/60); // sehri ends 10 min before fajr
+}
+
+function getCurrentPrayerInfo(){
+  const now = getNow();
+  const curHour = now.getHours() + now.getMinutes()/60 + now.getSeconds()/3600;
+  const pt = PRAYER_TIMES_TODAY;
+  let prayers = [
+    {name:'fajr', time: pt.fajr, idx:0},
+    {name:'dhuhr', time: pt.dhuhr, idx:1},
+    {name:'asr', time: pt.asr, idx:2},
+    {name:'maghrib', time: pt.maghrib, idx:3},
+    {name:'isha', time: pt.isha, idx:4},
+  ];
+  // Guard against invalid/NaN prayer times (e.g. mid-recalculation) — fall back safely
+  if(prayers.some(p => p.time===null || isNaN(p.time))){
+    return {current:null, next:{name:'dhuhr', time:12, idx:1}, diffHours: 1};
+  }
+  let current = null, next = null;
+  for(let i=0;i<prayers.length;i++){
+    if(curHour >= prayers[i].time) current = prayers[i];
+  }
+  next = prayers.find(p => p.time > curHour) || prayers[0]; // wrap to fajr tomorrow
+  let nextTime = next.time;
+  let diffHours = nextTime - curHour;
+  if(diffHours <= 0) diffHours += 24;
+  return {current, next, diffHours};
+}
+
+const PRAYER_LABELS = {
+  fajr:{bn:'ফজর', ar:'الفجر'}, dhuhr:{bn:'যুহর', ar:'الظهر'},
+  asr:{bn:'আসর', ar:'العصر'}, maghrib:{bn:'মাগরিব', ar:'المغرب'},
+  isha:{bn:'ইশা', ar:'العشاء'}
+};
+
+function updateActivePrayerHighlight(){
+  const {current} = getCurrentPrayerInfo();
+  document.querySelectorAll('#tab-prayer .prayer-row').forEach((row,i)=>{
+    row.classList.remove('cur');
+    const badge = row.querySelector('.p-active');
+    if(badge) badge.remove();
+  });
+  if(current){
+    const rows = document.querySelectorAll('#tab-prayer .prayer-row');
+    const row = rows[current.idx];
+    if(row){
+      row.classList.add('cur');
+      const timeWrap = row.querySelector('div[style*="text-align:right"]') || row.lastElementChild;
+      if(timeWrap && !timeWrap.querySelector('.p-active')){
+        const badge = document.createElement('div');
+        badge.className='p-active';
+        badge.innerHTML='<div class="p-active-dot"></div>চলছে';
+        timeWrap.appendChild(badge);
+      }
+    }
+  }
+}
+
+/* ══ NETWORK TIME SYNC — corrects wrong system clock ══ */
+let timeOffsetMs = 0; // difference between real time and system clock
+
+function getNow(){
+  return new Date(Date.now() + timeOffsetMs);
+}
+
+async function syncNetworkTime(){
+  const sources = [
+    async () => {
+      const r = await fetch('https://worldtimeapi.org/api/timezone/Asia/Dhaka');
+      const d = await r.json();
+      return new Date(d.utc_datetime).getTime();
+    },
+    async () => {
+      const r = await fetch('https://timeapi.io/api/Time/current/zone?timeZone=Asia/Dhaka');
+      const d = await r.json();
+      return new Date(d.dateTime).getTime();
+    },
+  ];
+  for(const src of sources){
+    try{
+      const before = Date.now();
+      const realMs = await src();
+      const after = Date.now();
+      const localMs = (before+after)/2;
+      timeOffsetMs = realMs - localMs;
+      window._timeSynced = true;
+      return;
+    }catch(e){ continue; }
+  }
+  // all sources failed — keep using system clock (offset 0)
+}
+
+function tick(){
+  const now=getNow();
+  document.getElementById('clock').textContent=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+
+  // Recalculate prayer times if date changed (midnight rollover)
+  const today = now.toDateString();
+  if(window._ptDate !== today){
+    window._ptDate = today;
+    PRAYER_TIMES_TODAY = getPrayerTimes(now);
+    updatePrayerDisplay();
+  }
+
+  const {current, next, diffHours} = getCurrentPrayerInfo();
+  const label = PRAYER_LABELS[next.name];
+  document.querySelector('.np-name').textContent = label.bn;
+  document.querySelector('.np-arabic').textContent = label.ar;
+
+  const curTag = document.getElementById('cur-prayer-tag');
+  const curText = document.getElementById('cur-prayer-text');
+  if(current){
+    const curLabel = PRAYER_LABELS[current.name];
+    curText.textContent = `এখন ${curLabel.bn} (${curLabel.ar}) এর সময় চলছে`;
+    curTag.style.display = 'flex';
+  } else {
+    curTag.style.display = 'none';
+  }
+
+  const totalSeconds = Math.round(diffHours*3600);
+  const h=Math.floor(totalSeconds/3600), m=Math.floor((totalSeconds%3600)/60), s=totalSeconds%60;
+  const p=n=>String(n).padStart(2,'0');
+  document.getElementById('countdown').textContent=p(h)+':'+p(m)+':'+p(s);
+
+  updateActivePrayerHighlight();
+}
+setInterval(tick,1000);
+detectLocation();
+updatePrayerDisplay();
+tick();
+syncNetworkTime().then(()=>{
+  PRAYER_TIMES_TODAY = getPrayerTimes(getNow());
+  updatePrayerDisplay();
+  tick();
+});
 
 /* ══ TABS ══ */
 function showTab(id,btn){
@@ -446,7 +714,7 @@ function colorizeHadith(text){
   return t;
 }
 
-
+function renderHadiths(list){
   const q=(document.getElementById('h-search').value||'').toLowerCase();
   let filtered=list;
   if(q) filtered=list.filter(h=>(h.t||'').toLowerCase().includes(q));
@@ -490,7 +758,6 @@ function goChapters(){ show('view-chapters'); }
 function loading(msg){
   return `<div class="loading-wrap"><div class="loading-dots"><div class="ld"></div><div class="ld"></div><div class="ld"></div></div><div class="loading-text">${msg}</div></div>`;
 }
-function esc(s){ return (s||'').replace(/'/g,"&#39;"); }
 function esc(s){ return (s||'').replace(/'/g,"&#39;"); }
 
 /* ══ AI CHAT ══ */
