@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ইসলামিক AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#06080a;--card:#0f1820;--card2:#141d28;
+  --border:#1e2e3e;--border2:#263545;
+  --gold:#c8a96e;--gold2:#e8d4a0;--gold3:#a07840;
+  --teal:#3da8a8;--teal3:#1a4f4f;
+  --text:#dde8f0;--text2:#8aabbf;--text3:#4a6a80;
+  --green:#5cb87a;
+}
+html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(--text);min-height:100vh;font-size:16px}
+.app{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg)}
+.app-bg{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 60% 35% at 85% 5%,rgba(200,169,110,.07) 0%,transparent 60%),
+             radial-gradient(ellipse 45% 55% at 15% 85%,rgba(42,122,122,.05) 0%,transparent 60%)}
+.wrap{position:relative;z-index:1}
+.header{padding:24px 20px 16px;background:linear-gradient(180deg,#0c1a10 0%,#06080a 100%);border-bottom:1px solid rgba(200,169,110,.12)}
+.app-eyebrow{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--gold3);margin-bottom:5px}
+.app-bismillah{font-size:22px;color:var(--gold2);direction:rtl;font-family:serif;line-height:1.5;margin-bottom:10px}
+.header-row{display:flex;justify-content:space-between;align-items:center}
+.header-loc{font-size:13px;color:var(--text3);display:flex;align-items:center;gap:5px}
+.live-dot{width:6px;height:6px;background:var(--teal);border-radius:50%;box-shadow:0 0 7px var(--teal);animation:blink 2s ease-in-out infinite}
+#clock{font-size:14px;color:var(--teal);font-weight:600;font-family:monospace}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.next-prayer{margin:14px 16px;background:linear-gradient(135deg,#0c1c16,#09130f);border:1px solid rgba(200,169,110,.22);border-radius:20px;padding:18px 20px;position:relative;overflow:hidden}
+.next-prayer::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(200,169,110,.04),transparent);border-radius:20px;pointer-events:none}
+.np-row{display:flex;justify-content:space-between;align-items:flex-end}
+.np-label{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.np-name{font-size:26px;font-weight:700;color:var(--gold2);line-height:1}
+.np-arabic{font-size:14px;color:var(--gold3);font-family:serif;direction:rtl;margin-top:3px}
+.np-right{text-align:right}
+.np-cd-label{font-size:11px;color:var(--text3);margin-bottom:2px}
+#countdown{font-size:28px;font-weight:300;color:var(--text);font-family:monospace;letter-spacing:1px}
+.progress-bar{margin-top:14px;height:2px;background:rgba(200,169,110,.08);border-radius:2px}
+.progress-fill{height:100%;width:35%;background:linear-gradient(90deg,var(--teal3),var(--gold));border-radius:2px}
+.tabbar{display:flex;padding:10px 14px;gap:6px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--border);background:rgba(0,0,0,.2)}
+.tabbar::-webkit-scrollbar{display:none}
+.tab-btn{flex:none;padding:8px 16px;border-radius:50px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:14px;font-weight:500;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;white-space:nowrap}
+.tab-btn.active{background:rgba(200,169,110,.12);border-color:rgba(200,169,110,.4);color:var(--gold2)}
+.section{display:none;padding:14px 16px 48px}
+.section.active{display:block}
+.sec-title{display:flex;align-items:center;gap:10px;margin-bottom:16px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
+.sec-title::before,.sec-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--border2),transparent)}
+.sec-gem{width:5px;height:5px;background:var(--gold3);transform:rotate(45deg);border-radius:1px;flex-shrink:0}
+.prayer-row{display:flex;align-items:center;padding:13px 15px;background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:8px;position:relative;overflow:hidden}
+.prayer-row.cur{background:linear-gradient(135deg,#0f1e2e,#0c1620);border-color:rgba(200,169,110,.28)}
+.prayer-row.cur::before{content:'';position:absolute;left:0;top:15%;bottom:15%;width:2px;background:linear-gradient(to bottom,transparent,var(--gold),transparent)}
+.p-icon{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:15px;margin-right:12px;flex-shrink:0}
+.prayer-row.cur .p-icon{background:rgba(200,169,110,.07);border-color:rgba(200,169,110,.18)}
+.p-info{flex:1}
+.p-name{font-size:17px;font-weight:600;color:var(--text)}
+.prayer-row.cur .p-name{color:var(--gold2)}
+.p-arabic{font-size:13px;color:var(--text3);font-family:serif;direction:rtl;margin-top:2px}
+.p-time{font-size:17px;font-weight:700;color:var(--text2);font-family:monospace}
+.prayer-row.cur .p-time{color:var(--gold)}
+.p-active{font-size:11px;color:var(--teal);margin-top:2px;display:flex;align-items:center;gap:3px;justify-content:flex-end}
+.p-active-dot{width:4px;height:4px;background:var(--teal);border-radius:50%;animation:blink 1.5s ease-in-out infinite}
+.special-card{margin-top:14px;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.special-card-head{padding:12px 16px;border-bottom:1px solid var(--border);font-size:14px;color:var(--gold2);background:rgba(200,169,110,.04)}
+.sp-row{display:flex;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(30,46,62,.6)}
+.sp-row:last-child{border-bottom:none}
+.sp-label{font-size:15px;color:var(--text2)}
+.sp-time{font-size:15px;color:var(--teal);font-weight:600;font-family:monospace}
+.search-wrap{position:relative;margin-bottom:16px}
+.search-input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:14px;padding:12px 16px 12px 44px;color:var(--text);font-size:15px;outline:none;font-family:'Hind Siliguri',sans-serif;transition:border-color .2s}
+.search-input:focus{border-color:rgba(200,169,110,.4)}
+.search-input::placeholder{color:var(--text3)}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:17px;pointer-events:none}
+
+/* Proxy setup banner */
+.proxy-banner{background:linear-gradient(135deg,rgba(200,169,110,.1),rgba(200,169,110,.05));border:1px solid rgba(200,169,110,.25);border-radius:14px;padding:14px 16px;margin-bottom:16px}
+.proxy-banner-title{font-size:14px;font-weight:600;color:var(--gold2);margin-bottom:6px}
+.proxy-banner-text{font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:10px}
+.proxy-input-row{display:flex;gap:8px}
+.proxy-input{flex:1;background:rgba(0,0,0,.3);border:1px solid var(--border2);border-radius:10px;padding:8px 12px;color:var(--text);font-size:12px;outline:none;font-family:monospace}
+.proxy-input:focus{border-color:rgba(200,169,110,.4)}
+.proxy-save-btn{padding:8px 14px;background:linear-gradient(135deg,var(--gold3),var(--gold));border:none;border-radius:10px;color:#000;font-size:12px;font-weight:600;cursor:pointer;font-family:'Hind Siliguri',sans-serif;white-space:nowrap}
+.proxy-status{font-size:11px;margin-top:8px;padding:6px 10px;border-radius:8px;display:none}
+.proxy-status.ok{display:block;background:rgba(50,150,80,.15);color:var(--green);border:1px solid rgba(50,150,80,.2)}
+.proxy-status.err{display:block;background:rgba(200,50,50,.1);color:#e07070;border:1px solid rgba(200,50,50,.2)}
+
+.book-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.book-card{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:15px 13px;cursor:pointer;transition:all .2s;user-select:none;position:relative;overflow:hidden}
+.book-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold3),transparent);opacity:0;transition:opacity .25s}
+.book-card:active{transform:scale(.97)}
+.book-card.sel{border-color:rgba(200,169,110,.45);background:var(--card2)}
+.book-card.sel::after{opacity:1}
+.b-arabic{font-family:serif;font-size:14px;color:var(--gold);direction:rtl;text-align:right;line-height:1.7;margin-bottom:7px}
+.b-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px}
+.b-count{font-size:11px;color:var(--text3)}
+.b-sel-tag{font-size:11px;color:var(--gold);margin-top:6px}
+
+/* Chapter & Hadith views */
+.back-btn{display:flex;align-items:center;gap:6px;color:var(--gold);font-size:14px;cursor:pointer;margin-bottom:14px;font-weight:500;padding:8px 0}
+
+.chapter-item{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:7px;cursor:pointer;transition:all .2s}
+.chapter-item:hover{border-color:rgba(200,169,110,.3);background:var(--card2)}
+.ch-name{font-size:15px;color:var(--text);font-weight:500}
+.ch-count{font-size:12px;color:var(--text3);margin-top:2px}
+
+.hadith-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:12px;cursor:pointer;transition:all .2s;user-select:none;position:relative;overflow:hidden}
+.hadith-card::before{content:'"';position:absolute;top:-8px;right:14px;font-family:serif;font-size:90px;color:rgba(200,169,110,.03);line-height:1;pointer-events:none}
+.hadith-card:active{transform:scale(.98)}
+.hadith-card:hover{border-color:rgba(200,169,110,.25);background:var(--card2)}
+.h-arabic{font-family:serif;font-size:16px;color:var(--gold2);direction:rtl;text-align:right;line-height:2;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.h-text{font-size:15px;color:var(--text);line-height:1.8;margin-bottom:13px;font-weight:300}
+.h-meta{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.badge{padding:4px 11px;border-radius:50px;font-size:12px;font-weight:500}
+.bg{background:rgba(200,169,110,.09);color:var(--gold);border:1px solid rgba(200,169,110,.14)}
+.bt{background:rgba(42,122,122,.1);color:var(--teal);border:1px solid rgba(42,122,122,.14)}
+.h-narrator{font-size:12px;color:var(--text3);margin-left:auto;font-style:italic}
+.h-hint{font-size:12px;color:var(--text3);margin-top:9px}
+
+/* Loading */
+.loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;gap:14px}
+.loading-dots{display:flex;gap:6px}
+.ld{width:8px;height:8px;border-radius:50%;background:var(--gold3);animation:bounce 1.2s ease-in-out infinite}
+.ld:nth-child(2){animation-delay:.2s}.ld:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-7px);opacity:1}}
+.loading-text{font-size:14px;color:var(--text3)}
+
+/* Pagination */
+.pagination{display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.page-btn{padding:7px 14px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text2);font-size:13px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s}
+.page-btn.active{background:rgba(200,169,110,.15);border-color:rgba(200,169,110,.4);color:var(--gold2)}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal-sheet{background:#0f1820;border:1px solid var(--border2);border-radius:22px 22px 0 0;width:100%;max-width:430px;max-height:88vh;overflow-y:auto;padding:18px 18px 40px;animation:slideUp .3s cubic-bezier(.4,0,.2,1)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:38px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 18px}
+.modal-book-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:3px}
+.modal-book-name{font-size:18px;color:var(--gold2);margin-bottom:14px}
+.modal-arabic{font-family:serif;font-size:18px;color:var(--gold2);direction:rtl;text-align:right;line-height:2.2;padding:16px;background:rgba(200,169,110,.04);border:1px solid rgba(200,169,110,.1);border-radius:14px;margin-bottom:14px}
+.modal-text{font-size:15px;color:var(--text);line-height:1.9;padding:13px 15px;background:rgba(255,255,255,.02);border-left:2px solid var(--gold3);border-radius:0 12px 12px 0;margin-bottom:14px}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.modal-info{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:11px 13px}
+.modal-info-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:3px}
+.modal-info-val{font-size:14px;color:var(--text);font-weight:500}
+.modal-close-btn{width:100%;padding:13px;background:rgba(200,169,110,.1);border:1px solid rgba(200,169,110,.2);border-radius:13px;color:var(--gold2);font-size:15px;font-weight:600;cursor:pointer;font-family:'Hind Siliguri',sans-serif}
+
+/* Chat */
+.chat-box{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden}
+.chat-head{display:flex;align-items:center;gap:11px;padding:13px 16px;background:rgba(200,169,110,.04);border-bottom:1px solid var(--border)}
+.chat-head-icon{width:34px;height:34px;border-radius:10px;background:rgba(200,169,110,.1);border:1px solid rgba(200,169,110,.18);display:flex;align-items:center;justify-content:center;font-size:15px}
+.chat-head-title{font-size:15px;font-weight:600;color:var(--gold2)}
+.chat-head-sub{font-size:12px;color:var(--text3);margin-top:1px}
+.chat-msgs{height:340px;overflow-y:auto;padding:13px;display:flex;flex-direction:column;gap:10px;background:#09101a}
+.chat-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;text-align:center}
+.chat-empty-icon{font-size:30px}
+.chat-empty-title{font-size:16px;color:var(--text2)}
+.chat-empty-desc{font-size:13px;color:var(--text3);max-width:210px;line-height:1.6}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:4px}
+.chip{background:rgba(200,169,110,.06);border:1px solid rgba(200,169,110,.14);color:var(--gold);padding:6px 12px;border-radius:50px;font-size:12px;cursor:pointer;font-family:'Hind Siliguri',sans-serif}
+.chip:hover{background:rgba(200,169,110,.14)}
+.msg{display:flex}
+.msg.user{justify-content:flex-end}
+.bubble{max-width:85%;padding:10px 14px;font-size:15px;line-height:1.7;white-space:pre-wrap;word-break:break-word}
+.msg.user .bubble{background:rgba(200,169,110,.14);border:1px solid rgba(200,169,110,.18);border-radius:16px 16px 4px 16px;color:var(--text)}
+.msg.ai .bubble{background:var(--card2);border:1px solid var(--border2);border-radius:16px 16px 16px 4px;color:var(--text)}
+.typing{display:flex;gap:5px;padding:12px 14px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--gold3);animation:bounce 1.2s ease-in-out infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+.chat-input-row{display:flex;gap:8px;padding:11px 13px;background:rgba(0,0,0,.25);border-top:1px solid var(--border)}
+.chat-input{flex:1;background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:12px;padding:9px 14px;color:var(--text);font-size:15px;outline:none;font-family:'Hind Siliguri',sans-serif}
+.chat-input:focus{border-color:rgba(200,169,110,.3)}
+.chat-input::placeholder{color:var(--text3)}
+.send-btn{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--gold3),var(--gold));border:none;cursor:pointer;font-size:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.send-btn:disabled{opacity:.4;cursor:not-allowed}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="app-bg"></div>
+<div class="wrap">
+
+<div class="header">
+  <div class="app-eyebrow">☪ Islamic AI • ইসলামিক এআই</div>
+  <div class="app-bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
+  <div class="header-row">
+    <div class="header-loc"><div class="live-dot"></div>বগুড়া, বাংলাদেশ</div>
+    <span id="clock">--:--:--</span>
+  </div>
+</div>
+
+<div class="next-prayer">
+  <div class="np-row">
+    <div><div class="np-label">পরবর্তী নামাজ</div><div class="np-name">যুহর</div><div class="np-arabic">الظهر</div></div>
+    <div class="np-right"><div class="np-cd-label">বাকি আছে</div><div id="countdown">--:--:--</div></div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill"></div></div>
+</div>
+
+<div class="tabbar">
+  <button class="tab-btn active" onclick="showTab('prayer',this)">🕌 নামাজ</button>
+  <button class="tab-btn" onclick="showTab('hadith',this)">📚 হাদিস</button>
+  <button class="tab-btn" onclick="showTab('aihadith',this)">🔍 AI হাদিস</button>
+  <button class="tab-btn" onclick="showTab('aiask',this)">🤲 AI গাইড</button>
+</div>
+
+<!-- Prayer -->
+<div id="tab-prayer" class="section active">
+  <div class="sec-title"><div class="sec-gem"></div>আজকের ওয়াক্ত<div class="sec-gem"></div></div>
+  <div class="prayer-row"><div class="p-icon">🌙</div><div class="p-info"><div class="p-name">ফজর</div><div class="p-arabic">الفجر</div></div><div><div class="p-time">05:12</div></div></div>
+  <div class="prayer-row cur"><div class="p-icon">☀️</div><div class="p-info"><div class="p-name">যুহর</div><div class="p-arabic">الظهر</div></div><div style="text-align:right"><div class="p-time">12:03</div><div class="p-active"><div class="p-active-dot"></div>চলছে</div></div></div>
+  <div class="prayer-row"><div class="p-icon">🌤️</div><div class="p-info"><div class="p-name">আসর</div><div class="p-arabic">العصر</div></div><div><div class="p-time">04:45</div></div></div>
+  <div class="prayer-row"><div class="p-icon">🌅</div><div class="p-info"><div class="p-name">মাগরিব</div><div class="p-arabic">المغرب</div></div><div><div class="p-time">06:51</div></div></div>
+  <div class="prayer-row"><div class="p-icon">⭐</div><div class="p-info"><div class="p-name">ইশা</div><div class="p-arabic">العشاء</div></div><div><div class="p-time">08:20</div></div></div>
+  <div class="special-card">
+    <div class="special-card-head">🌙 বিশেষ সময়</div>
+    <div class="sp-row"><span class="sp-label">সূর্যোদয়</span><span class="sp-time">06:51</span></div>
+    <div class="sp-row"><span class="sp-label">সূর্যাস্ত</span><span class="sp-time">06:51</span></div>
+    <div class="sp-row"><span class="sp-label">তাহাজ্জুদ</span><span class="sp-time">03:30</span></div>
+    <div class="sp-row"><span class="sp-label">সেহরি শেষ</span><span class="sp-time">05:00</span></div>
+  </div>
+</div>
+
+<!-- Hadith -->
+<div id="tab-hadith" class="section">
+
+  <!-- View 1: Books -->
+  <div id="view-books">
+    <div class="sec-title"><div class="sec-gem"></div>সিহাহ সিত্তাহ<div class="sec-gem"></div></div>
+
+    <!-- Proxy setup -->
+    <div class="proxy-banner" id="proxy-banner">
+      <div class="proxy-banner-title">⚙️ সব হাদিস লোড করতে Vercel URL দিন</div>
+      <div class="proxy-banner-text">hadith-proxy ফোল্ডারটি Vercel এ deploy করুন, তারপর নিচে URL দিন। না দিলে ৩৫টি হাদিস দেখাবে।</div>
+      <div class="proxy-input-row">
+        <input class="proxy-input" id="proxy-url-input" placeholder="https://your-proxy.vercel.app">
+        <button class="proxy-save-btn" onclick="saveProxy()">সংযুক্ত</button>
+      </div>
+      <div class="proxy-status" id="proxy-status"></div>
+    </div>
+
+    <div class="book-grid" id="book-grid"></div>
+  </div>
+
+  <!-- View 2: Chapters -->
+  <div id="view-chapters" style="display:none">
+    <div class="back-btn" onclick="goBooks()">← বই তালিকায় ফিরুন</div>
+    <div class="sec-title" id="ch-title"><div class="sec-gem"></div>অধ্যায়<div class="sec-gem"></div></div>
+    <div id="chapter-list"></div>
+  </div>
+
+  <!-- View 3: Hadiths -->
+  <div id="view-hadiths" style="display:none">
+    <div class="back-btn" onclick="goChapters()">← অধ্যায় তালিকায় ফিরুন</div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="h-search" placeholder="এই অধ্যায়ে সার্চ করুন...">
+    </div>
+    <div class="sec-title" id="h-title"><div class="sec-gem"></div>হাদিস<div class="sec-gem"></div></div>
+    <div id="hadith-list"></div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+
+</div>
+
+<!-- AI Hadith -->
+<div id="tab-aihadith" class="section">
+  <div class="sec-title"><div class="sec-gem"></div>AI হাদিস সার্চ<div class="sec-gem"></div></div>
+  <div class="chat-box">
+    <div class="chat-head"><div class="chat-head-icon">📖</div><div><div class="chat-head-title">AI হাদিস সার্চ</div><div class="chat-head-sub">সিহাহ সিত্তাহ থেকে হাদিস খুঁজুন</div></div></div>
+    <div class="chat-msgs" id="hmsgs">
+      <div class="chat-empty">
+        <div class="chat-empty-icon">📖</div>
+        <div class="chat-empty-title">হাদিস খুঁজুন</div>
+        <div class="chat-empty-desc">বাংলায় প্রশ্ন করুন, সিহাহ সিত্তাহ থেকে হাদিস পাবেন</div>
+        <div class="chips">
+          <button class="chip" onclick="sendChat('h','রাগ কমানোর হাদিস')">রাগ কমানোর হাদিস</button>
+          <button class="chip" onclick="sendChat('h','সবরের হাদিস')">সবরের হাদিস</button>
+          <button class="chip" onclick="sendChat('h','মা-বাবার হক')">মা-বাবার হক</button>
+          <button class="chip" onclick="sendChat('h','তওবার হাদিস')">তওবার হাদিস</button>
+        </div>
+      </div>
+    </div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="hinput" placeholder="হাদিস খুঁজুন..." onkeydown="if(event.key==='Enter')sendChat('h')">
+      <button class="send-btn" id="hbtn" onclick="sendChat('h')">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI Guide -->
+<div id="tab-aiask" class="section">
+  <div class="sec-title"><div class="sec-gem"></div>AI ইসলামিক গাইড<div class="sec-gem"></div></div>
+  <div class="chat-box">
+    <div class="chat-head"><div class="chat-head-icon">🤲</div><div><div class="chat-head-title">AI ইসলামিক গাইড</div><div class="chat-head-sub">যেকোনো ইসলামিক প্রশ্নের উত্তর</div></div></div>
+    <div class="chat-msgs" id="gmsgs">
+      <div class="chat-empty">
+        <div class="chat-empty-icon">☪️</div>
+        <div class="chat-empty-title">প্রশ্ন করুন</div>
+        <div class="chat-empty-desc">নামাজ, রোজা, দোয়া — যা খুশি জিজ্ঞেস করুন</div>
+        <div class="chips">
+          <button class="chip" onclick="sendChat('g','ফজর নামাজের ফজিলত কী')">ফজর নামাজের ফজিলত</button>
+          <button class="chip" onclick="sendChat('g','তওবার নিয়ম কী')">তওবার নিয়ম</button>
+          <button class="chip" onclick="sendChat('g','রিজিক বৃদ্ধির দোয়া কী')">রিজিক বৃদ্ধির দোয়া</button>
+          <button class="chip" onclick="sendChat('g','গুনাহ মাফের উপায়')">গুনাহ মাফের উপায়</button>
+        </div>
+      </div>
+    </div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="ginput" placeholder="প্রশ্ন করুন..." onkeydown="if(event.key==='Enter')sendChat('g')">
+      <button class="send-btn" id="gbtn" onclick="sendChat('g')">➤</button>
+    </div>
+  </div>
+</div>
+
+</div></div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-book-label">কিতাব</div>
+    <div class="modal-book-name" id="m-book"></div>
+    <div class="modal-arabic" id="m-arabic"></div>
+    <div class="modal-text" id="m-text"></div>
+    <div class="modal-grid">
+      <div class="modal-info"><div class="modal-info-label">বর্ণনাকারী</div><div class="modal-info-val" id="m-narrator"></div></div>
+      <div class="modal-info"><div class="modal-info-label">হাদিস নং</div><div class="modal-info-val" id="m-num"></div></div>
+      <div class="modal-info"><div class="modal-info-label">অধ্যায়</div><div class="modal-info-val" id="m-chapter"></div></div>
+      <div class="modal-info"><div class="modal-info-label">বিষয়</div><div class="modal-info-val" id="m-topic"></div></div>
+    </div>
+    <button class="modal-close-btn" onclick="document.getElementById('modal').classList.remove('open')">✕ বন্ধ করুন</button>
+  </div>
+</div>
+
+<script>
+/* ══ CONFIG ══ */
+// Direct CDN — no proxy needed!
+const CDN = 'https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions';
+const CDN_KEYS = {
+  bukhari:'ben-bukhari1', muslim:'ben-muslim1',
+  tirmizi:'ben-tirmidhi1', abudawud:'ben-abudawud',
+  nasai:'ben-nasai', ibnmajah:'ben-ibnmajah'
+};
+document.getElementById('proxy-banner').style.display='none';
+
+const BOOKS = [
+  {id:"bukhari", arabic:"صحيح البخاري", name:"সহিহ বুখারী",    count:"৭৫৬৩"},
+  {id:"muslim",  arabic:"صحيح مسلم",   name:"সহিহ মুসলিম",    count:"৭৪৭০"},
+  {id:"tirmizi", arabic:"جامع الترمذي",name:"জামে তিরমিযী",  count:"৩৯৫৬"},
+  {id:"abudawud",arabic:"سنن أبي داود",name:"সুনান আবু দাউদ",count:"৫২৭৪"},
+  {id:"nasai",   arabic:"سنن النسائي", name:"সুনান নাসাঈ",   count:"৫৭৫৮"},
+  {id:"ibnmajah",arabic:"سنن ابن ماجه",name:"সুনান ইবনে মাজাহ",count:"৪৩৪১"},
+];
+
+// API key map: our id → alquranbd key
+const BOOK_KEYS = {bukhari:'bukhari',muslim:'muslim',tirmizi:'tirmidi',abudawud:'abuDaud',nasai:'nasai',ibnmajah:'ibnMajah'};
+
+let selBook='bukhari', selBookName='সহিহ বুখারী';
+let selChapter=null, selChapterName='';
+let currentHadiths=[], currentPage=1, totalPages=1;
+
+/* ══ CLOCK ══ */
+function tick(){
+  const now=new Date();
+  document.getElementById('clock').textContent=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+  const t=new Date();t.setHours(12,3,0,0);
+  let d=t-now;if(d<0)d+=864e5;
+  const p=n=>String(Math.floor(n)).padStart(2,'0');
+  document.getElementById('countdown').textContent=p(d/36e5)+':'+p((d%36e5)/6e4)+':'+p((d%6e4)/1e3);
+}
+setInterval(tick,1000);tick();
+
+/* ══ TABS ══ */
+function showTab(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ══ PROXY ══ */
+async function saveProxy(){
+  const url = document.getElementById('proxy-url-input').value.trim().replace(/\/$/,'');
+  if(!url){ alert('URL দিন'); return; }
+  const st = document.getElementById('proxy-status');
+  st.className='proxy-status'; st.textContent='পরীক্ষা করা হচ্ছে...'; st.style.display='block';
+  try{
+    const r = await fetch(`${url}/api/hadith/bukhari`);
+    if(!r.ok) throw new Error();
+    PROXY = url;
+    localStorage.setItem('hadith_proxy', url);
+    st.className='proxy-status ok'; st.textContent='✅ সংযুক্ত! এখন সব হাদিস লোড হবে।';
+    document.getElementById('proxy-banner').style.borderColor='rgba(92,184,122,.3)';
+  }catch{
+    st.className='proxy-status err'; st.textContent='❌ সংযোগ ব্যর্থ। Vercel URL সঠিক কিনা দেখুন।';
+  }
+}
+
+/* ══ API ══ */
+async function apiGet(path){
+  // Use jsdelivr CDN directly
+  const url = `${CDN}/${path}.min.json`;
+  const r = await fetch(url);
+  if(!r.ok) throw new Error('CDN error: '+r.status);
+  return r.json();
+}
+
+/* ══ BOOKS ══ */
+function renderBooks(){
+  document.getElementById('book-grid').innerHTML=BOOKS.map(b=>`
+    <div class="book-card" onclick="openBook('${b.id}','${b.name}')">
+      <div class="b-arabic">${b.arabic}</div>
+      <div class="b-name">${b.name}</div>
+      <div class="b-count">${b.count} হাদিস</div>
+    </div>`).join('');
+}
+
+function openBook(id, name){
+  selBook=id; selBookName=name;
+  show('view-chapters');
+  document.getElementById('ch-title').innerHTML=`<div class="sec-gem"></div>${name}<div class="sec-gem"></div>`;
+  loadChapters();
+}
+
+async function loadChapters(){
+  const el=document.getElementById('chapter-list');
+  el.innerHTML=loading('অধ্যায় লোড হচ্ছে...');
+  try{
+    const cdnKey = CDN_KEYS[selBook];
+    const url = `${CDN}/${cdnKey}.min.json`;
+    const r = await fetch(url);
+    if(!r.ok) throw new Error('error '+r.status);
+    const data = await r.json();
+    // CDN returns {hadiths: [...]} grouped by chapter
+    const hadiths = data.hadiths || [];
+    // Group by chapter
+    const chapters = {};
+    hadiths.forEach(h => {
+      const ch = h.chapterno || 1;
+      if(!chapters[ch]) chapters[ch] = {no:ch, name: h.chapter||('অধ্যায় '+ch), count:0};
+      chapters[ch].count++;
+    });
+    // Store hadiths globally
+    window._allHadiths = hadiths;
+    const chList = Object.values(chapters);
+    el.innerHTML=chList.map(ch=>`
+      <div class="chapter-item" onclick="openChapterCDN(${ch.no},'${esc(ch.name)}')">
+        <div><div class="ch-name">${ch.name}</div><div class="ch-count">${ch.count} হাদিস</div></div>
+        <div style="color:var(--text3);font-size:18px">›</div>
+      </div>`).join('');
+  }catch(e){
+    el.innerHTML=`<div style="color:#e07070;padding:16px;text-align:center;font-size:14px">লোড ব্যর্থ: ${e.message}</div>`;
+  }
+}
+
+function openChapterCDN(no, name){
+  selChapter=no; selChapterName=name; currentPage=1;
+  show('view-hadiths');
+  document.getElementById('h-title').innerHTML=`<div class="sec-gem"></div>${name}<div class="sec-gem"></div>`;
+  // Filter hadiths for this chapter
+  currentHadiths = (window._allHadiths||[]).filter(h=>(h.chapterno||1)===no);
+  renderHadiths(currentHadiths);
+  document.getElementById('pagination').innerHTML='';
+}
+
+function openChapter(no, name){
+  selChapter=no; selChapterName=name; currentPage=1;
+  show('view-hadiths');
+  document.getElementById('h-title').innerHTML=`<div class="sec-gem"></div>${name}<div class="sec-gem"></div>`;
+  loadHadiths();
+}
+
+async function loadHadiths(){
+  // Now handled by openChapterCDN
+}
+
+function renderHadiths(list){
+  const q=(document.getElementById('h-search').value||'').toLowerCase();
+  let filtered=list;
+  if(q) filtered=list.filter(h=>(h.hadithBengali||'').toLowerCase().includes(q)||(h.hadithArabic||'').includes(q));
+  if(!filtered.length){
+    document.getElementById('hadith-list').innerHTML=`<div style="text-align:center;padding:40px;color:var(--text3);font-size:14px">কোনো হাদিস পাওয়া যায়নি</div>`;
+    return;
+  }
+  document.getElementById('hadith-list').innerHTML=filtered.map((h,i)=>`
+    <div class="hadith-card" onclick="openModal(${list.indexOf(h)})">
+      <div class="h-arabic">${h.arabic||''}</div>
+      <div class="h-text">${h.bengali||h.text||''}</div>
+      <div class="h-meta">
+        <span class="badge bg">${selBookName}</span>
+        <span class="badge bt">#${h.hadithnumber||h.hadithNo||''}</span>
+      </div>
+      <div class="h-hint">👆 বিস্তারিত দেখতে ট্যাপ করুন</div>
+    </div>`).join('');
+  document.getElementById('h-search').oninput=()=>renderHadiths(currentHadiths);
+}
+
+function renderPagination(pages){
+  if(pages.length<=1){document.getElementById('pagination').innerHTML='';return;}
+  document.getElementById('pagination').innerHTML=pages.map(p=>`
+    <button class="page-btn${p.pageNo+1===currentPage?' active':''}"
+      onclick="currentPage=${p.pageNo+1};loadHadiths()">
+      ${p.pageNo+1}
+    </button>`).join('');
+}
+
+function openModal(i){
+  const h=currentHadiths[i];
+  document.getElementById('m-book').textContent=selBookName;
+  document.getElementById('m-arabic').textContent=h.arabic||'';
+  document.getElementById('m-text').textContent=h.bengali||h.text||'';
+  document.getElementById('m-narrator').textContent=h.narrator||'-';
+  document.getElementById('m-num').textContent='#'+(h.hadithnumber||h.hadithNo||'');
+  document.getElementById('m-chapter').textContent=selChapterName;
+  document.getElementById('m-topic').textContent=h.grade||'-';
+  document.getElementById('modal').classList.add('open');
+}
+
+/* ══ NAVIGATION ══ */
+function show(id){
+  ['view-books','view-chapters','view-hadiths'].forEach(v=>
+    document.getElementById(v).style.display=v===id?'block':'none');
+}
+function goBooks(){ show('view-books'); }
+function goChapters(){ show('view-chapters'); }
+
+/* ══ HELPERS ══ */
+function loading(msg){
+  return `<div class="loading-wrap"><div class="loading-dots"><div class="ld"></div><div class="ld"></div><div class="ld"></div></div><div class="loading-text">${msg}</div></div>`;
+}
+function noProxy(){
+  return `<div style="text-align:center;padding:32px 16px;color:var(--text3);font-size:14px;line-height:1.7">Vercel Proxy URL সেট করুন<br>উপরের হলুদ বাক্সে URL দিন।</div>`;
+}
+function esc(s){ return (s||'').replace(/'/g,"&#39;"); }
+
+/* ══ AI CHAT ══ */
+const hist={h:[],g:[]};
+const sys={
+  h:'আপনি সিহাহ সিত্তাহর বিশেষজ্ঞ আলেম। প্রশ্নে সংশ্লিষ্ট হাদিস আরবি, বাংলা অনুবাদ, রাবী, কিতাব ও নম্বরসহ উল্লেখ করুন। বাংলায় উত্তর দিন।',
+  g:'আপনি একজন বিজ্ঞ ও দয়ালু ইসলামিক গাইড। কুরআন ও হাদিসের আলোকে সহজ বাংলায় উত্তর দিন।'
+};
+function addMsg(id,role,text){
+  const c=document.getElementById(id+'msgs');
+  const e=c.querySelector('.chat-empty');if(e)e.remove();
+  const d=document.createElement('div');d.className='msg '+(role==='user'?'user':'ai');
+  d.innerHTML='<div class="bubble">'+text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>')+'</div>';
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+function addTyping(id){
+  const c=document.getElementById(id+'msgs');
+  const d=document.createElement('div');d.className='msg ai';d.id='ty-'+id;
+  d.innerHTML='<div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+async function sendChat(id,preset){
+  const inp=document.getElementById(id+'input');
+  const btn=document.getElementById(id+'btn');
+  const text=(preset||inp.value).trim();
+  if(!text||btn.disabled)return;
+  inp.value='';btn.disabled=true;
+  addMsg(id,'user',text);
+  hist[id].push({role:'user',content:text});
+  addTyping(id);
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:sys[id],messages:hist[id]})
+    });
+    const data=await r.json();
+    const reply=data.content?.[0]?.text||'উত্তর পাওয়া যায়নি।';
+    document.getElementById('ty-'+id)?.remove();
+    hist[id].push({role:'assistant',content:reply});
+    addMsg(id,'ai',reply);
+  }catch(e){
+    document.getElementById('ty-'+id)?.remove();
+    addMsg(id,'ai','সংযোগ সমস্যা হয়েছে।');
+  }
+  btn.disabled=false;
+}
+
+// Init
+renderBooks();
+show('view-books');
+</script>
+</body>
+</html>
