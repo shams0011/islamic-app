@@ -491,7 +491,7 @@ function updatePrayerDisplay(){
 }
 
 function getCurrentPrayerInfo(){
-  const now = new Date();
+  const now = getNow();
   const curHour = now.getHours() + now.getMinutes()/60 + now.getSeconds()/3600;
   const pt = PRAYER_TIMES_TODAY;
   const prayers = [
@@ -541,8 +541,42 @@ function updateActivePrayerHighlight(){
   }
 }
 
+/* ══ NETWORK TIME SYNC — corrects wrong system clock ══ */
+let timeOffsetMs = 0; // difference between real time and system clock
+
+function getNow(){
+  return new Date(Date.now() + timeOffsetMs);
+}
+
+async function syncNetworkTime(){
+  const sources = [
+    async () => {
+      const r = await fetch('https://worldtimeapi.org/api/timezone/Asia/Dhaka');
+      const d = await r.json();
+      return new Date(d.utc_datetime).getTime();
+    },
+    async () => {
+      const r = await fetch('https://timeapi.io/api/Time/current/zone?timeZone=Asia/Dhaka');
+      const d = await r.json();
+      return new Date(d.dateTime).getTime();
+    },
+  ];
+  for(const src of sources){
+    try{
+      const before = Date.now();
+      const realMs = await src();
+      const after = Date.now();
+      const localMs = (before+after)/2;
+      timeOffsetMs = realMs - localMs;
+      window._timeSynced = true;
+      return;
+    }catch(e){ continue; }
+  }
+  // all sources failed — keep using system clock (offset 0)
+}
+
 function tick(){
-  const now=new Date();
+  const now=getNow();
   document.getElementById('clock').textContent=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
 
   // Recalculate prayer times if date changed (midnight rollover)
@@ -569,6 +603,11 @@ setInterval(tick,1000);
 detectLocation();
 updatePrayerDisplay();
 tick();
+syncNetworkTime().then(()=>{
+  PRAYER_TIMES_TODAY = getPrayerTimes(getNow());
+  updatePrayerDisplay();
+  tick();
+});
 
 /* ══ TABS ══ */
 function showTab(id,btn){
