@@ -199,6 +199,9 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
 </div>
 
 <div class="next-prayer">
+  <div id="cur-prayer-tag" style="display:none;font-size:12px;color:var(--teal);margin-bottom:8px;display:flex;align-items:center;gap:5px">
+    <div class="p-active-dot"></div><span id="cur-prayer-text"></span>
+  </div>
   <div class="np-row">
     <div><div class="np-label">পরবর্তী নামাজ</div><div class="np-name">যুহর</div><div class="np-arabic">الظهر</div></div>
     <div class="np-right"><div class="np-cd-label">বাকি আছে</div><div id="countdown">--:--:--</div></div>
@@ -587,10 +590,20 @@ function tick(){
     updatePrayerDisplay();
   }
 
-  const {next, diffHours} = getCurrentPrayerInfo();
+  const {current, next, diffHours} = getCurrentPrayerInfo();
   const label = PRAYER_LABELS[next.name];
   document.querySelector('.np-name').textContent = label.bn;
   document.querySelector('.np-arabic').textContent = label.ar;
+
+  const curTag = document.getElementById('cur-prayer-tag');
+  const curText = document.getElementById('cur-prayer-text');
+  if(current){
+    const curLabel = PRAYER_LABELS[current.name];
+    curText.textContent = `এখন ${curLabel.bn} (${curLabel.ar}) এর সময় চলছে`;
+    curTag.style.display = 'flex';
+  } else {
+    curTag.style.display = 'none';
+  }
 
   const totalSeconds = Math.round(diffHours*3600);
   const h=Math.floor(totalSeconds/3600), m=Math.floor((totalSeconds%3600)/60), s=totalSeconds%60;
