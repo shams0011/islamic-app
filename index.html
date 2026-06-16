@@ -446,8 +446,7 @@ function colorizeHadith(text){
   return t;
 }
 
-
-  const q=(document.getElementById('h-search').value||'').toLowerCase();
+function renderHadiths(list){
   let filtered=list;
   if(q) filtered=list.filter(h=>(h.t||'').toLowerCase().includes(q));
   if(!filtered.length){
