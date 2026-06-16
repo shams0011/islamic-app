@@ -447,6 +447,7 @@ function colorizeHadith(text){
 }
 
 function renderHadiths(list){
+  const q=(document.getElementById('h-search').value||'').toLowerCase();
   let filtered=list;
   if(q) filtered=list.filter(h=>(h.t||'').toLowerCase().includes(q));
   if(!filtered.length){
@@ -489,7 +490,6 @@ function goChapters(){ show('view-chapters'); }
 function loading(msg){
   return `<div class="loading-wrap"><div class="loading-dots"><div class="ld"></div><div class="ld"></div><div class="ld"></div></div><div class="loading-text">${msg}</div></div>`;
 }
-function esc(s){ return (s||'').replace(/'/g,"&#39;"); }
 function esc(s){ return (s||'').replace(/'/g,"&#39;"); }
 
 /* ══ AI CHAT ══ */
