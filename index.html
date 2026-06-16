@@ -106,11 +106,17 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
 .ch-count{font-size:12px;color:var(--text3);margin-top:2px}
 
 .hadith-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:12px;cursor:pointer;transition:all .2s;user-select:none;position:relative;overflow:hidden}
+.hadith-card::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--gold) 0%,var(--teal) 50%,#9ec98a 100%)}
 .hadith-card::before{content:'"';position:absolute;top:-8px;right:14px;font-family:serif;font-size:90px;color:rgba(200,169,110,.03);line-height:1;pointer-events:none}
 .hadith-card:active{transform:scale(.98)}
 .hadith-card:hover{border-color:rgba(200,169,110,.25);background:var(--card2)}
 .h-arabic{font-family:serif;font-size:16px;color:var(--gold2);direction:rtl;text-align:right;line-height:2;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)}
-.h-text{font-size:15px;color:var(--text);line-height:1.8;margin-bottom:13px;font-weight:300}
+.h-text{font-size:15px;color:var(--text);line-height:1.9;margin-bottom:13px;font-weight:300}
+.h-text .narrator-name{color:var(--gold2);font-weight:600;background:linear-gradient(135deg,rgba(200,169,110,.15),rgba(200,169,110,.05));padding:1px 6px;border-radius:6px}
+.h-text .ref-num{color:var(--teal);font-weight:600;background:rgba(42,122,122,.12);padding:1px 6px;border-radius:6px;font-size:13px}
+.h-text .holy-name{color:#e8a8a8;font-weight:600}
+.h-text .key-term{color:#9ec98a;font-weight:500}
+.h-text .quoted-speech{color:var(--gold2);font-style:italic}
 .h-meta{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
 .badge{padding:4px 11px;border-radius:50px;font-size:12px;font-weight:500}
 .bg{background:rgba(200,169,110,.09);color:var(--gold);border:1px solid rgba(200,169,110,.14)}
@@ -412,7 +418,35 @@ function openChapter(no, name){
   document.getElementById('pagination').innerHTML='';
 }
 
-function renderHadiths(list){
+/* ══ COLORIZE HADITH TEXT ══ */
+function colorizeHadith(text){
+  if(!text) return '';
+  let t = text;
+
+  // Highlight reference numbers in parentheses like (৩২১৫; মুসলিম...) or (১, ২৫২৯)
+  t = t.replace(/\(([^)]*[০-৯০-৯]{1,4}[^)]*)\)/g, m => `<span class="ref-num">${m}</span>`);
+
+  // Highlight holy names
+  const holyNames = ['আল্লাহ্‌', 'আল্লাহ', 'রাসূলুল্লাহ', 'রাসূল', 'সাল্লাল্লাহু আলাইহি ওয়াসাল্লাম', 'নবী'];
+  holyNames.forEach(name => {
+    const re = new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'g');
+    t = t.replace(re, m => `<span class="holy-name">${m}</span>`);
+  });
+
+  // Highlight common narrator markers — names ending in (রাঃ) or (রহ.)
+  t = t.replace(/([^।,\s][^।,]*?\((?:রাঃ|রহ\.?|রহিমাহুল্লাহ)\))/g, m => `<span class="narrator-name">${m}</span>`);
+
+  // Highlight key religious terms
+  const keyTerms = ['নামাজ', 'সালাত', 'রোজা', 'সিয়াম', 'যাকাত', 'হজ্জ', 'জান্নাত', 'জাহান্নাম', 'তাওবা', 'সবর', 'দু\'আ', 'ঈমান', 'সদকা'];
+  keyTerms.forEach(term => {
+    const re = new RegExp(term, 'g');
+    t = t.replace(re, m => `<span class="key-term">${m}</span>`);
+  });
+
+  return t;
+}
+
+
   const q=(document.getElementById('h-search').value||'').toLowerCase();
   let filtered=list;
   if(q) filtered=list.filter(h=>(h.t||'').toLowerCase().includes(q));
@@ -422,7 +456,7 @@ function renderHadiths(list){
   }
   document.getElementById('hadith-list').innerHTML=filtered.map((h)=>`
     <div class="hadith-card" onclick="openModal(${list.indexOf(h)})">
-      <div class="h-text">${h.t||''}</div>
+      <div class="h-text">${colorizeHadith(h.t)}</div>
       <div class="h-meta">
         <span class="badge bg">${selBookName}</span>
         <span class="badge bt">#${h.n||''}</span>
@@ -436,7 +470,7 @@ function openModal(i){
   const h=currentHadiths[i];
   document.getElementById('m-book').textContent=selBookName;
   document.getElementById('m-arabic').style.display='none';
-  document.getElementById('m-text').textContent=h.t||'';
+  document.getElementById('m-text').innerHTML=colorizeHadith(h.t||'');
   document.getElementById('m-narrator').textContent='-';
   document.getElementById('m-num').textContent='#'+(h.n||'');
   document.getElementById('m-chapter').textContent=selChapterName;
