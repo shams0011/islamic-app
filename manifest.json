@@ -1,0 +1,9 @@
+{
+  "name": "ইসলামিক AI — Deen Companion",
+  "short_name": "Islamic AI",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0a0d12",
+  "theme_color": "#0a0d12",
+  "icons": []
+}
