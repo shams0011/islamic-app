@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI</title>
-<!-- VERSION: v8-accessibility-polish -->
+<!-- VERSION: v9-path-fix-root-folders -->
 <meta name="theme-color" content="#0a0d12">
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -754,7 +754,7 @@ async function loadChapters(){
   try{
     let data = bookIndexCache[selBook];
     if(!data){
-      const r = await fetch(`hadith-data/${selBook}/index.json`);
+      const r = await fetch(`${selBook}/index.json`);
       if(!r.ok) throw new Error('error '+r.status);
       data = await r.json();
       bookIndexCache[selBook] = data;
@@ -780,7 +780,7 @@ async function openChapter(no, name){
     const cacheKey = selBook+':'+no;
     let chapterData = chapterCache[cacheKey];
     if(!chapterData){
-      const r = await fetch(`hadith-data/${selBook}/ch${no}.json`);
+      const r = await fetch(`${selBook}/ch${no}.json`);
       if(!r.ok) throw new Error('error '+r.status);
       chapterData = await r.json();
       chapterCache[cacheKey] = chapterData;
