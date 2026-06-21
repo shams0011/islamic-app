@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI</title>
-<!-- VERSION: v42-live-stream-fixed -->
+<!-- VERSION: v46-tabbar-reordered-polished -->
 <meta name="theme-color" content="#0a0d12">
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -65,8 +65,6 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
 @keyframes fireFlicker{0%,100%{transform:scale(1) rotate(-1deg)}50%{transform:scale(1.06) rotate(1deg)}}
 .tabbar{display:flex;padding:10px 14px;gap:6px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--border);background:rgba(10,13,18,.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);position:sticky;top:0;z-index:30}
 .tabbar::-webkit-scrollbar{display:none}
-.tab-btn{flex:none;padding:8px 16px;min-height:40px;display:flex;align-items:center;border-radius:50px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--text3);font-size:14px;font-weight:500;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;white-space:nowrap}
-.tab-btn.active{background:linear-gradient(135deg,rgba(16,185,129,.2),rgba(16,185,129,.08));border-color:rgba(16,185,129,.45);color:var(--emerald2);box-shadow:0 2px 10px rgba(16,185,129,.18)}
 .section{display:none;padding:14px 16px 48px}
 .section.active{display:block}
 .sec-title{display:flex;align-items:center;gap:10px;margin-bottom:16px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
@@ -84,6 +82,22 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
 .quick-item:nth-child(3) .quick-icon{background:rgba(16,185,129,.14);box-shadow:0 0 0 1px rgba(16,185,129,.18) inset}
 .quick-item:nth-child(4) .quick-icon{background:rgba(52,211,153,.14);box-shadow:0 0 0 1px rgba(52,211,153,.18) inset}
 .quick-label{font-size:11px;color:var(--text2);font-weight:500;text-align:center}
+.tabbar-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;padding:14px;border-bottom:1px solid var(--border);background:rgba(10,13,18,.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);position:sticky;top:0;z-index:30}
+.tabbar-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;user-select:none;transition:transform .15s,box-shadow .25s,background .25s,border-color .25s;padding:12px 4px;background:linear-gradient(160deg,rgba(255,255,255,.04),rgba(255,255,255,.015));border:1px solid var(--border2);border-radius:15px;font-family:'Hind Siliguri',sans-serif;box-shadow:0 3px 10px rgba(0,0,0,.15)}
+.tabbar-card:active{transform:scale(.92)}
+.tabbar-card-icon{font-size:17px;line-height:1;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:rgba(255,255,255,.05);transition:background .25s,box-shadow .25s}
+.tabbar-card-label{font-size:10px;color:var(--text2);font-weight:500;text-align:center;white-space:nowrap;transition:color .2s}
+.tabbar-card.active{background:linear-gradient(160deg,rgba(16,185,129,.2),rgba(16,185,129,.07));border-color:rgba(16,185,129,.45);box-shadow:0 5px 16px rgba(16,185,129,.22)}
+.tabbar-card.active .tabbar-card-label{color:var(--emerald2);font-weight:700}
+.tabbar-card.active .tabbar-card-icon{background:rgba(16,185,129,.18);box-shadow:0 0 0 1px rgba(16,185,129,.25) inset}
+.tabbar-card:nth-child(1) .tabbar-card-icon{background:rgba(16,185,129,.1)}
+.tabbar-card:nth-child(2) .tabbar-card-icon{background:rgba(212,175,106,.1)}
+.tabbar-card:nth-child(3) .tabbar-card-icon{background:rgba(52,211,153,.1)}
+.tabbar-card:nth-child(4) .tabbar-card-icon{background:rgba(232,168,168,.1)}
+.tabbar-card:nth-child(5) .tabbar-card-icon{background:rgba(212,175,106,.1)}
+.tabbar-card:nth-child(6) .tabbar-card-icon{background:rgba(16,185,129,.1)}
+.tabbar-card:nth-child(7) .tabbar-card-icon{background:rgba(52,211,153,.1)}
+.tabbar-card:nth-child(8) .tabbar-card-icon{background:rgba(232,168,168,.1)}
 
 .prayer-row{display:flex;align-items:center;padding:13px 15px;background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:8px;position:relative;overflow:hidden;transition:all .25s}
 .prayer-row.cur{background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(16,185,129,.03));border-color:rgba(16,185,129,.35);box-shadow:0 4px 16px rgba(16,185,129,.1)}
@@ -339,24 +353,24 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
 
 <div id="live-stream-widget" role="region" aria-label="মক্কা ও মদিনা লাইভ সম্প্রচার" style="margin:14px 16px 0">
   <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;padding-left:2px">
-    <span style="font-size:13px" aria-hidden="true">🔴</span>
-    <span id="live-stream-label" style="font-size:11.5px;font-weight:700;color:var(--text2);letter-spacing:0.5px">লাইভ সম্প্রচার</span>
+    <span style="font-size:13px;animation:fireFlicker 1.8s ease-in-out infinite" aria-hidden="true">🔴</span>
+    <span id="live-stream-label" style="font-size:12px;font-weight:700;color:var(--text2);letter-spacing:0.5px">লাইভ সম্প্রচার</span>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-    <div style="border-radius:16px;overflow:hidden;border:1px solid var(--border2);box-shadow:0 6px 18px rgba(0,0,0,.2);background:#000">
-      <div style="aspect-ratio:9/16;position:relative">
+    <div style="border-radius:18px;overflow:hidden;border:1px solid var(--border2);box-shadow:0 10px 28px rgba(0,0,0,.3);background:#000">
+      <div style="aspect-ratio:3/4;position:relative">
         <iframe id="madinah-live-iframe" src="https://www.youtube.com/embed/G4KRJX0Zsm4?autoplay=1&mute=1&playsinline=1" title="মদিনা লাইভ সম্প্রচার" style="width:100%;height:100%;border:0;position:absolute;inset:0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>
       </div>
-      <div style="padding:8px 10px;text-align:center;background:rgba(255,255,255,.03)">
-        <span id="madinah-live-label" style="font-size:11px;color:var(--text2);font-weight:600">🕌 মদিনা মুনাওয়ারা</span>
+      <div style="padding:7px 10px;text-align:center;background:linear-gradient(135deg,rgba(16,185,129,.08),rgba(255,255,255,.02))">
+        <span id="madinah-live-label" style="font-size:11.5px;color:var(--text2);font-weight:700">🕌 মদিনা মুনাওয়ারা</span>
       </div>
     </div>
-    <div style="border-radius:16px;overflow:hidden;border:1px solid var(--border2);box-shadow:0 6px 18px rgba(0,0,0,.2);background:#000">
-      <div style="aspect-ratio:9/16;position:relative">
+    <div style="border-radius:18px;overflow:hidden;border:1px solid var(--border2);box-shadow:0 10px 28px rgba(0,0,0,.3);background:#000">
+      <div style="aspect-ratio:3/4;position:relative">
         <iframe id="makkah-live-iframe" src="https://www.youtube.com/embed/fZvuHkHYaXk?autoplay=1&mute=1&playsinline=1" title="মক্কা লাইভ সম্প্রচার" style="width:100%;height:100%;border:0;position:absolute;inset:0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>
       </div>
-      <div style="padding:8px 10px;text-align:center;background:rgba(255,255,255,.03)">
-        <span id="makkah-live-label" style="font-size:11px;color:var(--text2);font-weight:600">🕋 মক্কা মুকাররমা</span>
+      <div style="padding:7px 10px;text-align:center;background:linear-gradient(135deg,rgba(212,175,106,.1),rgba(255,255,255,.02))">
+        <span id="makkah-live-label" style="font-size:11.5px;color:var(--text2);font-weight:700">🕋 মক্কা মুকাররমা</span>
       </div>
     </div>
   </div>
@@ -383,15 +397,39 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
   </button>
 </div>
 
-<div class="tabbar" role="tablist" aria-label="মূল মেনু">
-  <button class="tab-btn active" id="tabbtn-prayer" role="tab" aria-selected="true" aria-controls="tab-prayer" onclick="showTab('prayer',this)">🕌 নামাজ</button>
-  <button class="tab-btn" id="tabbtn-quran" role="tab" aria-selected="false" aria-controls="tab-quran" onclick="showTab('quran',this)">📖 কুরআন</button>
-  <button class="tab-btn" id="tabbtn-hadith" role="tab" aria-selected="false" aria-controls="tab-hadith" onclick="showTab('hadith',this)">📚 হাদিস</button>
-  <button class="tab-btn" id="tabbtn-qibla" role="tab" aria-selected="false" aria-controls="tab-qibla" onclick="showTab('qibla',this)">🧭 কিবলা</button>
-  <button class="tab-btn" id="tabbtn-tasbih" role="tab" aria-selected="false" aria-controls="tab-tasbih" onclick="showTab('tasbih',this)">📿 তাসবিহ</button>
-  <button class="tab-btn" id="tabbtn-dua" role="tab" aria-selected="false" aria-controls="tab-dua" onclick="showTab('dua',this)">🤲 দোয়া</button>
-  <button class="tab-btn" id="tabbtn-tools" role="tab" aria-selected="false" aria-controls="tab-tools" onclick="showTab('tools',this)">🧰 টুলস</button>
-  <button class="tab-btn" id="tabbtn-aihub" role="tab" aria-selected="false" aria-controls="tab-aihub" onclick="showTab('aihub',this)">✨ AI হাব</button>
+<div class="tabbar-grid" role="tablist" aria-label="মূল মেনু" id="tabbar-scroll">
+  <button class="tabbar-card active" id="tabbtn-prayer" role="tab" aria-selected="true" aria-controls="tab-prayer" onclick="showTab('prayer',this)">
+    <span class="tabbar-card-icon" aria-hidden="true">🕌</span>
+    <span class="tabbar-card-label">নামাজ</span>
+  </button>
+  <button class="tabbar-card" id="tabbtn-quran" role="tab" aria-selected="false" aria-controls="tab-quran" onclick="showTab('quran',this)">
+    <span class="tabbar-card-icon" aria-hidden="true">📖</span>
+    <span class="tabbar-card-label">কুরআন</span>
+  </button>
+  <button class="tabbar-card" id="tabbtn-hadith" role="tab" aria-selected="false" aria-controls="tab-hadith" onclick="showTab('hadith',this)">
+    <span class="tabbar-card-icon" aria-hidden="true">📚</span>
+    <span class="tabbar-card-label">হাদিস</span>
+  </button>
+  <button class="tabbar-card" id="tabbtn-dua" role="tab" aria-selected="false" aria-controls="tab-dua" onclick="showTab('dua',this)">
+    <span class="tabbar-card-icon" aria-hidden="true">🤲</span>
+    <span class="tabbar-card-label">দোয়া</span>
+  </button>
+  <button class="tabbar-card" id="tabbtn-tasbih" role="tab" aria-selected="false" aria-controls="tab-tasbih" onclick="showTab('tasbih',this)">
+    <span class="tabbar-card-icon" aria-hidden="true">📿</span>
+    <span class="tabbar-card-label">তাসবিহ</span>
+  </button>
+  <button class="tabbar-card" id="tabbtn-qibla" role="tab" aria-selected="false" aria-controls="tab-qibla" onclick="showTab('qibla',this)">
+    <span class="tabbar-card-icon" aria-hidden="true">🧭</span>
+    <span class="tabbar-card-label">কিবলা</span>
+  </button>
+  <button class="tabbar-card" id="tabbtn-tools" role="tab" aria-selected="false" aria-controls="tab-tools" onclick="showTab('tools',this)">
+    <span class="tabbar-card-icon" aria-hidden="true">🧰</span>
+    <span class="tabbar-card-label">টুলস</span>
+  </button>
+  <button class="tabbar-card" id="tabbtn-aihub" role="tab" aria-selected="false" aria-controls="tab-aihub" onclick="showTab('aihub',this)">
+    <span class="tabbar-card-icon" aria-hidden="true">✨</span>
+    <span class="tabbar-card-label">AI হাব</span>
+  </button>
 </div>
 
 
@@ -1253,7 +1291,15 @@ function applyLanguage(){
   const tabMap = {prayer:'tabPrayer', quran:'tabQuran', hadith:'tabHadith', qibla:'tabQibla', tasbih:'tabTasbih', dua:'tabDua', tools:'tabTools', aihub:'tabAihub'};
   Object.keys(tabMap).forEach(id => {
     const btn = document.getElementById('tabbtn-'+id);
-    if(btn) btn.textContent = t(tabMap[id]);
+    if(!btn) return;
+    const labelSpan = btn.querySelector('.tabbar-card-label');
+    const fullLabel = t(tabMap[id]); // e.g. "🕌 নামাজ" — icon prefix + label text
+    if(labelSpan){
+      // Strip the leading emoji+space (already shown by the separate icon span) and keep just the text
+      labelSpan.textContent = fullLabel.replace(/^\S+\s*/u, '');
+    } else {
+      btn.textContent = fullLabel; // fallback for any structure without the icon/label split
+    }
   });
 
   // Quick grid labels
@@ -3067,7 +3113,7 @@ syncNetworkTime().then(()=>{
 /* ══ TABS ══ */
 function showTab(id,btn){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>{ b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+  document.querySelectorAll('.tabbar-card').forEach(b=>{ b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
   btn.setAttribute('aria-selected','true');
