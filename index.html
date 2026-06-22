@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI</title>
-<!-- VERSION: v50-stream-remove-large-overlay -->
+<!-- VERSION: v51-stream-compact-label-bar -->
 <meta name="theme-color" content="#0a0d12">
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -360,19 +360,27 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
     <div style="border-radius:18px;overflow:hidden;border:1px solid var(--border2);box-shadow:0 10px 28px rgba(0,0,0,.3);background:#000">
       <div style="aspect-ratio:3/4;position:relative;overflow:hidden">
         <iframe id="madinah-live-iframe" src="https://www.youtube.com/embed/G4KRJX0Zsm4?autoplay=1&mute=1&playsinline=1&modestbranding=1&rel=0&iv_load_policy=3" title="মদিনা লাইভ সম্প্রচার" style="width:100%;height:100%;border:0;position:absolute;inset:0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>
-        <div aria-hidden="true" style="position:absolute;left:0;right:0;bottom:0;height:34%;background:linear-gradient(180deg,transparent,rgba(16,185,129,.5) 55%,rgba(6,12,10,.92) 100%);pointer-events:none"></div>
+        <div aria-hidden="true" style="position:absolute;left:0;right:0;top:0;height:22%;background:linear-gradient(180deg,rgba(6,12,10,.85),transparent);pointer-events:none"></div>
+        <div aria-hidden="true" style="position:absolute;left:0;right:0;bottom:0;height:30%;background:linear-gradient(180deg,transparent,rgba(6,12,10,.88) 70%);pointer-events:none"></div>
       </div>
-      <div style="padding:7px 10px;text-align:center;background:linear-gradient(135deg,rgba(16,185,129,.08),rgba(255,255,255,.02))">
-        <span id="madinah-live-label" style="font-size:11.5px;color:var(--text2);font-weight:700">🕌 মদিনা মুনাওয়ারা</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:6px 9px;background:linear-gradient(135deg,rgba(16,185,129,.1),rgba(255,255,255,.02))">
+        <span id="madinah-live-label" style="font-size:10.5px;color:var(--text2);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🕌 মদিনা মুনাওয়ারা</span>
+        <a href="https://www.youtube.com/watch?v=G4KRJX0Zsm4" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:3px;flex-shrink:0;padding:3px 7px;background:rgba(255,0,0,.1);border:1px solid rgba(255,0,0,.25);border-radius:6px;text-decoration:none" aria-label="YouTube তে দেখুন">
+          <span style="font-size:9px" aria-hidden="true">▶</span><span style="font-size:8.5px;color:#ff5c5c;font-weight:700">YouTube</span>
+        </a>
       </div>
     </div>
     <div style="border-radius:18px;overflow:hidden;border:1px solid var(--border2);box-shadow:0 10px 28px rgba(0,0,0,.3);background:#000">
       <div style="aspect-ratio:3/4;position:relative;overflow:hidden">
         <iframe id="makkah-live-iframe" src="https://www.youtube.com/embed/fZvuHkHYaXk?autoplay=1&mute=1&playsinline=1&modestbranding=1&rel=0&iv_load_policy=3" title="মক্কা লাইভ সম্প্রচার" style="width:100%;height:100%;border:0;position:absolute;inset:0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>
-        <div aria-hidden="true" style="position:absolute;left:0;right:0;bottom:0;height:34%;background:linear-gradient(180deg,transparent,rgba(212,175,106,.5) 55%,rgba(14,11,4,.92) 100%);pointer-events:none"></div>
+        <div aria-hidden="true" style="position:absolute;left:0;right:0;top:0;height:22%;background:linear-gradient(180deg,rgba(14,11,4,.85),transparent);pointer-events:none"></div>
+        <div aria-hidden="true" style="position:absolute;left:0;right:0;bottom:0;height:30%;background:linear-gradient(180deg,transparent,rgba(14,11,4,.88) 70%);pointer-events:none"></div>
       </div>
-      <div style="padding:7px 10px;text-align:center;background:linear-gradient(135deg,rgba(212,175,106,.1),rgba(255,255,255,.02))">
-        <span id="makkah-live-label" style="font-size:11.5px;color:var(--text2);font-weight:700">🕋 মক্কা মুকাররমা</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:6px 9px;background:linear-gradient(135deg,rgba(212,175,106,.1),rgba(255,255,255,.02))">
+        <span id="makkah-live-label" style="font-size:10.5px;color:var(--text2);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🕋 মক্কা মুকাররমা</span>
+        <a href="https://www.youtube.com/watch?v=fZvuHkHYaXk" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:3px;flex-shrink:0;padding:3px 7px;background:rgba(255,0,0,.1);border:1px solid rgba(255,0,0,.25);border-radius:6px;text-decoration:none" aria-label="YouTube তে দেখুন">
+          <span style="font-size:9px" aria-hidden="true">▶</span><span style="font-size:8.5px;color:#ff5c5c;font-weight:700">YouTube</span>
+        </a>
       </div>
     </div>
   </div>
