@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI</title>
-<!-- VERSION: v51-stream-compact-label-bar -->
+<!-- VERSION: v52-fixes-hanafi-asr-ai-proxy-full-duas -->
 <meta name="theme-color" content="#0a0d12">
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -305,7 +305,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
 </div>
 
 <div class="next-prayer" role="region" aria-label="পরবর্তী নামাজের তথ্য">
-  <div id="cur-prayer-tag" style="display:none;font-size:12px;color:var(--emerald2);margin-bottom:8px;display:flex;align-items:center;gap:5px" role="status">
+  <div id="cur-prayer-tag" style="font-size:12px;color:var(--emerald2);margin-bottom:8px;align-items:center;gap:5px;display:none" role="status">
     <div class="p-active-dot" aria-hidden="true"></div><span id="cur-prayer-text"></span>
   </div>
   <div class="np-row">
@@ -387,7 +387,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
   <div id="live-stream-note" style="font-size:10px;color:var(--text3);text-align:center;margin-top:8px">📡 লাইভ ভিডিও — ইন্টারনেট ডেটা খরচ হবে</div>
 </div>
 
-<div id="notif-permission-banner" style="display:none;margin:14px 16px 0;padding:12px 16px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:14px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+<div id="notif-permission-banner" style="margin:14px 16px 0;padding:12px 16px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:14px;align-items:center;justify-content:space-between;gap:10px;display:none">
   <div id="notif-banner-text" style="font-size:12.5px;color:var(--text2);line-height:1.5">🔔 নামাজের সময় হলে নোটিফিকেশন পেতে অনুমতি দিন</div>
   <button id="notif-banner-btn" onclick="requestNotificationPermission()" style="flex-shrink:0;padding:7px 14px;background:var(--emerald);border:none;border-radius:10px;color:#000;font-weight:600;font-size:12px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">অনুমতি দিন</button>
 </div>
@@ -528,8 +528,10 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
           <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);color:var(--text3);font-size:12px;font-weight:600">S</div>
           <div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:12px;font-weight:600">W</div>
           <div style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:12px;font-weight:600">E</div>
-          <div style="position:absolute;top:36px;left:50%;transform:translateX(-50%);color:var(--text3);font-size:10px">NE</div>
-          <div style="position:absolute;top:36px;right:36px;color:var(--text3);font-size:10px"></div>
+          <div style="position:absolute;top:36px;right:36px;color:var(--text3);font-size:10px">NE</div>
+          <div style="position:absolute;top:36px;left:36px;color:var(--text3);font-size:10px">NW</div>
+          <div style="position:absolute;bottom:36px;right:36px;color:var(--text3);font-size:10px">SE</div>
+          <div style="position:absolute;bottom:36px;left:36px;color:var(--text3);font-size:10px">SW</div>
         </div>
         <div id="qibla-needle" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transition:transform .15s linear" aria-hidden="true">
           <div style="font-size:42px;transform:translateY(-78px);filter:drop-shadow(0 2px 6px rgba(16,185,129,.4))">🕋</div>
@@ -1609,7 +1611,8 @@ function timeForAngle(jd, angle, lat, lon, tz, ccw){
 function asrTime(jd, lat, lon, tz){
   const {eqt, decl} = sunPosition(jd);
   const d2r=Math.PI/180;
-  const a=Math.atan(1/(1+Math.tan(Math.abs(lat-decl)*d2r)))*180/Math.PI;
+  // Hanafi asr (shadow factor 2) — matches Bangladesh Islamic Foundation practice
+  const a=Math.atan(1/(2+Math.tan(Math.abs(lat-decl)*d2r)))*180/Math.PI;
   const cosH=(Math.sin(a*d2r)-Math.sin(lat*d2r)*Math.sin(decl*d2r))/(Math.cos(lat*d2r)*Math.cos(decl*d2r));
   if(cosH>1||cosH<-1) return null;
   const H=Math.acos(cosH)*180/Math.PI/15;
@@ -1635,7 +1638,7 @@ function getPrayerTimes(date){
   const asr=asrTime(jd,LAT,LON,TZ);
   const sunset=timeForAngle(jd,0.833,LAT,LON,TZ,false);
   const maghrib=sunset;
-  const isha=timeForAngle(jd,17,LAT,LON,TZ,false);
+  const isha=timeForAngle(jd,18,LAT,LON,TZ,false); // 18° — Univ. of Islamic Sciences Karachi method (Bangladesh standard)
   return {fajr,sunrise,dhuhr,asr,maghrib,isha};
 }
 
@@ -1842,16 +1845,17 @@ function getNow(){
 }
 
 async function syncNetworkTime(){
+  // Both sources return true UTC epoch — works regardless of the device's timezone
   const sources = [
     async () => {
-      const r = await fetch('https://worldtimeapi.org/api/timezone/Asia/Dhaka');
+      const r = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
       const d = await r.json();
-      return new Date(d.utc_datetime).getTime();
+      return new Date(d.utc_datetime).getTime(); // has explicit +00:00 offset — parses correctly everywhere
     },
     async () => {
-      const r = await fetch('https://timeapi.io/api/Time/current/zone?timeZone=Asia/Dhaka');
+      const r = await fetch('https://timeapi.io/api/Time/current/zone?timeZone=Etc/UTC');
       const d = await r.json();
-      return new Date(d.dateTime).getTime();
+      return new Date(d.dateTime.slice(0,19) + 'Z').getTime(); // dateTime lacks a zone suffix — append Z so it parses as UTC
     },
   ];
   for(const src of sources){
@@ -3300,6 +3304,13 @@ function esc(s){ return (s||'').replace(/'/g,"&#39;"); }
 
 /* ══ AI CHAT ══ */
 /* ══ AI HUB — scalable system for multiple AI modules ══ */
+/* The browser must NOT call api.anthropic.com directly: the API key would be public
+   (anyone could steal it from this file) and CORS blocks it anyway. Instead requests
+   go through a small proxy (see ai-proxy/worker.js in the repo) that holds the key
+   server-side. Deploy the worker, then put its URL here, e.g.
+   'https://islamic-ai-proxy.YOUR-SUBDOMAIN.workers.dev'. Empty = AI features show a
+   friendly "not configured" message instead of failing with a fake network error. */
+const AI_PROXY_URL = '';
 const AI_MODULES = [
   {
     id:'hadith', icon:'📖', title:'AI হাদিস সার্চ', sub:'সিহাহ সিত্তাহ থেকে হাদিস খুঁজুন',
@@ -3473,23 +3484,31 @@ async function sendAiChat(preset){
   const btn=document.getElementById('aibtn');
   const text=(preset||inp.value).trim();
   if(!text||btn.disabled)return;
+  if(!AI_PROXY_URL){
+    addAiMsg('user',text);
+    addAiMsg('ai','⚙️ AI সেবাটি এখনো চালু করা হয়নি — শীঘ্রই আসছে ইনশাআল্লাহ।');
+    inp.value='';
+    return;
+  }
   inp.value='';btn.disabled=true;
   addAiMsg('user',text);
   aiHist[m.id].push({role:'user',content:text});
   addAiTyping();
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{
+    const r=await fetch(AI_PROXY_URL,{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,system:m.system,messages:aiHist[m.id]})
+      body:JSON.stringify({max_tokens:1200,system:m.system,messages:aiHist[m.id]})
     });
     const data=await r.json();
-    const reply=data.content?.[0]?.text||'উত্তর পাওয়া যায়নি।';
+    if(!r.ok || data.error) throw new Error(data.error?.message || 'proxy error '+r.status);
+    const reply=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n')||'উত্তর পাওয়া যায়নি।';
     document.getElementById('ai-typing')?.remove();
     aiHist[m.id].push({role:'assistant',content:reply});
     addAiMsg('ai',reply);
   }catch(e){
     document.getElementById('ai-typing')?.remove();
-    addAiMsg('ai','সংযোগ সমস্যা হয়েছে।');
+    aiHist[m.id].pop(); // remove the unanswered user turn so history stays valid for retry
+    addAiMsg('ai','সংযোগ সমস্যা হয়েছে, একটু পরে আবার চেষ্টা করুন।');
   }
   btn.disabled=false;
 }
@@ -3598,7 +3617,7 @@ function loadTasbihState(){
   try{
     const saved = JSON.parse(localStorage.getItem(profileKey('tasbih_state'))||'null');
     if(saved){
-      const today = new Date().toDateString();
+      const today = getNow().toDateString();
       if(saved.date === today){
         document.getElementById('tasbih-daily-total').textContent = toBn(saved.dailyTotal||0);
       } else {
@@ -3609,16 +3628,13 @@ function loadTasbihState(){
   }catch(e){}
 }
 
-function toBn(n){
-  const map={'0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯'};
-  return String(n).split('').map(c=>map[c]!==undefined?map[c]:c).join('');
-}
+function toBn(n){ return localizeNum(n); } // follows the active UI language (Bengali/Arabic digits or plain)
 
 function setTasbihTarget(target, arabicLabel, btnId){
   tasbihTarget = target;
   tasbihCount = 0;
   document.getElementById('tasbih-count').textContent = '০';
-  document.getElementById('tasbih-target-label').textContent = 'লক্ষ্য: '+toBn(target);
+  document.getElementById('tasbih-target-label').textContent = t('target')+': '+toBn(target);
   document.getElementById('tasbih-label-ar').textContent = arabicLabel;
 
   document.querySelectorAll('.tasbih-preset').forEach(btn => {
@@ -3639,7 +3655,7 @@ function tasbihTap(){
   setTimeout(()=>{ circle.style.transform = 'scale(1)'; }, 100);
 
   try{
-    const today = new Date().toDateString();
+    const today = getNow().toDateString();
     let saved = JSON.parse(localStorage.getItem(profileKey('tasbih_state'))||'null');
     if(!saved || saved.date !== today) saved = {date: today, dailyTotal: 0};
     saved.dailyTotal = (saved.dailyTotal||0) + 1;
@@ -3658,51 +3674,51 @@ function tasbihReset(){
 /* ══ DUA COLLECTION ══ */
 const DUA_DATA = [
   {cat:'সকাল-সন্ধ্যা', icon:'🌅', duas:[
-    {title:'সকালের দোয়া', ar:'أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ', bn:'আমরা ভোরে উপস্থিত হলাম এবং রাজত্ব আল্লাহর জন্যই ভোরে উপস্থিত হলো।'},
-    {title:'সন্ধ্যার দোয়া', ar:'أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ', bn:'আমরা সন্ধ্যায় উপস্থিত হলাম এবং রাজত্ব আল্লাহর জন্যই সন্ধ্যায় উপস্থিত হলো।'},
-    {title:'আয়াতুল কুরসি (সকাল-সন্ধ্যা সুরক্ষা)', ar:'اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ', bn:'আল্লাহ ব্যতীত কোনো ইলাহ নেই, তিনি চিরঞ্জীব, সর্বসত্তার ধারক।'},
-    {title:'সকল ক্ষতি থেকে সুরক্ষার দোয়া', ar:'بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ', bn:'আল্লাহর নামে শুরু করছি, যাঁর নামের সাথে কোনো কিছুই ক্ষতি করতে পারে না।'},
+    {title:'সকালের দোয়া', ar:'أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ', bn:'আমরা ভোরে উপনীত হলাম এবং সমস্ত রাজত্ব আল্লাহরই। সকল প্রশংসা আল্লাহর। আল্লাহ ছাড়া কোনো ইলাহ নেই, তিনি একক, তাঁর কোনো শরিক নেই; রাজত্ব তাঁরই, প্রশংসাও তাঁরই, আর তিনি সবকিছুর ওপর ক্ষমতাবান। (মুসলিম)'},
+    {title:'সন্ধ্যার দোয়া', ar:'أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ', bn:'আমরা সন্ধ্যায় উপনীত হলাম এবং সমস্ত রাজত্ব আল্লাহরই। সকল প্রশংসা আল্লাহর। আল্লাহ ছাড়া কোনো ইলাহ নেই, তিনি একক, তাঁর কোনো শরিক নেই; রাজত্ব তাঁরই, প্রশংসাও তাঁরই, আর তিনি সবকিছুর ওপর ক্ষমতাবান। (মুসলিম)'},
+    {title:'আয়াতুল কুরসি (সকাল-সন্ধ্যা সুরক্ষা)', ar:'اللَّهُ لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ، لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ، لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ، مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ، يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ، وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ، وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ، وَلَا يَئُودُهُ حِفْظُهُمَا، وَهُوَ الْعَلِيُّ الْعَظِيمُ', bn:'আল্লাহ, তিনি ছাড়া কোনো ইলাহ নেই; তিনি চিরঞ্জীব, সর্বসত্তার ধারক। তন্দ্রা বা নিদ্রা তাঁকে স্পর্শ করে না। আসমান ও জমিনে যা কিছু আছে সব তাঁরই। কে আছে এমন, যে তাঁর অনুমতি ছাড়া তাঁর কাছে সুপারিশ করবে? তাদের সামনে ও পেছনে যা আছে তা তিনি জানেন। তাঁর জ্ঞানের কোনো কিছুই তারা আয়ত্ত করতে পারে না, তবে তিনি যতটুকু চান ততটুকু ছাড়া। তাঁর কুরসি আসমান ও জমিন পরিব্যাপ্ত করে আছে; এ দুটোর রক্ষণাবেক্ষণ তাঁকে ক্লান্ত করে না। তিনি সুউচ্চ, মহান। (সূরা বাকারা ২৫৫)'},
+    {title:'সকল ক্ষতি থেকে সুরক্ষার দোয়া', ar:'بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ', bn:'আল্লাহর নামে (শুরু করছি), যাঁর নামের সাথে জমিন ও আসমানের কোনো কিছুই ক্ষতি করতে পারে না; তিনি সর্বশ্রোতা, সর্বজ্ঞ। (৩ বার — আবু দাউদ, তিরমিযী)'},
   ]},
   {cat:'খাবার', icon:'🍽️', duas:[
     {title:'খাবার শুরুর দোয়া', ar:'بِسْمِ اللَّهِ', bn:'আল্লাহর নামে শুরু করছি।'},
-    {title:'খাবার শেষের দোয়া', ar:'الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنِي هَذَا', bn:'সমস্ত প্রশংসা আল্লাহর জন্য যিনি আমাকে এই খাবার দিয়েছেন।'},
-    {title:'ভুলে গেলে বিসমিল্লাহ বলার দোয়া', ar:'بِسْمِ اللَّهِ أَوَّلَهُ وَآخِرَهُ', bn:'আল্লাহর নামে শুরুতেও, শেষেও।'},
-    {title:'দাওয়াত খাওয়ার পর দোয়া', ar:'اللَّهُمَّ بَارِكْ لَهُمْ فِيمَا رَزَقْتَهُمْ', bn:'হে আল্লাহ! তুমি তাদের যা দিয়েছ তাতে বরকত দাও।'},
+    {title:'খাবার শেষের দোয়া', ar:'الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنِي هَذَا وَرَزَقَنِيهِ مِنْ غَيْرِ حَوْلٍ مِنِّي وَلَا قُوَّةٍ', bn:'সমস্ত প্রশংসা আল্লাহর, যিনি আমাকে এই খাবার খাইয়েছেন এবং আমার কোনো শক্তি-সামর্থ্য ছাড়াই তা আমাকে রিজিক হিসেবে দিয়েছেন। (আবু দাউদ, তিরমিযী)'},
+    {title:'ভুলে গেলে বিসমিল্লাহ বলার দোয়া', ar:'بِسْمِ اللَّهِ فِي أَوَّلِهِ وَآخِرِهِ', bn:'আল্লাহর নামে — এর শুরুতেও, শেষেও। (আবু দাউদ, তিরমিযী)'},
+    {title:'দাওয়াত খাওয়ার পর দোয়া', ar:'اللَّهُمَّ بَارِكْ لَهُمْ فِيمَا رَزَقْتَهُمْ وَاغْفِرْ لَهُمْ وَارْحَمْهُمْ', bn:'হে আল্লাহ! তুমি তাদের যে রিজিক দিয়েছ তাতে বরকত দাও, তাদের ক্ষমা করো এবং তাদের প্রতি রহম করো। (মুসলিম)'},
   ]},
   {cat:'যাত্রা', icon:'🚗', duas:[
-    {title:'যাত্রা শুরুর দোয়া', ar:'سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا', bn:'পবিত্র তিনি যিনি আমাদের জন্য এটি বশীভূত করে দিয়েছেন।'},
-    {title:'বাড়ি প্রবেশের দোয়া', ar:'بِسْمِ اللَّهِ وَلَجْنَا', bn:'আল্লাহর নামে আমরা প্রবেশ করলাম।'},
-    {title:'বাড়ি থেকে বের হওয়ার দোয়া', ar:'بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ', bn:'আল্লাহর নামে, আমি আল্লাহর উপর ভরসা করলাম।'},
-    {title:'নতুন স্থানে পৌঁছানোর দোয়া', ar:'أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ', bn:'আল্লাহর পরিপূর্ণ বাণীর মাধ্যমে তাঁর সৃষ্টির অনিষ্ট থেকে আশ্রয় চাই।'},
+    {title:'যাত্রা শুরুর দোয়া (বাহনে উঠে)', ar:'سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ', bn:'পবিত্র ও মহান তিনি, যিনি এটিকে আমাদের বশীভূত করে দিয়েছেন, অথচ আমরা এটিকে বশ করতে সক্ষম ছিলাম না। আর নিশ্চয়ই আমরা আমাদের প্রতিপালকের কাছেই ফিরে যাব। (সূরা যুখরুফ ১৩-১৪)'},
+    {title:'বাড়ি প্রবেশের দোয়া', ar:'بِسْمِ اللَّهِ وَلَجْنَا، وَبِسْمِ اللَّهِ خَرَجْنَا، وَعَلَى اللَّهِ رَبِّنَا تَوَكَّلْنَا', bn:'আল্লাহর নামে আমরা প্রবেশ করলাম, আল্লাহর নামেই বের হলাম, এবং আমাদের প্রতিপালক আল্লাহর ওপরই ভরসা করলাম। (আবু দাউদ)'},
+    {title:'বাড়ি থেকে বের হওয়ার দোয়া', ar:'بِسْمِ اللَّهِ، تَوَكَّلْتُ عَلَى اللَّهِ، وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ', bn:'আল্লাহর নামে (বের হচ্ছি), আল্লাহর ওপর ভরসা করলাম; আল্লাহর সাহায্য ছাড়া (পাপ থেকে বাঁচার) কোনো উপায় নেই এবং (নেক কাজের) কোনো শক্তি নেই। (আবু দাউদ, তিরমিযী)'},
+    {title:'নতুন স্থানে পৌঁছানোর দোয়া', ar:'أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ', bn:'আমি আল্লাহর পরিপূর্ণ কালেমাসমূহের মাধ্যমে তাঁর সৃষ্টির অনিষ্ট থেকে আশ্রয় চাই। (মুসলিম)'},
   ]},
   {cat:'ঘুম', icon:'🌙', duas:[
-    {title:'ঘুমানোর দোয়া', ar:'بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا', bn:'হে আল্লাহ! তোমার নামেই আমি মৃত্যুবরণ করি এবং জীবিত হই।'},
-    {title:'ঘুম থেকে উঠার দোয়া', ar:'الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا', bn:'সমস্ত প্রশংসা আল্লাহর জন্য যিনি আমাদের মৃত্যুর পর জীবিত করলেন।'},
-    {title:'দুঃস্বপ্ন দেখলে দোয়া', ar:'أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ غَضَبِهِ وَعِقَابِهِ', bn:'আল্লাহর পরিপূর্ণ বাণীর মাধ্যমে তাঁর ক্রোধ ও শাস্তি থেকে আশ্রয় চাই।'},
+    {title:'ঘুমানোর দোয়া', ar:'بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا', bn:'হে আল্লাহ! তোমার নামেই আমি মৃত্যুবরণ করি এবং জীবিত হই। (বুখারী)'},
+    {title:'ঘুম থেকে উঠার দোয়া', ar:'الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ', bn:'সমস্ত প্রশংসা আল্লাহর, যিনি আমাদের মৃত্যুর (ঘুমের) পর জীবিত করলেন, আর তাঁর কাছেই পুনরুত্থান। (বুখারী)'},
+    {title:'দুঃস্বপ্ন দেখলে দোয়া', ar:'أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ غَضَبِهِ وَعِقَابِهِ وَشَرِّ عِبَادِهِ وَمِنْ هَمَزَاتِ الشَّيَاطِينِ وَأَنْ يَحْضُرُونِ', bn:'আমি আল্লাহর পরিপূর্ণ কালেমাসমূহের মাধ্যমে আশ্রয় চাই তাঁর ক্রোধ ও শাস্তি থেকে, তাঁর বান্দাদের অনিষ্ট থেকে, শয়তানের কুমন্ত্রণা থেকে এবং তাদের উপস্থিতি থেকে। (আবু দাউদ, তিরমিযী)'},
   ]},
   {cat:'দুশ্চিন্তা ও কষ্ট', icon:'💚', duas:[
-    {title:'দুশ্চিন্তার দোয়া', ar:'اللَّهُمَّ إِنِّي عَبْدُكَ', bn:'হে আল্লাহ! আমি তোমার বান্দা।'},
-    {title:'কষ্ট দূর করার দোয়া', ar:'لَا إِلَهَ إِلَّا أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ الظَّالِمِينَ', bn:'তুমি ব্যতীত কোনো ইলাহ নেই, তুমি পবিত্র, আমি অবশ্যই অন্যায়কারীদের অন্তর্ভুক্ত।'},
-    {title:'অস্থিরতা দূর করার দোয়া', ar:'حَسْبُنَا اللَّهُ وَنِعْمَ الْوَكِيلُ', bn:'আল্লাহই আমাদের জন্য যথেষ্ট এবং তিনি উত্তম কর্মবিধায়ক।'},
-    {title:'ভয় দূর করার দোয়া', ar:'اللَّهُمَّ إِنَّا نَجْعَلُكَ فِي نُحُورِهِمْ', bn:'হে আল্লাহ! আমরা তোমাকে তাদের বিরুদ্ধে ঢাল বানাচ্ছি।'},
+    {title:'দুশ্চিন্তা ও পেরেশানির দোয়া', ar:'اللَّهُمَّ إِنِّي عَبْدُكَ، ابْنُ عَبْدِكَ، ابْنُ أَمَتِكَ، نَاصِيَتِي بِيَدِكَ، مَاضٍ فِيَّ حُكْمُكَ، عَدْلٌ فِيَّ قَضَاؤُكَ، أَسْأَلُكَ بِكُلِّ اسْمٍ هُوَ لَكَ، سَمَّيْتَ بِهِ نَفْسَكَ، أَوْ أَنْزَلْتَهُ فِي كِتَابِكَ، أَوْ عَلَّمْتَهُ أَحَدًا مِنْ خَلْقِكَ، أَوِ اسْتَأْثَرْتَ بِهِ فِي عِلْمِ الْغَيْبِ عِنْدَكَ، أَنْ تَجْعَلَ الْقُرْآنَ رَبِيعَ قَلْبِي، وَنُورَ صَدْرِي، وَجَلَاءَ حُزْنِي، وَذَهَابَ هَمِّي', bn:'হে আল্লাহ! আমি তোমার বান্দা, তোমার বান্দার পুত্র, তোমার বান্দির পুত্র। আমার ললাট তোমার হাতে, আমার ওপর তোমার হুকুম কার্যকর, আমার ব্যাপারে তোমার ফয়সালা ন্যায়পূর্ণ। আমি তোমার প্রতিটি নামের অসিলায় প্রার্থনা করছি — যে নামে তুমি নিজেকে অভিহিত করেছ, বা তোমার কিতাবে নাযিল করেছ, বা তোমার সৃষ্টির কাউকে শিখিয়েছ, বা গায়েবের জ্ঞানে নিজের কাছে সংরক্ষিত রেখেছ — তুমি কুরআনকে বানিয়ে দাও আমার হৃদয়ের প্রশান্তি, আমার বক্ষের নূর, আমার দুঃখের অপসারণ ও আমার দুশ্চিন্তার নিরসন। (আহমাদ)'},
+    {title:'কষ্ট দূর করার দোয়া (দোয়া ইউনুস)', ar:'لَا إِلَهَ إِلَّا أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ الظَّالِمِينَ', bn:'তুমি ছাড়া কোনো ইলাহ নেই; তুমি পবিত্র। নিশ্চয়ই আমি জালিমদের অন্তর্ভুক্ত ছিলাম। (সূরা আম্বিয়া ৮৭)'},
+    {title:'অস্থিরতা দূর করার দোয়া', ar:'حَسْبُنَا اللَّهُ وَنِعْمَ الْوَكِيلُ', bn:'আল্লাহই আমাদের জন্য যথেষ্ট এবং তিনিই উত্তম কর্মবিধায়ক। (সূরা আলে ইমরান ১৭৩)'},
+    {title:'শত্রুর ভয়ে দোয়া', ar:'اللَّهُمَّ إِنَّا نَجْعَلُكَ فِي نُحُورِهِمْ وَنَعُوذُ بِكَ مِنْ شُرُورِهِمْ', bn:'হে আল্লাহ! আমরা তোমাকেই তাদের মোকাবিলায় রাখছি এবং তাদের অনিষ্ট থেকে তোমার কাছে আশ্রয় চাইছি। (আবু দাউদ)'},
   ]},
   {cat:'নামাজ সংক্রান্ত', icon:'🕌', duas:[
-    {title:'অযুর পর দোয়া', ar:'أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا اللَّهُ', bn:'আমি সাক্ষ্য দিচ্ছি যে আল্লাহ ব্যতীত কোনো ইলাহ নেই।'},
-    {title:'মসজিদে প্রবেশের দোয়া', ar:'اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ', bn:'হে আল্লাহ! আমার জন্য তোমার রহমতের দরজা খুলে দাও।'},
-    {title:'মসজিদ থেকে বের হওয়ার দোয়া', ar:'اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِكَ', bn:'হে আল্লাহ! আমি তোমার অনুগ্রহ থেকে প্রার্থনা করছি।'},
-    {title:'সালাতের পরের দোয়া (ইস্তিগফার)', ar:'أَسْتَغْفِرُ اللَّهَ', bn:'আমি আল্লাহর কাছে ক্ষমা প্রার্থনা করছি।'},
+    {title:'অযুর পর দোয়া', ar:'أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ', bn:'আমি সাক্ষ্য দিচ্ছি, আল্লাহ ছাড়া কোনো ইলাহ নেই, তিনি একক, তাঁর কোনো শরিক নেই; আরও সাক্ষ্য দিচ্ছি, মুহাম্মাদ (সাল্লাল্লাহু আলাইহি ওয়াসাল্লাম) তাঁর বান্দা ও রাসূল। (মুসলিম)'},
+    {title:'মসজিদে প্রবেশের দোয়া', ar:'اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ', bn:'হে আল্লাহ! আমার জন্য তোমার রহমতের দরজাগুলো খুলে দাও। (মুসলিম)'},
+    {title:'মসজিদ থেকে বের হওয়ার দোয়া', ar:'اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِكَ', bn:'হে আল্লাহ! আমি তোমার অনুগ্রহ প্রার্থনা করছি। (মুসলিম)'},
+    {title:'সালাতের পরের ইস্তিগফার', ar:'أَسْتَغْفِرُ اللَّهَ', bn:'আমি আল্লাহর কাছে ক্ষমা প্রার্থনা করছি। (৩ বার — মুসলিম)'},
   ]},
   {cat:'রোগ-অসুস্থতা', icon:'🩺', duas:[
-    {title:'অসুস্থতায় আরোগ্যের দোয়া', ar:'اللَّهُمَّ رَبَّ النَّاسِ أَذْهِبِ الْبَأْسَ اشْفِ', bn:'হে আল্লাহ! মানুষের প্রতিপালক, কষ্ট দূর করো, আরোগ্য দান করো।'},
-    {title:'রোগী দেখতে গিয়ে দোয়া', ar:'لَا بَأْسَ طَهُورٌ إِنْ شَاءَ اللَّهُ', bn:'কোনো সমস্যা নেই, এটি (রোগ) পবিত্রকারী, ইনশাআল্লাহ।'},
+    {title:'অসুস্থতায় আরোগ্যের দোয়া', ar:'اللَّهُمَّ رَبَّ النَّاسِ، أَذْهِبِ الْبَأْسَ، اشْفِ وَأَنْتَ الشَّافِي، لَا شِفَاءَ إِلَّا شِفَاؤُكَ، شِفَاءً لَا يُغَادِرُ سَقَمًا', bn:'হে আল্লাহ, মানুষের প্রতিপালক! কষ্ট দূর করে দাও, আরোগ্য দান করো — তুমিই আরোগ্যদাতা। তোমার আরোগ্য ছাড়া কোনো আরোগ্য নেই; এমন আরোগ্য দাও যা কোনো রোগ অবশিষ্ট রাখে না। (বুখারী, মুসলিম)'},
+    {title:'রোগী দেখতে গিয়ে দোয়া', ar:'لَا بَأْسَ طَهُورٌ إِنْ شَاءَ اللَّهُ', bn:'কোনো ভয় নেই, ইনশাআল্লাহ এ (অসুস্থতা) গুনাহ থেকে পবিত্রকারী। (বুখারী)'},
   ]},
   {cat:'ক্ষমা ও তাওবা', icon:'🤲', duas:[
-    {title:'সাইয়িদুল ইস্তিগফার', ar:'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَٰهَ إِلَّا أَنْتَ', bn:'হে আল্লাহ! তুমি আমার প্রতিপালক, তুমি ব্যতীত কোনো ইলাহ নেই।'},
-    {title:'তাওবার দোয়া', ar:'رَبِّ اغْفِرْ لِي وَتُبْ عَلَيَّ', bn:'হে আমার প্রতিপালক! আমাকে ক্ষমা করো এবং আমার তাওবা কবুল করো।'},
+    {title:'সাইয়িদুল ইস্তিগফার', ar:'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ لَكَ بِذَنْبِي فَاغْفِرْ لِي، فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ', bn:'হে আল্লাহ! তুমি আমার প্রতিপালক, তুমি ছাড়া কোনো ইলাহ নেই। তুমি আমাকে সৃষ্টি করেছ, আমি তোমার বান্দা। আমি সাধ্যমতো তোমার সাথে কৃত অঙ্গীকার ও প্রতিশ্রুতির ওপর আছি। আমি আমার কৃতকর্মের অনিষ্ট থেকে তোমার আশ্রয় চাই। আমার প্রতি তোমার নিয়ামত স্বীকার করছি এবং আমার গুনাহও স্বীকার করছি। অতএব আমাকে ক্ষমা করো, কেননা তুমি ছাড়া গুনাহ ক্ষমা করার কেউ নেই। (বুখারী)'},
+    {title:'তাওবার দোয়া', ar:'رَبِّ اغْفِرْ لِي وَتُبْ عَلَيَّ إِنَّكَ أَنْتَ التَّوَّابُ الرَّحِيمُ', bn:'হে আমার প্রতিপালক! আমাকে ক্ষমা করো এবং আমার তাওবা কবুল করো; নিশ্চয়ই তুমি তাওবা কবুলকারী, পরম দয়ালু। (আবু দাউদ, তিরমিযী)'},
   ]},
   {cat:'রিজিক ও বরকত', icon:'💰', duas:[
-    {title:'রিজিকের জন্য দোয়া', ar:'اللَّهُمَّ اكْفِنِي بِحَلَالِكَ عَنْ حَرَامِكَ', bn:'হে আল্লাহ! তোমার হালাল দিয়ে আমাকে হারাম থেকে যথেষ্ট করো।'},
-    {title:'ঋণ পরিশোধের দোয়া', ar:'اللَّهُمَّ اكْفِنِي بِحَلَالِكَ', bn:'হে আল্লাহ! তোমার হালাল রিজিক দিয়ে আমাকে যথেষ্ট করো।'},
+    {title:'রিজিক ও ঋণমুক্তির দোয়া', ar:'اللَّهُمَّ اكْفِنِي بِحَلَالِكَ عَنْ حَرَامِكَ، وَأَغْنِنِي بِفَضْلِكَ عَمَّنْ سِوَاكَ', bn:'হে আল্লাহ! তোমার হালাল দিয়ে আমাকে হারাম থেকে বাঁচিয়ে যথেষ্ট করে দাও, আর তোমার অনুগ্রহে আমাকে তুমি ছাড়া অন্য সবার থেকে অমুখাপেক্ষী করে দাও। (তিরমিযী)'},
+    {title:'ঋণ ও দুশ্চিন্তা থেকে আশ্রয়ের দোয়া', ar:'اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ، وَالْعَجْزِ وَالْكَسَلِ، وَالْبُخْلِ وَالْجُبْنِ، وَضَلَعِ الدَّيْنِ وَغَلَبَةِ الرِّجَالِ', bn:'হে আল্লাহ! আমি তোমার কাছে আশ্রয় চাই দুশ্চিন্তা ও দুঃখ থেকে, অক্ষমতা ও অলসতা থেকে, কৃপণতা ও ভীরুতা থেকে, ঋণের বোঝা ও মানুষের প্রাধান্য থেকে। (বুখারী)'},
   ]},
 ];
 
@@ -3738,7 +3754,7 @@ function goDuaCategories(){
 /* ══ TOOLS — Zakat Calculator ══ */
 const SILVER_NISAB_GRAMS = 612.36; // 52.5 tola — widely used as the inclusive nisab threshold
 const ZAKAT_RATE = 0.025; // 2.5%
-let silverPricePerGram = 80; // BDT/gram fallback default; refined via live price fetch when available
+let silverPricePerGram = 180; // BDT/gram — hardcoded approximation (mid-2026); no live feed exists, review this value periodically
 
 const ZAKAT_FIELDS = [
   {id:'cash', icon:'💵', labelKey:'zakatCash'},
@@ -4195,7 +4211,6 @@ function toggleSurahAudio(){
   }
 
   // Mishary Alafasy recitation — widely used, reliable public CDN, full-surah audio files
-  const surahPadded = String(currentOpenSurahNo).padStart(3, '0');
   const url = `https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/${currentOpenSurahNo}.mp3`;
   player.src = url;
   player.play().then(() => {
