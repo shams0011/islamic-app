@@ -1,9 +1,19 @@
 {
   "name": "ইসলামিক AI — Deen Companion",
   "short_name": "Islamic AI",
+  "description": "নামাজের সময়, কুরআন, হাদিস, দোয়া, কিবলা, তাসবিহ ও ইসলামিক AI সহায়ক — সব এক অ্যাপে",
+  "lang": "bn",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0a0d12",
   "theme_color": "#0a0d12",
-  "icons": []
+  "categories": ["lifestyle", "education"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
 }

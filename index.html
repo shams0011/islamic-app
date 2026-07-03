@@ -3,10 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>ইসলামিক AI</title>
-<!-- VERSION: v52-fixes-hanafi-asr-ai-proxy-full-duas -->
+<title>ইসলামিক AI — Deen Companion</title>
+<!-- VERSION: v53-premium-polish -->
+<meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
+<meta property="og:title" content="ইসলামিক AI — Deen Companion">
+<meta property="og:description" content="নামাজ, কুরআন, হাদিস, দোয়া, কিবলা, তাসবিহ ও AI সহায়ক — সব এক অ্যাপে।">
+<meta property="og:type" content="website">
+<meta property="og:image" content="icons/icon-512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Islamic AI">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -234,6 +246,21 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
 .send-btn:active{transform:scale(.92)}
 .send-btn:disabled{opacity:.4;cursor:not-allowed}
 
+/* ══ PREMIUM POLISH ══ */
+/* Live-stream facade — video loads only on tap (saves data + battery) */
+.live-facade{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.live-facade::before{content:'';position:absolute;inset:0;background:rgba(6,12,10,.45)}
+.live-facade-play{position:relative;width:52px;height:52px;border-radius:50%;background:rgba(16,185,129,.92);color:#04140e;font-size:19px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(0,0,0,.5);transition:transform .15s}
+.live-facade:hover .live-facade-play{transform:scale(1.07)}
+.live-facade:active .live-facade-play{transform:scale(.9)}
+.live-facade-hint{position:relative;font-size:10px;color:#e8ecf0;font-family:'Hind Siliguri',sans-serif;text-shadow:0 1px 4px rgba(0,0,0,.85)}
+/* Smooth section entrance on tab switch */
+.section.active{animation:secIn .28s cubic-bezier(.4,0,.2,1)}
+@keyframes secIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* Toast feedback */
+#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:linear-gradient(135deg,#12251d,#0d1a15);border:1px solid rgba(16,185,129,.35);color:var(--emerald2);padding:10px 18px;border-radius:50px;font-size:13px;font-family:'Hind Siliguri',sans-serif;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:99998;box-shadow:0 8px 24px rgba(0,0,0,.45);max-width:85vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
 /* ══ RTL SUPPORT (Arabic / Urdu) ══ */
 html[dir="rtl"] body{direction:rtl}
 html[dir="rtl"] .header-top-row{flex-direction:row-reverse}
@@ -359,7 +386,10 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
     <div style="border-radius:18px;overflow:hidden;border:1px solid var(--border2);box-shadow:0 10px 28px rgba(0,0,0,.3);background:#000">
       <div style="aspect-ratio:3/4;position:relative;overflow:hidden">
-        <iframe id="madinah-live-iframe" src="https://www.youtube.com/embed/G4KRJX0Zsm4?autoplay=1&mute=1&playsinline=1&modestbranding=1&rel=0&iv_load_policy=3" title="মদিনা লাইভ সম্প্রচার" style="width:100%;height:100%;border:0;position:absolute;inset:0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+        <button type="button" class="live-facade" data-video="G4KRJX0Zsm4" data-title="মদিনা লাইভ সম্প্রচার" onclick="loadLiveStream(this)" aria-label="মদিনা লাইভ সম্প্রচার চালু করুন" style="width:100%;height:100%;border:0;position:absolute;inset:0;padding:0;cursor:pointer;background:#000 url('https://i.ytimg.com/vi/G4KRJX0Zsm4/hqdefault.jpg') center/cover no-repeat">
+          <span class="live-facade-play" aria-hidden="true">▶</span>
+          <span class="live-facade-hint" aria-hidden="true">ট্যাপ করে চালু করুন</span>
+        </button>
         <div aria-hidden="true" style="position:absolute;left:0;right:0;top:0;height:22%;background:linear-gradient(180deg,rgba(6,12,10,.85),transparent);pointer-events:none"></div>
         <div aria-hidden="true" style="position:absolute;left:0;right:0;bottom:0;height:30%;background:linear-gradient(180deg,transparent,rgba(6,12,10,.88) 70%);pointer-events:none"></div>
       </div>
@@ -372,7 +402,10 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
     </div>
     <div style="border-radius:18px;overflow:hidden;border:1px solid var(--border2);box-shadow:0 10px 28px rgba(0,0,0,.3);background:#000">
       <div style="aspect-ratio:3/4;position:relative;overflow:hidden">
-        <iframe id="makkah-live-iframe" src="https://www.youtube.com/embed/fZvuHkHYaXk?autoplay=1&mute=1&playsinline=1&modestbranding=1&rel=0&iv_load_policy=3" title="মক্কা লাইভ সম্প্রচার" style="width:100%;height:100%;border:0;position:absolute;inset:0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+        <button type="button" class="live-facade" data-video="fZvuHkHYaXk" data-title="মক্কা লাইভ সম্প্রচার" onclick="loadLiveStream(this)" aria-label="মক্কা লাইভ সম্প্রচার চালু করুন" style="width:100%;height:100%;border:0;position:absolute;inset:0;padding:0;cursor:pointer;background:#000 url('https://i.ytimg.com/vi/fZvuHkHYaXk/hqdefault.jpg') center/cover no-repeat">
+          <span class="live-facade-play" aria-hidden="true">▶</span>
+          <span class="live-facade-hint" aria-hidden="true">ট্যাপ করে চালু করুন</span>
+        </button>
         <div aria-hidden="true" style="position:absolute;left:0;right:0;top:0;height:22%;background:linear-gradient(180deg,rgba(14,11,4,.85),transparent);pointer-events:none"></div>
         <div aria-hidden="true" style="position:absolute;left:0;right:0;bottom:0;height:30%;background:linear-gradient(180deg,transparent,rgba(14,11,4,.88) 70%);pointer-events:none"></div>
       </div>
@@ -1996,6 +2029,13 @@ function togglePrayerDone(prayerKey){
   log[today][prayerKey] = !log[today][prayerKey];
   savePrayerLog(log);
   refreshPrayerCheckButtons();
+  if(log[today][prayerKey]){
+    const doneCount = PRAYER_KEYS.filter(k => log[today][k]).length;
+    showToast(doneCount === 5
+      ? '🌟 মাশাআল্লাহ! আজকের ৫ ওয়াক্ত সম্পূর্ণ'
+      : `✓ ${prayerName(prayerKey)} আদায় হয়েছে (${localizeNum(doneCount)}/${localizeNum(5)})`);
+    if(navigator.vibrate) navigator.vibrate(30);
+  }
   if(document.getElementById('tool-streak-view') && document.getElementById('tool-streak-view').style.display !== 'none'){
     renderStreakView();
   }
@@ -3117,6 +3157,33 @@ function showTab(id,btn){
   btn.setAttribute('aria-selected','true');
 }
 
+/* ══ TOAST FEEDBACK ══ */
+let _toastTimer = null;
+function showToast(msg){
+  let el = document.getElementById('toast');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'toast';
+    el.setAttribute('role','status');
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(()=>el.classList.remove('show'), 2200);
+}
+
+/* ══ LIVE STREAM FACADE — swap the thumbnail for the real player on tap ══ */
+function loadLiveStream(btn){
+  const ifr = document.createElement('iframe');
+  ifr.src = `https://www.youtube.com/embed/${btn.dataset.video}?autoplay=1&playsinline=1&modestbranding=1&rel=0&iv_load_policy=3`;
+  ifr.title = btn.dataset.title;
+  ifr.style.cssText = 'width:100%;height:100%;border:0;position:absolute;inset:0';
+  ifr.allow = 'autoplay; encrypted-media; picture-in-picture';
+  ifr.allowFullscreen = true;
+  btn.replaceWith(ifr);
+}
+
 /* ══ BOOKS ══ */
 function renderBooks(){
   document.getElementById('book-grid').innerHTML=BOOKS.map(b=>`
@@ -3663,7 +3730,10 @@ function tasbihTap(){
     document.getElementById('tasbih-daily-total').textContent = toBn(saved.dailyTotal);
   }catch(e){}
 
-  if(tasbihCount >= tasbihTarget && navigator.vibrate) navigator.vibrate([40,30,40]);
+  if(tasbihCount === tasbihTarget){
+    showToast('📿 লক্ষ্য পূর্ণ হয়েছে — মাশাআল্লাহ!');
+    if(navigator.vibrate) navigator.vibrate([40,30,40]);
+  }
 }
 
 function tasbihReset(){
