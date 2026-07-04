@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v53-premium-polish -->
+<!-- VERSION: v54-ai-proxy-live -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -3377,7 +3377,7 @@ function esc(s){ return (s||'').replace(/'/g,"&#39;"); }
    server-side. Deploy the worker, then put its URL here, e.g.
    'https://islamic-ai-proxy.YOUR-SUBDOMAIN.workers.dev'. Empty = AI features show a
    friendly "not configured" message instead of failing with a fake network error. */
-const AI_PROXY_URL = '';
+const AI_PROXY_URL = 'https://islamic-ai-proxy.samsuzzaman.workers.dev';
 const AI_MODULES = [
   {
     id:'hadith', icon:'📖', title:'AI হাদিস সার্চ', sub:'সিহাহ সিত্তাহ থেকে হাদিস খুঁজুন',
