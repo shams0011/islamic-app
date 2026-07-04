@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v59-header-date-polish -->
+<!-- VERSION: v60-location-based-date -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -1410,7 +1410,7 @@ function applyLanguage(){
   setTextIfExists('alarm-stop-btn', t('stopAlarm'));
 
   // Refresh date display (weekday/month names depend on language)
-  if(typeof getNow === 'function' && typeof updateDateDisplay === 'function') updateDateDisplay(getNow());
+  if(typeof getLocationNow === 'function' && typeof updateDateDisplay === 'function') updateDateDisplay(getLocationNow());
 
   // Hadith section
   setTextIfExists('hadith-sec-title-text', t('sahihSittah'));
@@ -1429,7 +1429,7 @@ function applyLanguage(){
   setTextIfExists('ramadan-sehri-label', t('ramadanSehriEnds'));
   setTextIfExists('ramadan-iftar-label', t('ramadanIftar'));
   if(document.getElementById('ramadan-banner') && document.getElementById('ramadan-banner').style.display !== 'none'){
-    updateRamadanBanner(gregorianToHijri(getNow()));
+    updateRamadanBanner(gregorianToHijri(getLocationNow()));
   }
   setTextIfExists('tool-title-streak', t('prayerStreak'));
   setTextIfExists('tool-desc-streak', t('prayerStreakDesc'));
@@ -1611,6 +1611,7 @@ function detectLocation(){
         }
         PRAYER_TIMES_TODAY = getPrayerTimes(getNow());
         updatePrayerDisplay();
+        if(typeof updateDateDisplay==='function') updateDateDisplay(getLocationNow());
         updateLocationName(LAT, LON);
       },
       err => {
@@ -1638,6 +1639,7 @@ async function detectLocationByIP(){
       }
       PRAYER_TIMES_TODAY = getPrayerTimes(getNow());
       updatePrayerDisplay();
+      if(typeof updateDateDisplay==='function') updateDateDisplay(getLocationNow());
       const locEl = document.getElementById('loc-name');
       if(locEl) locEl.textContent = [d.city, d.country_name].filter(Boolean).join(', ');
     }
@@ -1761,7 +1763,7 @@ function updateMakruhTimes(){
   setTextIfExists('makruh-time-zawal', `${fmtHM(windows.zawal.start)} - ${fmtHM(windows.zawal.end)}`);
   setTextIfExists('makruh-time-sunset', `${fmtHM(windows.sunset.start)} - ${fmtHM(windows.sunset.end)}`);
 
-  const now = getNow();
+  const now = getLocationNow();
   const curHour = now.getHours() + now.getMinutes()/60 + now.getSeconds()/3600;
   const inWindow = (w) => curHour >= w.start && curHour <= w.end;
   const isMakruhNow = inWindow(windows.sunrise) || inWindow(windows.zawal) || inWindow(windows.sunset);
@@ -1771,7 +1773,7 @@ function updateMakruhTimes(){
 }
 
 function getCurrentPrayerInfo(){
-  const now = getNow();
+  const now = getLocationNow();
   const curHour = now.getHours() + now.getMinutes()/60 + now.getSeconds()/3600;
   const pt = PRAYER_TIMES_TODAY;
   let prayers = [
@@ -1923,6 +1925,17 @@ function getNow(){
   return new Date(Date.now() + timeOffsetMs);
 }
 
+// Wall-clock at the DETECTED LOCATION, not the device. getNow() is the true
+// instant (network-corrected); shifting by (location TZ − device TZ) makes the
+// Date's LOCAL fields read as the location's wall-clock. When the device is
+// already in the detected timezone (the usual case) the shift is 0 and this is
+// identical to getNow(). Used for the clock, date card, and prayer countdowns
+// so they follow the user's location rather than a mis-set device timezone.
+function getLocationNow(){
+  const deviceTZ = -new Date().getTimezoneOffset()/60;
+  return new Date(getNow().getTime() + Math.round((TZ - deviceTZ)*3600000));
+}
+
 async function syncNetworkTime(){
   // Both sources return true UTC epoch — works regardless of the device's timezone
   const sources = [
@@ -2034,7 +2047,7 @@ function updateRamadanCountdowns(){
   const pt = PRAYER_TIMES_TODAY;
   if(!pt || pt.fajr == null || pt.maghrib == null) return;
 
-  const now = getNow();
+  const now = getLocationNow();
   const curHour = now.getHours() + now.getMinutes()/60 + now.getSeconds()/3600;
   const sehriEndHour = pt.fajr - 10/60; // sehri ends 10 min before fajr, consistent with the special-times card
 
@@ -2057,7 +2070,7 @@ function updateRamadanCountdowns(){
 const PRAYER_KEYS = ['fajr','dhuhr','asr','maghrib','isha'];
 
 function todayKey(){
-  const now = getNow();
+  const now = getLocationNow();
   return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
 }
 
@@ -2105,7 +2118,7 @@ function refreshPrayerCheckButtons(){
 // ALL 5 prayers were marked complete that day. Counts backward from today/yesterday.
 function calculatePrayerStreak(log){
   let streak = 0;
-  let checkDate = getNow();
+  let checkDate = getLocationNow();
   // If today isn't fully complete yet, start counting from yesterday instead — an incomplete
   // "today" shouldn't break a streak that's still in progress.
   const todayEntry = log[todayKey()];
@@ -3138,7 +3151,7 @@ function updateDateDisplay(now){
 }
 
 function tick(){
-  const now=getNow();
+  const now=getLocationNow();
   const timeStr = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
   const [hms, ampm] = timeStr.split(' ');
   document.getElementById('clock').textContent = localizeNum(hms);
@@ -3738,7 +3751,7 @@ function loadTasbihState(){
   try{
     const saved = JSON.parse(localStorage.getItem(profileKey('tasbih_state'))||'null');
     if(saved){
-      const today = getNow().toDateString();
+      const today = getLocationNow().toDateString();
       if(saved.date === today){
         document.getElementById('tasbih-daily-total').textContent = toBn(saved.dailyTotal||0);
       } else {
@@ -3776,7 +3789,7 @@ function tasbihTap(){
   setTimeout(()=>{ circle.style.transform = 'scale(1)'; }, 100);
 
   try{
-    const today = getNow().toDateString();
+    const today = getLocationNow().toDateString();
     let saved = JSON.parse(localStorage.getItem(profileKey('tasbih_state'))||'null');
     if(!saved || saved.date !== today) saved = {date: today, dailyTotal: 0};
     saved.dailyTotal = (saved.dailyTotal||0) + 1;
