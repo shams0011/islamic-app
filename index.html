@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v58-dual-countdown -->
+<!-- VERSION: v59-header-date-polish -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -52,8 +52,8 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
   background-size:80px 80px}
 .wrap{position:relative;z-index:1}
 .header{padding:max(24px, env(safe-area-inset-top)) 20px 16px;background:linear-gradient(180deg,rgba(16,185,129,.05) 0%,transparent 100%);border-bottom:1px solid var(--border2)}
-.app-eyebrow{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--gold3);margin-bottom:5px}
-.app-bismillah{font-size:22px;color:var(--emerald2);direction:rtl;font-family:serif;line-height:1.5;margin-bottom:10px}
+.app-eyebrow{font-size:10.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold3);margin-bottom:5px;font-weight:600}
+.app-bismillah{font-size:24px;color:var(--emerald2);direction:rtl;font-family:serif;line-height:1.5;margin-bottom:10px;text-shadow:0 0 26px rgba(16,185,129,.22)}
 .header-row{display:flex;justify-content:space-between;align-items:center}
 .header-loc{font-size:13px;color:var(--text3);display:flex;align-items:center;gap:5px}
 .live-dot{width:6px;height:6px;background:var(--emerald2);border-radius:50%;box-shadow:0 0 7px var(--emerald2);animation:blink 2s ease-in-out infinite}
@@ -74,7 +74,7 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
 .np-col-next .np-name-row{justify-content:flex-end}
 .np-arabic{font-size:16px;color:var(--emerald2);font-family:serif;direction:rtl;font-weight:600;opacity:.95}
 .np-col-next .np-arabic{color:var(--gold2)}
-.np-time-chip{margin-top:auto;padding:6px 12px;border-radius:10px;background:rgba(16,185,129,.13);border:1px solid rgba(16,185,129,.3);font-size:14.5px;font-weight:700;color:#5eead4;font-family:ui-monospace,monospace;align-self:flex-start;letter-spacing:0.4px;box-shadow:0 2px 10px rgba(16,185,129,.1)}
+.np-time-chip{margin-top:auto;padding:6px 11px;border-radius:10px;background:rgba(16,185,129,.13);border:1px solid rgba(16,185,129,.3);font-size:13px;font-weight:700;color:#5eead4;font-family:ui-monospace,monospace;align-self:flex-start;letter-spacing:0.2px;box-shadow:0 2px 10px rgba(16,185,129,.1);white-space:nowrap}
 .np-col-next .np-time-chip{background:rgba(212,175,106,.13);border-color:rgba(212,175,106,.32);color:var(--gold2);align-self:flex-end;box-shadow:0 2px 10px rgba(212,175,106,.1)}
 .np-cd-cap{font-size:10px;letter-spacing:1px;color:var(--text3);margin-top:8px;font-weight:500;white-space:nowrap}
 .np-countdown{font-size:24px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:1px;margin:1px 0 8px;line-height:1}
@@ -258,6 +258,19 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
 .send-btn:disabled{opacity:.4;cursor:not-allowed}
 
 /* ══ PREMIUM POLISH ══ */
+/* Date widget — icon tile + stacked dates + weekday pill */
+.date-card{margin:14px 16px 0;padding:14px 16px;background:linear-gradient(135deg,rgba(212,175,106,.07),rgba(16,185,129,.045));backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border2);border-radius:18px;display:flex;align-items:center;gap:13px;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.date-tile{flex-shrink:0;width:46px;height:46px;border-radius:14px;background:linear-gradient(150deg,rgba(212,175,106,.9),rgba(168,133,79,.85));display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(212,175,106,.28),inset 0 1px 0 rgba(255,255,255,.25);line-height:1}
+.date-tile-day{font-size:19px;font-weight:800;color:#1a1206;font-family:ui-monospace,monospace}
+.date-tile-mon{font-size:8.5px;font-weight:700;color:rgba(26,18,6,.7);letter-spacing:.5px;margin-top:1px}
+.date-info{flex:1;min-width:0}
+.date-greg{font-size:15px;color:var(--text);font-weight:700;letter-spacing:-.2px}
+.date-hijri{font-size:12.5px;color:var(--emerald2);margin-top:2px;font-weight:500}
+.date-right{text-align:right;flex-shrink:0}
+.date-weekday{font-size:12px;color:var(--text);font-weight:600;padding:4px 11px;border-radius:50px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);white-space:nowrap}
+.date-event{font-size:11px;color:var(--gold2);margin-top:5px;font-weight:600}
+html[dir="rtl"] .date-info{text-align:right}
+html[dir="rtl"] .date-right{text-align:left}
 /* Live-stream facade — video loads only on tap (saves data + battery) */
 .live-facade{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
 .live-facade::before{content:'';position:absolute;inset:0;background:rgba(6,12,10,.45)}
@@ -313,7 +326,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
 
 <div class="header" role="banner">
   <div class="header-top-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;gap:6px">
-    <div class="app-eyebrow" id="app-eyebrow" style="margin-bottom:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">☪ Islamic AI • ইসলামিক এআই</div>
+    <div class="app-eyebrow" id="app-eyebrow" style="margin-bottom:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">☪ ইসলামিক AI • দ্বীন সঙ্গী</div>
     <button type="button" id="profile-selector-btn" onclick="openProfileSelector()" aria-label="প্রোফাইল পরিবর্তন করুন" style="display:flex;align-items:center;gap:5px;padding:5px 10px;background:rgba(212,175,106,.08);border:1px solid rgba(212,175,106,.2);border-radius:50px;color:var(--gold2);font-size:11.5px;font-weight:600;cursor:pointer;font-family:'Hind Siliguri',sans-serif;flex-shrink:0">
       <span aria-hidden="true">👤</span><span id="profile-selector-label">আমি</span>
     </button>
@@ -331,14 +344,18 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
   </div>
 </div>
 
-<div class="date-card" role="region" aria-label="তারিখ ও ক্যালেন্ডার" style="margin:14px 16px 0;padding:14px 18px;background:linear-gradient(135deg,rgba(212,175,106,.06),rgba(16,185,129,.04));backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border2);border-radius:18px;display:flex;justify-content:space-between;align-items:center;gap:10px;box-shadow:0 4px 16px rgba(0,0,0,.15)">
-  <div>
-    <div id="date-gregorian" style="font-size:14px;color:var(--text);font-weight:600">--</div>
-    <div id="date-hijri" style="font-size:12px;color:var(--emerald2);margin-top:2px">--</div>
+<div class="date-card" role="region" aria-label="তারিখ ও ক্যালেন্ডার">
+  <div class="date-tile" aria-hidden="true">
+    <div class="date-tile-day" id="date-tile-day">--</div>
+    <div class="date-tile-mon" id="date-tile-mon">---</div>
   </div>
-  <div style="text-align:right">
-    <div id="date-weekday-bn" style="font-size:13px;color:var(--text2);font-weight:500">--</div>
-    <div id="date-hijri-event" style="font-size:11px;color:var(--gold2);margin-top:2px"></div>
+  <div class="date-info">
+    <div class="date-greg" id="date-gregorian">--</div>
+    <div class="date-hijri" id="date-hijri">--</div>
+  </div>
+  <div class="date-right">
+    <div class="date-weekday" id="date-weekday-bn">--</div>
+    <div class="date-event" id="date-hijri-event"></div>
   </div>
 </div>
 
@@ -3105,6 +3122,10 @@ function updateDateDisplay(now){
   const year = localizeNum(now.getFullYear());
   gEl.textContent = `${day} ${month}, ${year}`;
   wEl.textContent = weekday;
+
+  // Calendar-tile glyph: day number + short month
+  setTextIfExists('date-tile-day', day);
+  setTextIfExists('date-tile-mon', (month || '').slice(0, 3));
 
   const hijri = gregorianToHijri(now);
   const hMonthName = hijriMo[hijri.month-1] || '';
