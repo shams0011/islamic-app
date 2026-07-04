@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v56-prayer-card-clarity -->
+<!-- VERSION: v57-prayer-name-inline -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -70,8 +70,10 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
 .np-live-dot{display:inline-block;width:7px;height:7px;background:var(--emerald2);border-radius:50%;box-shadow:0 0 9px var(--emerald2);animation:blink 2s ease-in-out infinite;margin-right:6px;vertical-align:1px}
 .np-name{font-size:31px;font-weight:800;line-height:1.15;color:#fff;background:linear-gradient(135deg,#fff 25%,var(--emerald2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.3px;text-shadow:0 0 24px rgba(16,185,129,.25)}
 .np-name-next{background:linear-gradient(135deg,#fff 25%,var(--gold2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 24px rgba(212,175,106,.25)}
-.np-arabic{font-size:16.5px;color:var(--emerald2);font-family:serif;direction:rtl;margin-top:2px;text-align:left;font-weight:600}
-.np-col-next .np-arabic{color:var(--gold2);text-align:right}
+.np-name-row{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+.np-col-next .np-name-row{justify-content:flex-end}
+.np-arabic{font-size:16px;color:var(--emerald2);font-family:serif;direction:rtl;font-weight:600;opacity:.95}
+.np-col-next .np-arabic{color:var(--gold2)}
 .np-time-chip{margin-top:auto;padding:6px 12px;border-radius:10px;background:rgba(16,185,129,.13);border:1px solid rgba(16,185,129,.3);font-size:14.5px;font-weight:700;color:#5eead4;font-family:ui-monospace,monospace;align-self:flex-start;letter-spacing:0.4px;box-shadow:0 2px 10px rgba(16,185,129,.1)}
 .np-col-next .np-time-chip{background:rgba(212,175,106,.13);border-color:rgba(212,175,106,.32);color:var(--gold2);align-self:flex-end;box-shadow:0 2px 10px rgba(212,175,106,.1)}
 #countdown{font-size:29px;font-weight:600;color:#fff;font-family:ui-monospace,monospace;letter-spacing:1.5px;margin:3px 0 8px;text-shadow:0 0 16px rgba(255,255,255,.18)}
@@ -275,8 +277,6 @@ html[dir="rtl"] .header-row > div:last-child{text-align:left}
 html[dir="rtl"] .np-grid{direction:rtl}
 html[dir="rtl"] .np-live-dot{margin-right:0;margin-left:6px}
 html[dir="rtl"] .np-col-next{text-align:left}
-html[dir="rtl"] .np-arabic{text-align:right}
-html[dir="rtl"] .np-col-next .np-arabic{text-align:left}
 html[dir="rtl"] .date-card{flex-direction:row-reverse}
 html[dir="rtl"] .date-card > div:last-child{text-align:left}
 html[dir="rtl"] .prayer-row{flex-direction:row-reverse}
@@ -343,15 +343,19 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
   <div class="np-grid">
     <div class="np-col">
       <div class="np-label"><span class="np-live-dot" aria-hidden="true"></span><span id="np-cur-label">চলছে</span></div>
-      <div class="np-name" id="np-cur-name">--</div>
-      <div class="np-arabic" id="np-cur-arabic" lang="ar" dir="rtl"></div>
+      <div class="np-name-row">
+        <span class="np-name" id="np-cur-name">--</span>
+        <span class="np-arabic" id="np-cur-arabic" lang="ar" dir="rtl"></span>
+      </div>
       <div class="np-time-chip" id="np-cur-range">--:-- – --:--</div>
     </div>
     <div class="np-divider" aria-hidden="true"></div>
     <div class="np-col np-col-next">
       <div class="np-label" id="np-label">পরবর্তী নামাজ</div>
-      <div class="np-name np-name-next" id="np-next-name">--</div>
-      <div class="np-arabic" id="np-next-arabic" lang="ar" dir="rtl"></div>
+      <div class="np-name-row">
+        <span class="np-arabic" id="np-next-arabic" lang="ar" dir="rtl"></span>
+        <span class="np-name np-name-next" id="np-next-name">--</span>
+      </div>
       <div id="countdown" role="timer" aria-label="পরবর্তী নামাজের বাকি সময়">--:--:--</div>
       <div class="np-time-chip" id="np-next-at">--:--</div>
     </div>
