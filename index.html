@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v54-ai-proxy-live -->
+<!-- VERSION: v55-dual-prayer-card -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -62,13 +62,19 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
 .next-prayer{margin:14px 16px;background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.02));backdrop-filter:blur(20px) saturate(140%);-webkit-backdrop-filter:blur(20px) saturate(140%);border:1px solid var(--border2);border-radius:22px;padding:18px 20px;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.04)}
 .next-prayer::before{content:'';position:absolute;top:-40%;right:-15%;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(16,185,129,.18),transparent 70%);pointer-events:none}
 .next-prayer::after{content:'';position:absolute;bottom:-30%;left:-10%;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,106,.08),transparent 70%);pointer-events:none}
-.np-row{display:flex;justify-content:space-between;align-items:flex-end;position:relative;z-index:1}
-.np-label{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
-.np-name{font-size:28px;font-weight:800;line-height:1;background:linear-gradient(135deg,#fff,var(--emerald2) 70%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.3px}
-.np-arabic{font-size:14px;color:var(--emerald2);font-family:serif;direction:rtl;margin-top:3px}
-.np-right{text-align:right}
-.np-cd-label{font-size:11px;color:var(--text3);margin-bottom:2px}
-#countdown{font-size:28px;font-weight:300;color:var(--text);font-family:monospace;letter-spacing:1px}
+.np-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;position:relative;z-index:1;align-items:stretch}
+.np-divider{width:1px;background:linear-gradient(180deg,transparent,rgba(255,255,255,.14),transparent)}
+.np-col{display:flex;flex-direction:column;gap:3px;min-width:0}
+.np-col-next{text-align:right;align-items:flex-end}
+.np-label{font-size:10.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--text3);margin-bottom:4px;white-space:nowrap}
+.np-live-dot{display:inline-block;width:6px;height:6px;background:var(--emerald2);border-radius:50%;box-shadow:0 0 7px var(--emerald2);animation:blink 2s ease-in-out infinite;margin-right:6px;vertical-align:1px}
+.np-name{font-size:26px;font-weight:800;line-height:1.1;background:linear-gradient(135deg,#fff,var(--emerald2) 70%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.3px}
+.np-name-next{background:linear-gradient(135deg,#fff,var(--gold2) 70%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.np-arabic{font-size:13px;color:var(--emerald2);font-family:serif;direction:rtl;margin-top:2px;text-align:left}
+.np-col-next .np-arabic{color:var(--gold2);text-align:right}
+.np-time-chip{margin-top:auto;padding:5px 10px;border-radius:9px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.16);font-size:13px;font-weight:600;color:var(--emerald2);font-family:ui-monospace,monospace;align-self:flex-start;letter-spacing:0.3px}
+.np-col-next .np-time-chip{background:rgba(212,175,106,.08);border-color:rgba(212,175,106,.18);color:var(--gold2);align-self:flex-end}
+#countdown{font-size:25px;font-weight:300;color:var(--text);font-family:monospace;letter-spacing:1px;margin:2px 0 6px}
 .progress-bar{margin-top:14px;height:3px;background:rgba(255,255,255,.06);border-radius:3px;position:relative;z-index:1;overflow:hidden}
 .progress-fill{height:100%;width:35%;background:linear-gradient(90deg,var(--emerald3),var(--emerald2),var(--gold2));border-radius:3px;position:relative;overflow:hidden;transition:width 1s linear}
 .progress-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);animation:shimmer 2.2s ease-in-out infinite}
@@ -266,9 +272,11 @@ html[dir="rtl"] body{direction:rtl}
 html[dir="rtl"] .header-top-row{flex-direction:row-reverse}
 html[dir="rtl"] .header-row{flex-direction:row-reverse}
 html[dir="rtl"] .header-row > div:last-child{text-align:left}
-html[dir="rtl"] .np-row{flex-direction:row-reverse}
-html[dir="rtl"] .np-right{text-align:left}
-html[dir="rtl"] #cur-prayer-tag{flex-direction:row-reverse;justify-content:flex-end}
+html[dir="rtl"] .np-grid{direction:rtl}
+html[dir="rtl"] .np-live-dot{margin-right:0;margin-left:6px}
+html[dir="rtl"] .np-col-next{text-align:left}
+html[dir="rtl"] .np-arabic{text-align:right}
+html[dir="rtl"] .np-col-next .np-arabic{text-align:left}
 html[dir="rtl"] .date-card{flex-direction:row-reverse}
 html[dir="rtl"] .date-card > div:last-child{text-align:left}
 html[dir="rtl"] .prayer-row{flex-direction:row-reverse}
@@ -331,13 +339,22 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
   </div>
 </div>
 
-<div class="next-prayer" role="region" aria-label="পরবর্তী নামাজের তথ্য">
-  <div id="cur-prayer-tag" style="font-size:12px;color:var(--emerald2);margin-bottom:8px;align-items:center;gap:5px;display:none" role="status">
-    <div class="p-active-dot" aria-hidden="true"></div><span id="cur-prayer-text"></span>
-  </div>
-  <div class="np-row">
-    <div><div class="np-label" id="np-label">পরবর্তী নামাজ</div><div class="np-name" aria-describedby="np-label">যুহর</div><div class="np-arabic" lang="ar" dir="rtl">الظهر</div></div>
-    <div class="np-right"><div class="np-cd-label" id="cd-label">বাকি আছে</div><div id="countdown" role="timer" aria-labelledby="cd-label">--:--:--</div></div>
+<div class="next-prayer" role="region" aria-label="নামাজের ওয়াক্তের তথ্য">
+  <div class="np-grid">
+    <div class="np-col">
+      <div class="np-label"><span class="np-live-dot" aria-hidden="true"></span><span id="np-cur-label">চলছে</span></div>
+      <div class="np-name" id="np-cur-name">--</div>
+      <div class="np-arabic" id="np-cur-arabic" lang="ar" dir="rtl"></div>
+      <div class="np-time-chip" id="np-cur-range">--:-- – --:--</div>
+    </div>
+    <div class="np-divider" aria-hidden="true"></div>
+    <div class="np-col np-col-next">
+      <div class="np-label" id="np-label">পরবর্তী নামাজ</div>
+      <div class="np-name np-name-next" id="np-next-name">--</div>
+      <div class="np-arabic" id="np-next-arabic" lang="ar" dir="rtl"></div>
+      <div id="countdown" role="timer" aria-label="পরবর্তী নামাজের বাকি সময়">--:--:--</div>
+      <div class="np-time-chip" id="np-next-at">--:--</div>
+    </div>
   </div>
   <div class="progress-bar" role="progressbar" aria-label="নামাজের সময়ের অগ্রগতি"><div class="progress-fill"></div></div>
 </div>
@@ -1338,7 +1355,7 @@ function applyLanguage(){
 
   // Next prayer card
   const npLabel = document.getElementById('np-label'); if(npLabel) npLabel.textContent = t('nextPrayer');
-  const cdLabel = document.getElementById('cd-label'); if(cdLabel) cdLabel.textContent = t('timeLeft');
+  const npCurLabel = document.getElementById('np-cur-label'); if(npCurLabel) npCurLabel.textContent = t('runningNow');
 
   // Prayer tab section titles
   setTextIfExists('prayer-sec-title-text', t('todayWaqt'));
@@ -3115,19 +3132,20 @@ function tick(){
   }
 
   const {current, next, diffHours} = getCurrentPrayerInfo();
-  const label = PRAYER_LABELS[next.name];
-  document.querySelector('.np-name').textContent = prayerName(next.name);
-  document.querySelector('.np-arabic').textContent = label.ar;
+  const pt = PRAYER_TIMES_TODAY;
 
-  const curTag = document.getElementById('cur-prayer-tag');
-  const curText = document.getElementById('cur-prayer-text');
-  if(current){
-    const curLabel = PRAYER_LABELS[current.name];
-    curText.textContent = t('nowPraying').replace('{name}', prayerName(current.name)).replace('{ar}', curLabel.ar);
-    curTag.style.display = 'flex';
-  } else {
-    curTag.style.display = 'none';
-  }
+  // Left column — the waqt running right now. Between midnight and fajr no
+  // prayer time has started "today", but isha is still in effect, so show it.
+  const curKey = current ? current.name : 'isha';
+  const endMap = {fajr: pt.sunrise, dhuhr: pt.asr, asr: pt.maghrib, maghrib: pt.isha, isha: pt.fajr};
+  setTextIfExists('np-cur-name', prayerName(curKey));
+  setTextIfExists('np-cur-arabic', PRAYER_LABELS[curKey].ar);
+  setTextIfExists('np-cur-range', fmtHM(pt[curKey]) + ' – ' + fmtHM(endMap[curKey]));
+
+  // Right column — the upcoming prayer with its start time and countdown
+  setTextIfExists('np-next-name', prayerName(next.name));
+  setTextIfExists('np-next-arabic', PRAYER_LABELS[next.name].ar);
+  setTextIfExists('np-next-at', fmtHM(next.time));
 
   const totalSeconds = Math.round(diffHours*3600);
   const h=Math.floor(totalSeconds/3600), m=Math.floor((totalSeconds%3600)/60), s=totalSeconds%60;
