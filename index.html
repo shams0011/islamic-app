@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v97-map-traveler -->
+<!-- VERSION: v98-geo-true-map -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -3293,15 +3293,16 @@ function closeHajjStepModal(){
 
 /* ══ HAJJ ROUTE MAP — simplified geographic flow: Makkah → Mina → Arafat → Muzdalifah → Mina → Makkah ══ */
 /* ══ INTERACTIVE ROUTE MAP — tappable locations with info popups ══ */
-// seq = order of the journey (shown inside each node); the two Mina stops kept
-// confusing users when the nodes carried identical unnumbered labels.
+// Hajj nodes follow the REAL geography, west to east: Makkah — Mina —
+// Muzdalifah — Arafat. Mina is ONE place visited twice (8th, then 10th-12th),
+// so it appears once and the numbered curved legs show the two visits — the
+// old pentagon drew "Mina" twice and users rightly asked why.
 const HAJJ_MAP_LOCATIONS = {
   hajj: [
-    {id:'makkah', x:160, y:34, seq:1, icon:'🕋', color:'#34d399', labelKey:'mapLocMakkah', descKey:'mapDescMakkah', linkStepId:'h2'},
-    {id:'mina1', x:268, y:94, seq:2, icon:'⛺', color:'#d4af6a', labelKey:'mapLocMina', descKey:'mapDescMina', linkStepId:'h4'},
-    {id:'arafat', x:218, y:164, seq:3, icon:'⛰️', color:'#34d399', labelKey:'mapLocArafat', descKey:'mapDescArafat', linkStepId:'h5'},
-    {id:'muzdalifah', x:102, y:164, seq:4, icon:'🌙', color:'#7de8d3', labelKey:'mapLocMuzdalifah', descKey:'mapDescMuzdalifah', linkStepId:'h6'},
-    {id:'mina2', x:52, y:94, seq:5, icon:'🎯', color:'#d4af6a', labelKey:'mapLocMina', descKey:'mapDescMinaReturn', linkStepId:'h7'},
+    {id:'makkah', x:42, y:96, icon:'🕋', color:'#34d399', labelKey:'mapLocMakkah', descKey:'mapDescMakkah', linkStepId:'h2', hintBn:'শুরু ও শেষ', hintEn:'start & end'},
+    {id:'mina', x:130, y:96, icon:'⛺', color:'#d4af6a', labelKey:'mapLocMina', descKey:'mapDescMina', linkStepId:'h4', hintBn:'৮ ও ১০–১২', hintEn:'8th & 10-12th'},
+    {id:'muzdalifah', x:212, y:96, icon:'🌙', color:'#7de8d3', labelKey:'mapLocMuzdalifah', descKey:'mapDescMuzdalifah', linkStepId:'h6', hintBn:'৯-এর রাত', hintEn:'night of 9th'},
+    {id:'arafat', x:288, y:96, icon:'⛰️', color:'#34d399', labelKey:'mapLocArafat', descKey:'mapDescArafat', linkStepId:'h5', hintBn:'৯ জিলহজ্জ', hintEn:'9th'},
   ],
   umrah: [
     {id:'miqat', x:44, y:48, seq:1, icon:'🤍', color:'#34d399', labelKey:'mapLocMiqat', descKey:'mapDescMiqat', linkStepId:'u1'},
@@ -3309,6 +3310,16 @@ const HAJJ_MAP_LOCATIONS = {
     {id:'tawaf-sayi', x:276, y:48, seq:3, icon:'🕋', color:'#34d399', labelKey:'mapLocTawafSayi', descKey:'mapDescTawafSayi', linkStepId:'u3'},
   ],
 };
+
+// The five numbered legs of the Hajj journey. bend < 0 arcs above the
+// baseline (outbound legs), bend > 0 arcs below (return legs).
+const HAJJ_LEGS = [
+  {from:'makkah', to:'mina', n:1, bn:'৮ জিলহজ্জ সকালে', en:'8th morning', bend:-40},
+  {from:'mina', to:'arafat', n:2, bn:'৯ ফজরের পর', en:'9th after Fajr', bend:-84},
+  {from:'arafat', to:'muzdalifah', n:3, bn:'৯ সূর্যাস্তের পর', en:'9th after sunset', bend:46},
+  {from:'muzdalifah', to:'mina', n:4, bn:'১০ ফজরের পর', en:'10th after Fajr', bend:46},
+  {from:'mina', to:'makkah', n:5, bn:'বিদায়ী তাওয়াফে', en:'farewell tawaf', bend:100},
+];
 
 let hajjMapSelectedLinkStepId = null;
 
@@ -3364,92 +3375,11 @@ function renderHajjRouteMap(){
   if(!wrap) return;
   closeHajjMapLocationInfo();
 
-  const locations = HAJJ_MAP_LOCATIONS[currentHajjMode];
-  const height = currentHajjMode === 'umrah' ? 112 : 208;
   const progress = loadHajjProgress();
   const stepDone = id => { const e = progress[id]; return e === true || (e && typeof e === 'object' && !!e.completedAt); };
+  const bn = currentLang === 'bn';
 
-  // Day-of-ritual hints under the labels (Bengali UI only — tiny gold captions)
-  const DAY_HINTS = currentLang === 'bn'
-    ? {makkah:'শুরু ও শেষ', mina1:'৮ জিলহজ্জ', arafat:'৯ জিলহজ্জ', muzdalifah:'৯-এর রাত', mina2:'১০–১২ জিলহজ্জ'}
-    : {};
-
-  // Faint fixed "starfield" + center glow so the map reads like a night-sky scene
-  const stars = [[22,26],[300,22],[36,150],[292,148],[160,104],[70,58],[248,54],[120,20],[208,18],[286,110]]
-    .map(([x,y],i) => `<circle cx="${x}" cy="${y}" r="${i%3===0?1.5:1}" fill="#e8f4ef" opacity="0.14"/>`).join('');
-
-  // Travel-date captions along each leg of the route (which move happens when)
-  const SEG_LABELS = currentHajjMode === 'hajj'
-    ? (currentLang === 'bn'
-        ? ['৮ জিলহজ্জ সকালে', '৯ ফজরের পর', '৯ সূর্যাস্তের পর', '১০ ফজরের পর', 'বিদায়ী তাওয়াফে']
-        : ['8th morning', '9th after Fajr', '9th after sunset', '10th after Fajr', 'farewell tawaf'])
-    : [];
-
-  // Route: animated gradient dashed segments with an arrowhead at each midpoint
-  const stops = [...locations].sort((a, b) => a.seq - b.seq);
-  let segs = '';
-  const segCount = currentHajjMode === 'umrah' ? stops.length - 1 : stops.length; // hajj loops back to start
-  for(let i = 0; i < segCount; i++){
-    const a = stops[i], b = stops[(i + 1) % stops.length];
-    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
-    const ang = Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI;
-    // captions sit INSIDE the pentagon (toward the empty centre) — outward
-    // placement collided with the day-hint captions on the nodes
-    let label = '';
-    if(SEG_LABELS[i]){
-      const dx = mx - 160, dy = my - 104, len = Math.hypot(dx, dy) || 1;
-      const lx = mx - (dx / len) * 24, ly = my - (dy / len) * 14;
-      label = `<text x="${lx}" y="${ly + 3}" fill="#d4af6a" font-size="8" font-weight="700" text-anchor="middle" opacity="0.95" style="paint-order:stroke;stroke:#0c1210;stroke-width:2.5px">${SEG_LABELS[i]}</text>`;
-    }
-    segs += `
-      <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="url(#hj-route-grad)" stroke-width="2.5" stroke-dasharray="7 5" opacity="0.75">
-        <animate attributeName="stroke-dashoffset" from="24" to="0" dur="1.8s" repeatCount="indefinite"/>
-      </line>
-      <g transform="translate(${mx} ${my}) rotate(${ang})">
-        <polygon points="-2,-7 12,0 -2,7" fill="#0c1210" opacity="0.85"/>
-        <polygon points="0,-5.5 10,0 0,5.5" fill="#f0d795"/>
-      </g>
-      ${label}`;
-  }
-
-  // A glowing "pilgrim" dot travels the whole route in journey order, so the
-  // direction of travel is unmistakable at a glance
-  const routeD = 'M' + stops.map(s => `${s.x} ${s.y}`).join(' L') + (currentHajjMode === 'umrah' ? '' : ' Z');
-  const travelDur = currentHajjMode === 'umrah' ? '5s' : '11s';
-  const traveler = `
-    <circle r="6.5" fill="#f0d795" opacity="0.28">
-      <animateMotion dur="${travelDur}" repeatCount="indefinite" path="${routeD}"/>
-    </circle>
-    <circle r="3.2" fill="#f0d795" style="filter:drop-shadow(0 0 5px rgba(240,215,149,.9))">
-      <animateMotion dur="${travelDur}" repeatCount="indefinite" path="${routeD}"/>
-    </circle>`;
-
-  const points = stops.map(loc => {
-    const done = stepDone(loc.linkStepId);
-    const ringColor = done ? '#34d399' : loc.color;
-    const labelY = currentHajjMode === 'umrah' ? loc.y + 34 : (loc.y < 100 ? loc.y - 26 : loc.y + 30);
-    const hint = DAY_HINTS[loc.id];
-    const hintY = (loc.y < 100 && currentHajjMode !== 'umrah') ? labelY - 13 : labelY + 12;
-    return `
-    <g onclick="openHajjMapLocationInfo('${loc.id}')" style="cursor:pointer" role="button" tabindex="0" aria-label="${t(loc.labelKey)}">
-      <circle cx="${loc.x}" cy="${loc.y}" r="19" fill="${ringColor}" opacity="${done ? '0.22' : '0.13'}">
-        <animate attributeName="r" values="17;21;17" dur="2.6s" repeatCount="indefinite"/>
-      </circle>
-      <circle cx="${loc.x}" cy="${loc.y}" r="13" fill="#0c1210" stroke="${ringColor}" stroke-width="${done ? 2.5 : 2}"/>
-      <circle cx="${loc.x}" cy="${loc.y}" r="12" fill="${ringColor}" opacity="${done ? '0.35' : '0.22'}"/>
-      <text x="${loc.x}" y="${loc.y + 4.5}" font-size="12" text-anchor="middle" style="pointer-events:none">${loc.icon}</text>
-      <circle cx="${loc.x + 11}" cy="${loc.y - 11}" r="7.5" fill="${ringColor}"/>
-      <text x="${loc.x + 11}" y="${loc.y - 7.6}" fill="#08100d" font-size="${done ? 10.5 : 9.5}" font-weight="800" text-anchor="middle" style="pointer-events:none">${done ? '✓' : localizeNum(loc.seq)}</text>
-      <text x="${loc.x}" y="${labelY}" fill="#e8f4ef" font-size="12" font-weight="700" text-anchor="middle" style="text-shadow:0 1px 4px rgba(0,0,0,.6)">${t(loc.labelKey)}</text>
-      ${hint ? `<text x="${loc.x}" y="${hintY}" fill="#d4af6a" font-size="8.5" font-weight="600" text-anchor="middle" opacity="0.85">${hint}</text>` : ''}
-    </g>`;
-  }).join('');
-
-  // viewBox extends 16px above y=0 so the day-hint captions over the top nodes
-  // (which land at negative y) stay visible
-  const svgH = height + 16;
-  wrap.innerHTML = `<svg width="100%" height="${svgH}" viewBox="0 -16 320 ${svgH}">
-    <defs>
+  const defs = `<defs>
       <linearGradient id="hj-route-grad" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stop-color="#34d399"/>
         <stop offset="100%" stop-color="#d4af6a"/>
@@ -3458,9 +3388,104 @@ function renderHajjRouteMap(){
         <stop offset="0%" stop-color="rgba(16,185,129,.09)"/>
         <stop offset="100%" stop-color="rgba(16,185,129,0)"/>
       </radialGradient>
-    </defs>
-    <rect x="0" y="-16" width="320" height="${svgH}" fill="url(#hj-map-glow)" rx="14"/>
-    ${stars}${segs}${traveler}${points}</svg>`;
+    </defs>`;
+
+  // Shared premium node (glowing pulse ring, tinted icon disc, bright label)
+  const nodeSvg = (loc, opts) => {
+    const done = stepDone(loc.linkStepId);
+    const ringColor = done ? '#34d399' : loc.color;
+    const hint = bn ? loc.hintBn : loc.hintEn;
+    return `
+    <g onclick="openHajjMapLocationInfo('${loc.id}')" style="cursor:pointer" role="button" tabindex="0" aria-label="${t(loc.labelKey)}">
+      <circle cx="${loc.x}" cy="${loc.y}" r="19" fill="${ringColor}" opacity="${done ? '0.22' : '0.13'}">
+        <animate attributeName="r" values="17;21;17" dur="2.6s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="${loc.x}" cy="${loc.y}" r="13" fill="#0c1210" stroke="${ringColor}" stroke-width="${done ? 2.5 : 2}"/>
+      <circle cx="${loc.x}" cy="${loc.y}" r="12" fill="${ringColor}" opacity="${done ? '0.35' : '0.22'}"/>
+      <text x="${loc.x}" y="${loc.y + 4.5}" font-size="12" text-anchor="middle" style="pointer-events:none">${loc.icon}</text>
+      ${opts.badge ? `<circle cx="${loc.x + 11}" cy="${loc.y - 11}" r="7.5" fill="${ringColor}"/>
+      <text x="${loc.x + 11}" y="${loc.y - 7.6}" fill="#08100d" font-size="${done ? 10.5 : 9.5}" font-weight="800" text-anchor="middle" style="pointer-events:none">${done ? '✓' : localizeNum(loc.seq)}</text>`
+      : (done ? `<circle cx="${loc.x + 11}" cy="${loc.y - 11}" r="7.5" fill="#34d399"/>
+      <text x="${loc.x + 11}" y="${loc.y - 7.6}" fill="#08100d" font-size="10.5" font-weight="800" text-anchor="middle" style="pointer-events:none">✓</text>` : '')}
+      <text x="${loc.x}" y="${loc.y + 30}" fill="#e8f4ef" font-size="12" font-weight="700" text-anchor="middle" style="text-shadow:0 1px 4px rgba(0,0,0,.6)">${t(loc.labelKey)}</text>
+      ${hint ? `<text x="${loc.x}" y="${loc.y + 42}" fill="#d4af6a" font-size="8.5" font-weight="600" text-anchor="middle" opacity="0.85">${hint}</text>` : ''}
+    </g>`;
+  };
+
+  if(currentHajjMode === 'hajj'){
+    // Geographic layout: one node per REAL place on a west-east baseline;
+    // the numbered curved legs (above = outbound, below = return) show when
+    // the pilgrim passes through — Mina appears once even though it is
+    // visited twice.
+    const nodes = HAJJ_MAP_LOCATIONS.hajj;
+    const byId = {}; nodes.forEach(n => { byId[n.id] = n; });
+
+    const stars = [[22,44],[300,40],[36,162],[292,160],[160,38],[70,50],[248,46],[120,36],[208,152],[64,120]]
+      .map(([x,y],i) => `<circle cx="${x}" cy="${y}" r="${i%3===0?1.5:1}" fill="#e8f4ef" opacity="0.14"/>`).join('');
+
+    let legsSvg = '', chipsSvg = '', travelPath = '';
+    HAJJ_LEGS.forEach(leg => {
+      const a = byId[leg.from], b = byId[leg.to];
+      const cx = (a.x + b.x) / 2, cy = a.y + leg.bend;
+      const apexX = (a.x + 2 * cx + b.x) / 4, apexY = (a.y + 2 * cy + b.y) / 4;
+      const dirAng = b.x > a.x ? 0 : 180; // tangent at the apex is horizontal
+      if(!travelPath) travelPath = `M${a.x} ${a.y}`;
+      travelPath += ` Q ${cx} ${cy} ${b.x} ${b.y}`;
+      legsSvg += `
+      <path d="M${a.x} ${a.y} Q ${cx} ${cy} ${b.x} ${b.y}" fill="none" stroke="url(#hj-route-grad)" stroke-width="2.5" stroke-dasharray="7 5" opacity="0.75">
+        <animate attributeName="stroke-dashoffset" from="24" to="0" dur="1.8s" repeatCount="indefinite"/>
+      </path>
+      <g transform="translate(${apexX} ${apexY}) rotate(${dirAng})">
+        <polygon points="-2,-7 12,0 -2,7" fill="#0c1210" opacity="0.85"/>
+        <polygon points="0,-5.5 10,0 0,5.5" fill="#f0d795"/>
+      </g>`;
+      const chipY = apexY + (leg.bend < 0 ? -13 : 13);
+      chipsSvg += `
+      <circle cx="${apexX}" cy="${chipY}" r="8" fill="#d4af6a" stroke="#0c1210" stroke-width="1.5"/>
+      <text x="${apexX}" y="${chipY + 3.6}" fill="#08100d" font-size="10" font-weight="800" text-anchor="middle">${localizeNum(leg.n)}</text>`;
+    });
+
+    const traveler = `
+    <circle r="6.5" fill="#f0d795" opacity="0.28"><animateMotion dur="12s" repeatCount="indefinite" path="${travelPath}"/></circle>
+    <circle r="3.2" fill="#f0d795" style="filter:drop-shadow(0 0 5px rgba(240,215,149,.9))"><animateMotion dur="12s" repeatCount="indefinite" path="${travelPath}"/></circle>`;
+
+    const legend = `
+    <div style="display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:12px">
+      ${HAJJ_LEGS.map(l => `<span style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:#eed9a6;background:rgba(212,175,106,.09);border:1px solid rgba(212,175,106,.22);border-radius:50px;padding:3px 10px"><b style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#d4af6a;color:#08100d;font-size:9.5px">${localizeNum(l.n)}</b>${bn ? l.bn : l.en}</span>`).join('')}
+    </div>`;
+
+    wrap.innerHTML = `<svg width="100%" height="152" viewBox="0 26 320 152">
+      ${defs}
+      <rect x="0" y="26" width="320" height="152" fill="url(#hj-map-glow)" rx="14"/>
+      ${stars}${legsSvg}${traveler}${chipsSvg}${nodes.map(n => nodeSvg(n, {badge:false})).join('')}</svg>${legend}`;
+    return;
+  }
+
+  // ── Umrah: simple linear flow with numbered nodes ──
+  const stops = [...HAJJ_MAP_LOCATIONS.umrah].sort((a, b) => a.seq - b.seq);
+  const stars = [[22,14],[300,12],[36,86],[292,84],[160,90],[120,10],[208,8]]
+    .map(([x,y],i) => `<circle cx="${x}" cy="${y}" r="${i%3===0?1.5:1}" fill="#e8f4ef" opacity="0.14"/>`).join('');
+  let segs = '';
+  for(let i = 0; i < stops.length - 1; i++){
+    const a = stops[i], b = stops[i + 1];
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    segs += `
+      <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="url(#hj-route-grad)" stroke-width="2.5" stroke-dasharray="7 5" opacity="0.75">
+        <animate attributeName="stroke-dashoffset" from="24" to="0" dur="1.8s" repeatCount="indefinite"/>
+      </line>
+      <g transform="translate(${mx} ${my})">
+        <polygon points="-2,-7 12,0 -2,7" fill="#0c1210" opacity="0.85"/>
+        <polygon points="0,-5.5 10,0 0,5.5" fill="#f0d795"/>
+      </g>`;
+  }
+  const routeD = 'M' + stops.map(s => `${s.x} ${s.y}`).join(' L');
+  const traveler = `
+    <circle r="6.5" fill="#f0d795" opacity="0.28"><animateMotion dur="5s" repeatCount="indefinite" path="${routeD}"/></circle>
+    <circle r="3.2" fill="#f0d795" style="filter:drop-shadow(0 0 5px rgba(240,215,149,.9))"><animateMotion dur="5s" repeatCount="indefinite" path="${routeD}"/></circle>`;
+  wrap.innerHTML = `<svg width="100%" height="112" viewBox="0 0 320 112">
+    ${defs}
+    <rect x="0" y="0" width="320" height="112" fill="url(#hj-map-glow)" rx="14"/>
+    ${stars}${segs}${traveler}${stops.map(n => nodeSvg(n, {badge:true})).join('')}</svg>`;
 }
 
 function openHajjMapLocationInfo(locId){
