@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v101-map-color-tune -->
+<!-- VERSION: v102-slim-progress -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -1009,10 +1009,16 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
     </div>
 
     <div id="hajj-subtab-checklist-view">
-      <div style="background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(212,175,106,.05));border:1px solid rgba(16,185,129,.22);border-radius:18px;padding:18px;margin-bottom:16px;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.15)">
-        <div id="hajj-progress-pct" style="font-size:32px;font-weight:800;color:var(--emerald2);font-family:monospace">০%</div>
-        <div style="margin-top:11px;height:8px;background:rgba(255,255,255,.06);border-radius:8px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.2)">
-          <div id="hajj-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--emerald3),var(--emerald2));border-radius:8px;transition:width .4s ease"></div>
+      <div style="background:linear-gradient(135deg,rgba(16,185,129,.1),rgba(212,175,106,.04));border:1px solid rgba(16,185,129,.2);border-radius:14px;padding:11px 15px;margin-bottom:16px;box-shadow:0 4px 12px rgba(0,0,0,.12)">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">
+          <span id="hajj-progress-label" style="font-size:12px;font-weight:700;color:var(--text2)">✅ অগ্রগতি</span>
+          <span style="display:flex;align-items:center;gap:8px">
+            <span id="hajj-progress-steps" style="font-size:11px;font-weight:600;color:var(--text3)"></span>
+            <span id="hajj-progress-pct" style="font-size:13.5px;font-weight:800;color:var(--emerald2);font-family:monospace">০%</span>
+          </span>
+        </div>
+        <div style="height:7px;background:rgba(255,255,255,.06);border-radius:8px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.2)">
+          <div id="hajj-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--emerald3),var(--emerald2));border-radius:8px;transition:width .4s ease;box-shadow:0 0 8px rgba(16,185,129,.5)"></div>
         </div>
       </div>
 
@@ -2538,6 +2544,8 @@ function renderHajjChecklist(){
   const doneCount = steps.filter(s => { const e = progress[s.id]; return e === true || (e && typeof e === 'object' && !!e.completedAt); }).length;
   const pct = steps.length ? Math.round((doneCount/steps.length)*100) : 0;
   setTextIfExists('hajj-progress-pct', localizeNum(pct)+'%');
+  setTextIfExists('hajj-progress-label', currentLang === 'bn' ? '✅ অগ্রগতি' : '✅ Progress');
+  setTextIfExists('hajj-progress-steps', `${localizeNum(doneCount)}/${localizeNum(steps.length)} ${currentLang === 'bn' ? 'ধাপ' : 'steps'}`);
   const bar = document.getElementById('hajj-progress-bar');
   if(bar) bar.style.width = pct+'%';
 }
