@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v95-hajj-itinerary -->
+<!-- VERSION: v96-map-leg-dates -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -3378,6 +3378,13 @@ function renderHajjRouteMap(){
   const stars = [[22,26],[300,22],[36,150],[292,148],[160,104],[70,58],[248,54],[120,20],[208,18],[286,110]]
     .map(([x,y],i) => `<circle cx="${x}" cy="${y}" r="${i%3===0?1.5:1}" fill="#e8f4ef" opacity="0.14"/>`).join('');
 
+  // Travel-date captions along each leg of the route (which move happens when)
+  const SEG_LABELS = currentHajjMode === 'hajj'
+    ? (currentLang === 'bn'
+        ? ['৮ জিলহজ্জ সকালে', '৯ ফজরের পর', '৯ সূর্যাস্তের পর', '১০ ফজরের পর', 'বিদায়ী তাওয়াফে']
+        : ['8th morning', '9th after Fajr', '9th after sunset', '10th after Fajr', 'farewell tawaf'])
+    : [];
+
   // Route: animated gradient dashed segments with an arrowhead at each midpoint
   const stops = [...locations].sort((a, b) => a.seq - b.seq);
   let segs = '';
@@ -3386,11 +3393,20 @@ function renderHajjRouteMap(){
     const a = stops[i], b = stops[(i + 1) % stops.length];
     const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
     const ang = Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI;
+    // captions sit INSIDE the pentagon (toward the empty centre) — outward
+    // placement collided with the day-hint captions on the nodes
+    let label = '';
+    if(SEG_LABELS[i]){
+      const dx = mx - 160, dy = my - 104, len = Math.hypot(dx, dy) || 1;
+      const lx = mx - (dx / len) * 24, ly = my - (dy / len) * 14;
+      label = `<text x="${lx}" y="${ly + 3}" fill="#d4af6a" font-size="8" font-weight="700" text-anchor="middle" opacity="0.95" style="paint-order:stroke;stroke:#0c1210;stroke-width:2.5px">${SEG_LABELS[i]}</text>`;
+    }
     segs += `
       <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="url(#hj-route-grad)" stroke-width="2.5" stroke-dasharray="7 5" opacity="0.75">
         <animate attributeName="stroke-dashoffset" from="24" to="0" dur="1.8s" repeatCount="indefinite"/>
       </line>
-      <polygon points="0,-4.5 8,0 0,4.5" fill="#d4af6a" opacity="0.9" transform="translate(${mx} ${my}) rotate(${ang})"/>`;
+      <polygon points="0,-4.5 8,0 0,4.5" fill="#d4af6a" opacity="0.9" transform="translate(${mx} ${my}) rotate(${ang})"/>
+      ${label}`;
   }
 
   const points = stops.map(loc => {
