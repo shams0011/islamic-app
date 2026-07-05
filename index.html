@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v98-geo-true-map -->
+<!-- VERSION: v99-map-inline-captions -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -3313,12 +3313,14 @@ const HAJJ_MAP_LOCATIONS = {
 
 // The five numbered legs of the Hajj journey. bend < 0 arcs above the
 // baseline (outbound legs), bend > 0 arcs below (return legs).
+// cap = where the date caption sits relative to the leg's number chip
+// (hand-placed so nothing collides with node labels or other legs)
 const HAJJ_LEGS = [
-  {from:'makkah', to:'mina', n:1, bn:'৮ জিলহজ্জ সকালে', en:'8th morning', bend:-40},
-  {from:'mina', to:'arafat', n:2, bn:'৯ ফজরের পর', en:'9th after Fajr', bend:-84},
-  {from:'arafat', to:'muzdalifah', n:3, bn:'৯ সূর্যাস্তের পর', en:'9th after sunset', bend:46},
-  {from:'muzdalifah', to:'mina', n:4, bn:'১০ ফজরের পর', en:'10th after Fajr', bend:46},
-  {from:'mina', to:'makkah', n:5, bn:'বিদায়ী তাওয়াফে', en:'farewell tawaf', bend:100},
+  {from:'makkah', to:'mina', n:1, bn:'৮ জিলহজ্জ সকালে', en:'8th morning', bend:-40, cap:{dx:-12, dy:3, anchor:'end'}},
+  {from:'mina', to:'arafat', n:2, bn:'৯ ফজরের পর', en:'9th after Fajr', bend:-84, cap:{dx:12, dy:3, anchor:'start'}},
+  {from:'arafat', to:'muzdalifah', n:3, bn:'৯ সূর্যাস্তের পর', en:'9th after sunset', bend:46, cap:{dx:0, dy:15, anchor:'middle'}},
+  {from:'muzdalifah', to:'mina', n:4, bn:'১০ ফজরের পর', en:'10th after Fajr', bend:46, cap:{dx:0, dy:15, anchor:'middle'}},
+  {from:'mina', to:'makkah', n:5, bn:'বিদায়ী তাওয়াফে', en:'farewell tawaf', bend:100, cap:{dx:12, dy:3, anchor:'start'}},
 ];
 
 let hajjMapSelectedLinkStepId = null;
@@ -3442,22 +3444,18 @@ function renderHajjRouteMap(){
       const chipY = apexY + (leg.bend < 0 ? -13 : 13);
       chipsSvg += `
       <circle cx="${apexX}" cy="${chipY}" r="8" fill="#d4af6a" stroke="#0c1210" stroke-width="1.5"/>
-      <text x="${apexX}" y="${chipY + 3.6}" fill="#08100d" font-size="10" font-weight="800" text-anchor="middle">${localizeNum(leg.n)}</text>`;
+      <text x="${apexX}" y="${chipY + 3.6}" fill="#08100d" font-size="10" font-weight="800" text-anchor="middle">${localizeNum(leg.n)}</text>
+      <text x="${apexX + leg.cap.dx}" y="${chipY + leg.cap.dy}" fill="#eed9a6" font-size="8.5" font-weight="700" text-anchor="${leg.cap.anchor}" style="paint-order:stroke;stroke:#0c1210;stroke-width:2.5px">${bn ? leg.bn : leg.en}</text>`;
     });
 
     const traveler = `
     <circle r="6.5" fill="#f0d795" opacity="0.28"><animateMotion dur="12s" repeatCount="indefinite" path="${travelPath}"/></circle>
     <circle r="3.2" fill="#f0d795" style="filter:drop-shadow(0 0 5px rgba(240,215,149,.9))"><animateMotion dur="12s" repeatCount="indefinite" path="${travelPath}"/></circle>`;
 
-    const legend = `
-    <div style="display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:12px">
-      ${HAJJ_LEGS.map(l => `<span style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:#eed9a6;background:rgba(212,175,106,.09);border:1px solid rgba(212,175,106,.22);border-radius:50px;padding:3px 10px"><b style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#d4af6a;color:#08100d;font-size:9.5px">${localizeNum(l.n)}</b>${bn ? l.bn : l.en}</span>`).join('')}
-    </div>`;
-
     wrap.innerHTML = `<svg width="100%" height="152" viewBox="0 26 320 152">
       ${defs}
       <rect x="0" y="26" width="320" height="152" fill="url(#hj-map-glow)" rx="14"/>
-      ${stars}${legsSvg}${traveler}${chipsSvg}${nodes.map(n => nodeSvg(n, {badge:false})).join('')}</svg>${legend}`;
+      ${stars}${legsSvg}${traveler}${chipsSvg}${nodes.map(n => nodeSvg(n, {badge:false})).join('')}</svg>`;
     return;
   }
 
