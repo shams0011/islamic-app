@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v99-map-inline-captions -->
+<!-- VERSION: v100-map-clarity -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -3299,10 +3299,10 @@ function closeHajjStepModal(){
 // old pentagon drew "Mina" twice and users rightly asked why.
 const HAJJ_MAP_LOCATIONS = {
   hajj: [
-    {id:'makkah', x:42, y:96, icon:'🕋', color:'#34d399', labelKey:'mapLocMakkah', descKey:'mapDescMakkah', linkStepId:'h2', hintBn:'শুরু ও শেষ', hintEn:'start & end'},
-    {id:'mina', x:130, y:96, icon:'⛺', color:'#d4af6a', labelKey:'mapLocMina', descKey:'mapDescMina', linkStepId:'h4', hintBn:'৮ ও ১০–১২', hintEn:'8th & 10-12th'},
-    {id:'muzdalifah', x:212, y:96, icon:'🌙', color:'#7de8d3', labelKey:'mapLocMuzdalifah', descKey:'mapDescMuzdalifah', linkStepId:'h6', hintBn:'৯-এর রাত', hintEn:'night of 9th'},
-    {id:'arafat', x:288, y:96, icon:'⛰️', color:'#34d399', labelKey:'mapLocArafat', descKey:'mapDescArafat', linkStepId:'h5', hintBn:'৯ জিলহজ্জ', hintEn:'9th'},
+    {id:'makkah', x:44, y:118, icon:'🕋', color:'#34d399', labelKey:'mapLocMakkah', descKey:'mapDescMakkah', linkStepId:'h2', hintBn:'শুরু ও শেষ', hintEn:'start & end'},
+    {id:'mina', x:136, y:118, icon:'⛺', color:'#d4af6a', labelKey:'mapLocMina', descKey:'mapDescMina', linkStepId:'h4', hintBn:'৮ ও ১০–১২', hintEn:'8th & 10-12th'},
+    {id:'muzdalifah', x:220, y:118, icon:'🌙', color:'#7de8d3', labelKey:'mapLocMuzdalifah', descKey:'mapDescMuzdalifah', linkStepId:'h6', hintBn:'৯-এর রাত', hintEn:'night of 9th'},
+    {id:'arafat', x:288, y:118, icon:'⛰️', color:'#34d399', labelKey:'mapLocArafat', descKey:'mapDescArafat', linkStepId:'h5', hintBn:'৯ জিলহজ্জ', hintEn:'9th'},
   ],
   umrah: [
     {id:'miqat', x:44, y:48, seq:1, icon:'🤍', color:'#34d399', labelKey:'mapLocMiqat', descKey:'mapDescMiqat', linkStepId:'u1'},
@@ -3313,14 +3313,12 @@ const HAJJ_MAP_LOCATIONS = {
 
 // The five numbered legs of the Hajj journey. bend < 0 arcs above the
 // baseline (outbound legs), bend > 0 arcs below (return legs).
-// cap = where the date caption sits relative to the leg's number chip
-// (hand-placed so nothing collides with node labels or other legs)
 const HAJJ_LEGS = [
-  {from:'makkah', to:'mina', n:1, bn:'৮ জিলহজ্জ সকালে', en:'8th morning', bend:-40, cap:{dx:-12, dy:3, anchor:'end'}},
-  {from:'mina', to:'arafat', n:2, bn:'৯ ফজরের পর', en:'9th after Fajr', bend:-84, cap:{dx:12, dy:3, anchor:'start'}},
-  {from:'arafat', to:'muzdalifah', n:3, bn:'৯ সূর্যাস্তের পর', en:'9th after sunset', bend:46, cap:{dx:0, dy:15, anchor:'middle'}},
-  {from:'muzdalifah', to:'mina', n:4, bn:'১০ ফজরের পর', en:'10th after Fajr', bend:46, cap:{dx:0, dy:15, anchor:'middle'}},
-  {from:'mina', to:'makkah', n:5, bn:'বিদায়ী তাওয়াফে', en:'farewell tawaf', bend:100, cap:{dx:12, dy:3, anchor:'start'}},
+  {from:'makkah', to:'mina', n:1, bn:'৮ জিলহজ্জ সকালে', en:'8th morning', bend:-46},
+  {from:'mina', to:'arafat', n:2, bn:'৯ ফজরের পর', en:'9th after Fajr', bend:-92},
+  {from:'arafat', to:'muzdalifah', n:3, bn:'৯ সূর্যাস্তের পর', en:'9th after sunset', bend:50},
+  {from:'muzdalifah', to:'mina', n:4, bn:'১০ ফজরের পর', en:'10th after Fajr', bend:50},
+  {from:'mina', to:'makkah', n:5, bn:'বিদায়ী তাওয়াফে', en:'farewell tawaf', bend:108},
 ];
 
 let hajjMapSelectedLinkStepId = null;
@@ -3392,25 +3390,28 @@ function renderHajjRouteMap(){
       </radialGradient>
     </defs>`;
 
-  // Shared premium node (glowing pulse ring, tinted icon disc, bright label)
+  // Shared premium node (glowing pulse ring, tinted icon disc, bright label).
+  // opts.big renders the larger, clearer variant used by the Hajj map.
   const nodeSvg = (loc, opts) => {
     const done = stepDone(loc.linkStepId);
     const ringColor = done ? '#34d399' : loc.color;
     const hint = bn ? loc.hintBn : loc.hintEn;
+    const R = opts.big ? 15 : 13, halo = opts.big ? 22 : 19;
+    const badgeR = opts.big ? 8.5 : 7.5, badgeOff = opts.big ? 12.5 : 11;
     return `
     <g onclick="openHajjMapLocationInfo('${loc.id}')" style="cursor:pointer" role="button" tabindex="0" aria-label="${t(loc.labelKey)}">
-      <circle cx="${loc.x}" cy="${loc.y}" r="19" fill="${ringColor}" opacity="${done ? '0.22' : '0.13'}">
-        <animate attributeName="r" values="17;21;17" dur="2.6s" repeatCount="indefinite"/>
+      <circle cx="${loc.x}" cy="${loc.y}" r="${halo}" fill="${ringColor}" opacity="${done ? '0.22' : '0.13'}">
+        <animate attributeName="r" values="${halo - 2};${halo + 2};${halo - 2}" dur="2.6s" repeatCount="indefinite"/>
       </circle>
-      <circle cx="${loc.x}" cy="${loc.y}" r="13" fill="#0c1210" stroke="${ringColor}" stroke-width="${done ? 2.5 : 2}"/>
-      <circle cx="${loc.x}" cy="${loc.y}" r="12" fill="${ringColor}" opacity="${done ? '0.35' : '0.22'}"/>
-      <text x="${loc.x}" y="${loc.y + 4.5}" font-size="12" text-anchor="middle" style="pointer-events:none">${loc.icon}</text>
-      ${opts.badge ? `<circle cx="${loc.x + 11}" cy="${loc.y - 11}" r="7.5" fill="${ringColor}"/>
-      <text x="${loc.x + 11}" y="${loc.y - 7.6}" fill="#08100d" font-size="${done ? 10.5 : 9.5}" font-weight="800" text-anchor="middle" style="pointer-events:none">${done ? '✓' : localizeNum(loc.seq)}</text>`
-      : (done ? `<circle cx="${loc.x + 11}" cy="${loc.y - 11}" r="7.5" fill="#34d399"/>
-      <text x="${loc.x + 11}" y="${loc.y - 7.6}" fill="#08100d" font-size="10.5" font-weight="800" text-anchor="middle" style="pointer-events:none">✓</text>` : '')}
-      <text x="${loc.x}" y="${loc.y + 30}" fill="#e8f4ef" font-size="12" font-weight="700" text-anchor="middle" style="text-shadow:0 1px 4px rgba(0,0,0,.6)">${t(loc.labelKey)}</text>
-      ${hint ? `<text x="${loc.x}" y="${loc.y + 42}" fill="#d4af6a" font-size="8.5" font-weight="600" text-anchor="middle" opacity="0.85">${hint}</text>` : ''}
+      <circle cx="${loc.x}" cy="${loc.y}" r="${R}" fill="#0c1210" stroke="${ringColor}" stroke-width="${done ? 2.5 : 2}"/>
+      <circle cx="${loc.x}" cy="${loc.y}" r="${R - 1}" fill="${ringColor}" opacity="${done ? '0.35' : '0.22'}"/>
+      <text x="${loc.x}" y="${loc.y + (opts.big ? 5 : 4.5)}" font-size="${opts.big ? 14 : 12}" text-anchor="middle" style="pointer-events:none">${loc.icon}</text>
+      ${opts.badge ? `<circle cx="${loc.x + badgeOff}" cy="${loc.y - badgeOff}" r="${badgeR}" fill="${ringColor}"/>
+      <text x="${loc.x + badgeOff}" y="${loc.y - badgeOff + 3.7}" fill="#08100d" font-size="${done ? 10.5 : 9.5}" font-weight="800" text-anchor="middle" style="pointer-events:none">${done ? '✓' : localizeNum(loc.seq)}</text>`
+      : (done ? `<circle cx="${loc.x + badgeOff}" cy="${loc.y - badgeOff}" r="${badgeR}" fill="#34d399"/>
+      <text x="${loc.x + badgeOff}" y="${loc.y - badgeOff + 3.7}" fill="#08100d" font-size="10.5" font-weight="800" text-anchor="middle" style="pointer-events:none">✓</text>` : '')}
+      <text x="${loc.x}" y="${loc.y + (opts.big ? 33 : 30)}" fill="#f4fbf8" font-size="${opts.big ? 12.5 : 12}" font-weight="800" text-anchor="middle" style="text-shadow:0 1px 4px rgba(0,0,0,.7)">${t(loc.labelKey)}</text>
+      ${hint ? `<text x="${loc.x}" y="${loc.y + (opts.big ? 46 : 42)}" fill="#eed9a6" font-size="${opts.big ? 9.5 : 8.5}" font-weight="700" text-anchor="middle" opacity="0.95" style="paint-order:stroke;stroke:#0c1210;stroke-width:2px">${hint}</text>` : ''}
     </g>`;
   };
 
@@ -3422,7 +3423,7 @@ function renderHajjRouteMap(){
     const nodes = HAJJ_MAP_LOCATIONS.hajj;
     const byId = {}; nodes.forEach(n => { byId[n.id] = n; });
 
-    const stars = [[22,44],[300,40],[36,162],[292,160],[160,38],[70,50],[248,46],[120,36],[208,152],[64,120]]
+    const stars = [[22,50],[302,44],[36,196],[288,200],[160,40],[70,56],[250,52],[120,40],[160,206],[16,130]]
       .map(([x,y],i) => `<circle cx="${x}" cy="${y}" r="${i%3===0?1.5:1}" fill="#e8f4ef" opacity="0.14"/>`).join('');
 
     let legsSvg = '', chipsSvg = '', travelPath = '';
@@ -3441,21 +3442,25 @@ function renderHajjRouteMap(){
         <polygon points="-2,-7 12,0 -2,7" fill="#0c1210" opacity="0.85"/>
         <polygon points="0,-5.5 10,0 0,5.5" fill="#f0d795"/>
       </g>`;
-      const chipY = apexY + (leg.bend < 0 ? -13 : 13);
+      // number chip floats off the arc; its date caption sits centred just
+      // beyond it (above for outbound legs, below for return legs)
+      const up = leg.bend < 0;
+      const chipY = apexY + (up ? -15 : 15);
+      const capY = chipY + (up ? -14 : 26);
       chipsSvg += `
-      <circle cx="${apexX}" cy="${chipY}" r="8" fill="#d4af6a" stroke="#0c1210" stroke-width="1.5"/>
-      <text x="${apexX}" y="${chipY + 3.6}" fill="#08100d" font-size="10" font-weight="800" text-anchor="middle">${localizeNum(leg.n)}</text>
-      <text x="${apexX + leg.cap.dx}" y="${chipY + leg.cap.dy}" fill="#eed9a6" font-size="8.5" font-weight="700" text-anchor="${leg.cap.anchor}" style="paint-order:stroke;stroke:#0c1210;stroke-width:2.5px">${bn ? leg.bn : leg.en}</text>`;
+      <circle cx="${apexX}" cy="${chipY}" r="8.5" fill="#d4af6a" stroke="#0c1210" stroke-width="1.5"/>
+      <text x="${apexX}" y="${chipY + 3.8}" fill="#08100d" font-size="10.5" font-weight="800" text-anchor="middle">${localizeNum(leg.n)}</text>
+      <text x="${apexX}" y="${capY}" fill="#f4e3b8" font-size="9.5" font-weight="700" text-anchor="middle" style="paint-order:stroke;stroke:#0c1210;stroke-width:3px">${bn ? leg.bn : leg.en}</text>`;
     });
 
     const traveler = `
     <circle r="6.5" fill="#f0d795" opacity="0.28"><animateMotion dur="12s" repeatCount="indefinite" path="${travelPath}"/></circle>
     <circle r="3.2" fill="#f0d795" style="filter:drop-shadow(0 0 5px rgba(240,215,149,.9))"><animateMotion dur="12s" repeatCount="indefinite" path="${travelPath}"/></circle>`;
 
-    wrap.innerHTML = `<svg width="100%" height="152" viewBox="0 26 320 152">
+    wrap.innerHTML = `<svg width="100%" style="height:auto;display:block" viewBox="0 30 320 192">
       ${defs}
-      <rect x="0" y="26" width="320" height="152" fill="url(#hj-map-glow)" rx="14"/>
-      ${stars}${legsSvg}${traveler}${chipsSvg}${nodes.map(n => nodeSvg(n, {badge:false})).join('')}</svg>`;
+      <rect x="0" y="30" width="320" height="192" fill="url(#hj-map-glow)" rx="14"/>
+      ${stars}${legsSvg}${traveler}${chipsSvg}${nodes.map(n => nodeSvg(n, {badge:false, big:true})).join('')}</svg>`;
     return;
   }
 
@@ -3480,7 +3485,7 @@ function renderHajjRouteMap(){
   const traveler = `
     <circle r="6.5" fill="#f0d795" opacity="0.28"><animateMotion dur="5s" repeatCount="indefinite" path="${routeD}"/></circle>
     <circle r="3.2" fill="#f0d795" style="filter:drop-shadow(0 0 5px rgba(240,215,149,.9))"><animateMotion dur="5s" repeatCount="indefinite" path="${routeD}"/></circle>`;
-  wrap.innerHTML = `<svg width="100%" height="112" viewBox="0 0 320 112">
+  wrap.innerHTML = `<svg width="100%" style="height:auto;display:block" viewBox="0 0 320 112">
     ${defs}
     <rect x="0" y="0" width="320" height="112" fill="url(#hj-map-glow)" rx="14"/>
     ${stars}${segs}${traveler}${stops.map(n => nodeSvg(n, {badge:true})).join('')}</svg>`;
