@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v73-date-in-clock-panel -->
+<!-- VERSION: v74-location-in-panel -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -88,7 +88,6 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
 #clock{font-size:23px;font-weight:700;color:#5eead4;font-family:ui-monospace,monospace;letter-spacing:.5px;line-height:1;text-shadow:0 0 16px rgba(16,185,129,.45)}
 #clock-ampm{font-size:10px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;font-weight:600}
 html[dir="rtl"] .clock-panel{direction:rtl}
-.header-row{display:flex;justify-content:space-between;align-items:center}
 .header-loc{font-size:13px;color:var(--text3);display:flex;align-items:center;gap:5px}
 .live-dot{width:6px;height:6px;background:var(--emerald2);border-radius:50%;box-shadow:0 0 7px var(--emerald2);animation:blink 2s ease-in-out infinite}
 #clock{font-size:14px;color:var(--emerald2);font-weight:600;font-family:monospace}
@@ -337,8 +336,6 @@ html[dir="rtl"] .fc-cd-cap{white-space:nowrap}
 /* ══ RTL SUPPORT (Arabic / Urdu) ══ */
 html[dir="rtl"] body{direction:rtl}
 html[dir="rtl"] .header-top-row{flex-direction:row-reverse}
-html[dir="rtl"] .header-row{flex-direction:row-reverse}
-html[dir="rtl"] .header-row > div:last-child{text-align:left}
 html[dir="rtl"] .np-grid{direction:rtl}
 html[dir="rtl"] .np-live-dot{margin-right:0;margin-left:6px}
 html[dir="rtl"] .np-col-next{text-align:left}
@@ -425,10 +422,8 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
         <span id="clock" role="timer" aria-live="off" aria-label="বর্তমান সময়">--:--:--</span>
         <span id="clock-ampm">--</span>
       </div>
+      <div class="header-loc"><div class="live-dot" aria-hidden="true"></div><span class="sr-only">বর্তমান অবস্থান: </span><span id="loc-name">বগুড়া, বাংলাদেশ</span></div>
     </div>
-  </div>
-  <div class="header-row">
-    <div class="header-loc"><div class="live-dot" aria-hidden="true"></div><span class="sr-only">বর্তমান অবস্থান: </span><span id="loc-name">বগুড়া, বাংলাদেশ</span></div>
   </div>
 </div>
 
