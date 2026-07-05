@@ -29,10 +29,60 @@ const MAX_CHARS = 24000;       // cap total request text — keeps costs bounded
 function corsHeaders(origin) {
   return {
     'Access-Control-Allow-Origin': origin === ALLOWED_ORIGIN ? origin : ALLOWED_ORIGIN,
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Max-Age': '86400',
   };
+}
+
+// ── GET /live — resolve the current Makkah/Madinah live-stream video IDs ──
+// YouTube live streams rotate their video IDs every few weeks, which kept
+// breaking the hardcoded embeds in the app. YouTube's channel-based
+// embed (embed/live_stream?channel=) is dead, and the client can't scrape
+// YouTube cross-origin, so the worker does it: one search per city with the
+// live-only filter (sp=EgJAAQ==), first result wins. Results are edge-cached
+// for 30 minutes. No key or quota involved — plain HTML scrape.
+const LIVE_QUERIES = {
+  makkah: 'makkah+live+kaaba',
+  madinah: 'madinah+live+masjid+nabawi',
+};
+
+async function resolveLiveId(query) {
+  try {
+    const res = await fetch(
+      `https://www.youtube.com/results?search_query=${query}&sp=EgJAAQ%253D%253D`,
+      { headers: { 'Accept-Language': 'en', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } }
+    );
+    if (!res.ok) return null;
+    const html = await res.text();
+    const m = html.match(/"videoRenderer":\{"videoId":"([\w-]{11})"/);
+    return m ? m[1] : null;
+  } catch {
+    return null;
+  }
+}
+
+async function handleLive(url) {
+  const cache = caches.default;
+  const cacheKey = new Request(url.origin + '/live');
+  const cached = await cache.match(cacheKey);
+  if (cached) return cached;
+
+  const [makkah, madinah] = await Promise.all([
+    resolveLiveId(LIVE_QUERIES.makkah),
+    resolveLiveId(LIVE_QUERIES.madinah),
+  ]);
+  const resp = Response.json({ makkah, madinah }, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'public, max-age=1800',
+      // Public, non-sensitive data — open CORS so the app also works from
+      // localhost previews, unlike the key-guarded chat endpoint below.
+      'Access-Control-Allow-Origin': '*',
+    },
+  });
+  if (makkah || madinah) await cache.put(cacheKey, resp.clone());
+  return resp;
 }
 
 export default {
@@ -42,6 +92,9 @@ export default {
 
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: cors });
+    }
+    if (request.method === 'GET' && new URL(request.url).pathname === '/live') {
+      return handleLive(new URL(request.url));
     }
     if (request.method !== 'POST') {
       return Response.json({ error: { message: 'POST only' } }, { status: 405, headers: cors });
