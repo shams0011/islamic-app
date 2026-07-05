@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v90-menu-2col -->
+<!-- VERSION: v91-hajj-banner -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -367,6 +367,18 @@ html[dir="rtl"] .fc-cd-cap{white-space:nowrap}
 .dw-text{font-size:14.5px;color:#dce6e1;line-height:1.85;margin-bottom:11px;position:relative;z-index:1;font-weight:400}
 .dw-ref{display:inline-flex;align-items:center;gap:6px;position:relative;z-index:1;font-size:12px;font-weight:700;color:#eed9a6;padding:5px 13px;border-radius:50px;background:rgba(212,175,106,.13);border:1px solid rgba(212,175,106,.35);box-shadow:0 2px 8px rgba(212,175,106,.1)}
 .dw-ref:empty{display:none}
+
+/* ── Hajj & Umrah banner — quick entry under the daily verse ── */
+.hajj-banner{display:flex;align-items:center;gap:14px;width:calc(100% - 32px);margin:14px 16px 0;padding:15px 18px;cursor:pointer;text-align:left;font-family:'Hind Siliguri',sans-serif;border-radius:19px;border:1px solid transparent;background:linear-gradient(160deg,#101a16,#0c1210) padding-box,linear-gradient(120deg,rgba(212,175,106,.45),rgba(16,185,129,.25) 55%,rgba(212,175,106,.4)) border-box;box-shadow:0 6px 20px rgba(0,0,0,.25),0 0 24px rgba(212,175,106,.06);transition:transform .18s,box-shadow .25s;position:relative;overflow:hidden}
+.hajj-banner::before{content:'';position:absolute;top:-60%;right:-10%;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,106,.14),transparent 70%);pointer-events:none}
+.hajj-banner:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(212,175,106,.14)}
+.hajj-banner:active{transform:scale(.98)}
+.hajj-banner-icon{width:48px;height:48px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:25px;border-radius:14px;background:linear-gradient(135deg,rgba(212,175,106,.22),rgba(212,175,106,.06));box-shadow:0 0 0 1px rgba(212,175,106,.3) inset,0 3px 10px rgba(0,0,0,.25);filter:drop-shadow(0 0 8px rgba(212,175,106,.3))}
+.hajj-banner-info{display:flex;flex-direction:column;gap:2px;min-width:0}
+.hajj-banner-title{font-size:16px;font-weight:800;background:linear-gradient(180deg,#f4e3b8,#d4af6a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:#e3c98a}
+.hajj-banner-sub{font-size:11.5px;color:var(--text3);font-weight:500}
+.hajj-banner-arrow{margin-left:auto;font-size:24px;color:rgba(212,175,106,.6);flex-shrink:0;transition:transform .18s}
+.hajj-banner:hover .hajj-banner-arrow{transform:translateX(3px)}
 .dw-ref::before{content:'📖'}
 /* Live-stream facade — video loads only on tap (saves data + battery) */
 .live-facade{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
@@ -578,6 +590,15 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
   <div id="daily-widget-text" class="dw-text"></div>
   <div id="daily-widget-ref" class="dw-ref"></div>
 </div>
+
+<button type="button" id="hajj-banner" class="hajj-banner" onclick="openHajjFromHome()" aria-label="হজ্জ ও উমরাহ গাইড খুলুন">
+  <span class="hajj-banner-icon" aria-hidden="true">🕋</span>
+  <span class="hajj-banner-info">
+    <span class="hajj-banner-title" id="hajj-banner-title">হজ্জ ও উমরাহ গাইড</span>
+    <span class="hajj-banner-sub" id="hajj-banner-sub">ধাপে ধাপে চেকলিস্ট, দোয়া ও নির্দেশনা</span>
+  </span>
+  <span class="hajj-banner-arrow" aria-hidden="true">›</span>
+</button>
 
 <div id="live-stream-widget" role="region" aria-label="মক্কা ও মদিনা লাইভ সম্প্রচার" style="margin:14px 16px 0">
   <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;padding-left:2px">
@@ -4444,6 +4465,14 @@ function renderMosqueResults(elements, myLat, myLon){
 }
 
 /* ══ TOOLS — Navigation ══ */
+// Home-screen Hajj banner: jump to the Tools tab with the guide already open
+function openHajjFromHome(){
+  showTab('tools', document.getElementById('tabbtn-tools'));
+  openTool('hajj');
+  const main = document.getElementById('main-content');
+  if(main) main.scrollIntoView({behavior:'smooth'});
+}
+
 function openTool(toolId){
   document.getElementById('tools-grid-view').style.display = 'none';
   document.getElementById('tool-zakat-view').style.display = toolId === 'zakat' ? 'block' : 'none';
