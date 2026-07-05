@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v70-kalima-thuluth-art -->
+<!-- VERSION: v71-kalima-wide -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -66,9 +66,10 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
 .ac-sec{stroke:#e05c5c;stroke-width:1.1;stroke-linecap:round}
 .ac-cap{fill:var(--gold2)}
 .cp-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;align-items:center;text-align:center;position:relative;z-index:1}
-/* Kalima — the classic Thuluth Shahada calligraphy (icons/kalima.svg, from
-   Wikimedia Commons), painted bright teal via CSS mask (gradient + glow) */
-.kalima-art{width:148px;height:144px;background:linear-gradient(180deg,#b8fff5 0%,#40e0c8 48%,#0fb5a0 100%);-webkit-mask:url('icons/kalima.svg') no-repeat center/contain;mask:url('icons/kalima.svg') no-repeat center/contain;filter:drop-shadow(0 0 10px rgba(45,212,191,.55)) drop-shadow(0 0 28px rgba(45,212,191,.3))}
+/* Kalima — the classic Thuluth Shahada calligraphy in its wide flag layout
+   (icons/kalima.svg, Wikimedia Commons, background removed), painted bright
+   teal via CSS mask (gradient + glow) */
+.kalima-art{width:100%;max-width:224px;aspect-ratio:600/400;background:linear-gradient(180deg,#b8fff5 0%,#40e0c8 48%,#0fb5a0 100%);-webkit-mask:url('icons/kalima.svg') no-repeat center/contain;mask:url('icons/kalima.svg') no-repeat center/contain;filter:drop-shadow(0 0 10px rgba(45,212,191,.55)) drop-shadow(0 0 26px rgba(45,212,191,.3))}
 .cp-digital{display:flex;align-items:baseline;gap:7px}
 #clock{font-size:23px;font-weight:700;color:var(--emerald2);font-family:ui-monospace,monospace;letter-spacing:.5px;line-height:1;text-shadow:0 0 16px rgba(16,185,129,.4)}
 #clock-ampm{font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase}
