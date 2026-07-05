@@ -42,21 +42,57 @@ function corsHeaders(origin) {
 // YouTube cross-origin, so the worker does it: one search per city with the
 // live-only filter (sp=EgJAAQ==), first result wins. Results are edge-cached
 // for 30 minutes. No key or quota involved — plain HTML scrape.
+// Broad queries surface more candidates (the ad-free ones are often smaller
+// channels ranked lower), but "madinah live" also returns Makkah streams and
+// vice versa — the title regex keeps each slot on the right city.
+// seed: known ad-free 24/7 streams, checked before the search results — search
+// ranking shuffles between requests, so without seeds an ad-free stream that
+// exists can fall out of the candidate window. Seeds that stop being live or
+// start running ads lose automatically to the normal search flow.
 const LIVE_QUERIES = {
-  makkah: 'makkah+live+kaaba',
-  madinah: 'madinah+live+masjid+nabawi',
+  makkah: { q: 'makkah+live', re: /makkah|mecca|مكة|المكي/i, seed: [] },
+  madinah: { q: 'madinah+live', re: /madinah?|medina|المدينة|النبوية/i, seed: ['naaOMgZbIHQ'] },
 };
 
-async function resolveLiveId(query) {
+const YT_HEADERS = { 'Accept-Language': 'en', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' };
+const MAX_CANDIDATES = 8;
+
+// Streams are ranked ad-free first: "adPlacements" in the watch page's player
+// response means YouTube runs pre-roll/mid-roll ads on that stream (stable per
+// stream, verified across repeated fetches). Most Haram restream channels are
+// monetized, so an ad-free one may not exist — then the first live embeddable
+// candidate wins rather than returning nothing.
+async function resolveLiveId({ q, re, seed }) {
   try {
     const res = await fetch(
-      `https://www.youtube.com/results?search_query=${query}&sp=EgJAAQ%253D%253D`,
-      { headers: { 'Accept-Language': 'en', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } }
+      `https://www.youtube.com/results?search_query=${q}&sp=EgJAAQ%253D%253D`,
+      { headers: YT_HEADERS }
     );
     if (!res.ok) return null;
     const html = await res.text();
-    const m = html.match(/"videoRenderer":\{"videoId":"([\w-]{11})"/);
-    return m ? m[1] : null;
+    const ids = [...new Set([
+      ...seed,
+      ...[...html.matchAll(/"videoRenderer":\{"videoId":"([\w-]{11})"/g)].map(m => m[1]),
+    ])].slice(0, MAX_CANDIDATES);
+    if (!ids.length) return null;
+
+    // Sequential with early exit on the first ad-free hit — parallel fetching
+    // of every candidate blew the per-invocation subrequest limit (each watch
+    // page can also redirect, doubling the count).
+    let firstPlayable = null;
+    for (const id of ids) {
+      try {
+        const page = await fetch(`https://www.youtube.com/watch?v=${id}`, { headers: YT_HEADERS });
+        if (!page.ok) continue;
+        const body = await page.text();
+        const title = (body.match(/<title>([^<]*)/) || [])[1] || '';
+        if (!re.test(title)) continue;
+        if (!body.includes('"isLiveNow":true') || !body.includes('"playableInEmbed":true')) continue;
+        if (!body.includes('"adPlacements"')) return id; // ad-free — done
+        if (!firstPlayable) firstPlayable = id;
+      } catch { /* skip this candidate */ }
+    }
+    return firstPlayable || ids[0];
   } catch {
     return null;
   }
@@ -64,7 +100,8 @@ async function resolveLiveId(query) {
 
 async function handleLive(url) {
   const cache = caches.default;
-  const cacheKey = new Request(url.origin + '/live');
+  // v3: bumped so deploys with new selection logic skip stale edge entries
+  const cacheKey = new Request(url.origin + '/live?v=3');
   const cached = await cache.match(cacheKey);
   if (cached) return cached;
 
