@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v67-fasting-card-polish -->
+<!-- VERSION: v68-analog-clock-kalima -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -53,7 +53,25 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
 .wrap{position:relative;z-index:1}
 .header{padding:max(24px, env(safe-area-inset-top)) 20px 16px;background:linear-gradient(180deg,rgba(16,185,129,.05) 0%,transparent 100%);border-bottom:1px solid var(--border2)}
 .app-eyebrow{font-size:10.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold3);margin-bottom:5px;font-weight:600}
-.app-bismillah{font-size:24px;color:var(--emerald2);direction:rtl;font-family:serif;line-height:1.5;margin-bottom:10px;text-shadow:0 0 26px rgba(16,185,129,.22)}
+/* Clock panel — analog dial left, glowing Kalima + digital clock right */
+.clock-panel{display:flex;align-items:center;gap:16px;margin:2px 0 10px;padding:13px 15px;background:linear-gradient(135deg,rgba(16,185,129,.09),rgba(212,175,106,.055));border:1px solid var(--border2);border-radius:19px;box-shadow:0 8px 26px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.06);position:relative;overflow:hidden}
+.clock-panel::before{content:'';position:absolute;top:-45%;right:-12%;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,106,.14),transparent 70%);pointer-events:none}
+.ac-wrap{flex-shrink:0;width:96px;height:96px;filter:drop-shadow(0 5px 16px rgba(0,0,0,.5))}
+.ac-face{fill:url(#acg)}
+.ac-ring{fill:none;stroke:rgba(212,175,106,.6);stroke-width:2.2}
+.ac-ring2{fill:none;stroke:rgba(16,185,129,.28);stroke-width:.8}
+.ac-num{fill:var(--gold2);font-size:11px;font-weight:700;font-family:ui-monospace,monospace}
+.ac-dot{fill:rgba(148,163,177,.85)}
+.ac-hand{fill:var(--gold2)}
+.ac-sec{stroke:#e05c5c;stroke-width:1.1;stroke-linecap:round}
+.ac-cap{fill:var(--gold2)}
+.cp-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;align-items:flex-end;text-align:right;position:relative;z-index:1}
+.kalima{font-family:serif;direction:rtl;font-size:21px;line-height:1.75;font-weight:700;color:#fff;text-shadow:0 0 16px rgba(212,175,106,.5),0 0 36px rgba(16,185,129,.3)}
+.cp-digital{display:flex;align-items:baseline;gap:7px}
+#clock{font-size:23px;font-weight:700;color:var(--emerald2);font-family:ui-monospace,monospace;letter-spacing:.5px;line-height:1;text-shadow:0 0 16px rgba(16,185,129,.4)}
+#clock-ampm{font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase}
+html[dir="rtl"] .clock-panel{direction:rtl}
+html[dir="rtl"] .cp-right{align-items:flex-start;text-align:left}
 .header-row{display:flex;justify-content:space-between;align-items:center}
 .header-loc{font-size:13px;color:var(--text3);display:flex;align-items:center;gap:5px}
 .live-dot{width:6px;height:6px;background:var(--emerald2);border-radius:50%;box-shadow:0 0 7px var(--emerald2);animation:blink 2s ease-in-out infinite}
@@ -360,13 +378,44 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
       <span aria-hidden="true">🌐</span><span id="lang-selector-label">বাং</span>
     </button>
   </div>
-  <div class="app-bismillah" lang="ar" dir="rtl">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
+  <!-- Clock panel — live analog clock (left) + Kalima with digital clock (right) -->
+  <div class="clock-panel">
+    <div class="ac-wrap" aria-hidden="true">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="acg" cx="38%" cy="32%" r="75%">
+            <stop offset="0%" stop-color="#15201a"/>
+            <stop offset="100%" stop-color="#080c0a"/>
+          </radialGradient>
+        </defs>
+        <circle class="ac-face" cx="50" cy="50" r="47"/>
+        <circle class="ac-ring" cx="50" cy="50" r="47"/>
+        <circle class="ac-ring2" cx="50" cy="50" r="41.5"/>
+        <text class="ac-num" x="50" y="16.5" text-anchor="middle" dominant-baseline="central">12</text>
+        <text class="ac-num" x="84" y="51" text-anchor="middle" dominant-baseline="central">3</text>
+        <text class="ac-num" x="50" y="85.5" text-anchor="middle" dominant-baseline="central">6</text>
+        <text class="ac-num" x="16" y="51" text-anchor="middle" dominant-baseline="central">9</text>
+        <circle class="ac-dot" cx="68" cy="18.8" r="1.7"/><circle class="ac-dot" cx="81.2" cy="32" r="1.7"/>
+        <circle class="ac-dot" cx="81.2" cy="68" r="1.7"/><circle class="ac-dot" cx="68" cy="81.2" r="1.7"/>
+        <circle class="ac-dot" cx="32" cy="81.2" r="1.7"/><circle class="ac-dot" cx="18.8" cy="68" r="1.7"/>
+        <circle class="ac-dot" cx="18.8" cy="32" r="1.7"/><circle class="ac-dot" cx="32" cy="18.8" r="1.7"/>
+        <polygon id="ac-hour" class="ac-hand" points="50,31 52.4,52 47.6,52"/>
+        <polygon id="ac-min"  class="ac-hand" points="50,20 51.8,52 48.2,52"/>
+        <line id="ac-sec" class="ac-sec" x1="50" y1="58" x2="50" y2="17"/>
+        <circle class="ac-cap" cx="50" cy="50" r="3.2"/>
+        <circle cx="50" cy="50" r="1.2" fill="#0a0d12"/>
+      </svg>
+    </div>
+    <div class="cp-right">
+      <div class="kalima" lang="ar" dir="rtl">لَا إِلَٰهَ إِلَّا اللَّهُ مُحَمَّدٌ رَسُولُ اللَّهِ</div>
+      <div class="cp-digital">
+        <span id="clock" role="timer" aria-live="off" aria-label="বর্তমান সময়">--:--:--</span>
+        <span id="clock-ampm">--</span>
+      </div>
+    </div>
+  </div>
   <div class="header-row">
     <div class="header-loc"><div class="live-dot" aria-hidden="true"></div><span class="sr-only">বর্তমান অবস্থান: </span><span id="loc-name">বগুড়া, বাংলাদেশ</span></div>
-    <div style="text-align:right">
-      <div id="clock" role="timer" aria-live="off" aria-label="বর্তমান সময়" style="font-size:20px;font-weight:700;color:var(--emerald2);font-family:ui-monospace,monospace;letter-spacing:0.5px;line-height:1">--:--:--</div>
-      <div id="clock-ampm" style="font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-top:2px">--</div>
-    </div>
   </div>
 </div>
 
@@ -3293,6 +3342,15 @@ function tick(){
   };
   const ampmMap = AMPM_LABELS[currentLang] || AMPM_LABELS.bn;
   if(ampmEl) ampmEl.textContent = ampm === 'AM' ? ampmMap.AM : ampmMap.PM;
+
+  // Analog clock hands (location wall-clock, same instant as the digital readout)
+  const acH = document.getElementById('ac-hour');
+  if(acH){
+    const s = now.getSeconds(), m = now.getMinutes() + s/60, h = (now.getHours()%12) + m/60;
+    acH.setAttribute('transform', `rotate(${h*30} 50 50)`);
+    document.getElementById('ac-min').setAttribute('transform', `rotate(${m*6} 50 50)`);
+    document.getElementById('ac-sec').setAttribute('transform', `rotate(${s*6} 50 50)`);
+  }
 
   // Recalculate prayer times if date changed (midnight rollover)
   const today = now.toDateString();
