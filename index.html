@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v93-hajj-route-map -->
+<!-- VERSION: v94-hajj-map-alive -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -3302,10 +3302,20 @@ function renderHajjRouteMap(){
   closeHajjMapLocationInfo();
 
   const locations = HAJJ_MAP_LOCATIONS[currentHajjMode];
-  const height = currentHajjMode === 'umrah' ? 104 : 196;
+  const height = currentHajjMode === 'umrah' ? 112 : 208;
+  const progress = loadHajjProgress();
+  const stepDone = id => { const e = progress[id]; return e === true || (e && typeof e === 'object' && !!e.completedAt); };
 
-  // Route: gradient dashed segments between consecutive stops, with a small
-  // arrowhead at each midpoint showing the direction of travel.
+  // Day-of-ritual hints under the labels (Bengali UI only — tiny gold captions)
+  const DAY_HINTS = currentLang === 'bn'
+    ? {makkah:'শুরু ও শেষ', mina1:'৮ জিলহজ্জ', arafat:'৯ জিলহজ্জ', muzdalifah:'৯-এর রাত', mina2:'১০–১২ জিলহজ্জ'}
+    : {};
+
+  // Faint fixed "starfield" + center glow so the map reads like a night-sky scene
+  const stars = [[22,26],[300,22],[36,150],[292,148],[160,104],[70,58],[248,54],[120,20],[208,18],[286,110]]
+    .map(([x,y],i) => `<circle cx="${x}" cy="${y}" r="${i%3===0?1.5:1}" fill="#e8f4ef" opacity="0.14"/>`).join('');
+
+  // Route: animated gradient dashed segments with an arrowhead at each midpoint
   const stops = [...locations].sort((a, b) => a.seq - b.seq);
   let segs = '';
   const segCount = currentHajjMode === 'umrah' ? stops.length - 1 : stops.length; // hajj loops back to start
@@ -3314,34 +3324,49 @@ function renderHajjRouteMap(){
     const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
     const ang = Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI;
     segs += `
-      <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="url(#hj-route-grad)" stroke-width="2.5" stroke-dasharray="7 5" opacity="0.7"/>
+      <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="url(#hj-route-grad)" stroke-width="2.5" stroke-dasharray="7 5" opacity="0.75">
+        <animate attributeName="stroke-dashoffset" from="24" to="0" dur="1.8s" repeatCount="indefinite"/>
+      </line>
       <polygon points="0,-4.5 8,0 0,4.5" fill="#d4af6a" opacity="0.9" transform="translate(${mx} ${my}) rotate(${ang})"/>`;
   }
 
   const points = stops.map(loc => {
-    const labelY = currentHajjMode === 'umrah' ? loc.y + 34 : (loc.y < 100 ? loc.y - 24 : loc.y + 30);
+    const done = stepDone(loc.linkStepId);
+    const ringColor = done ? '#34d399' : loc.color;
+    const labelY = currentHajjMode === 'umrah' ? loc.y + 34 : (loc.y < 100 ? loc.y - 26 : loc.y + 30);
+    const hint = DAY_HINTS[loc.id];
+    const hintY = (loc.y < 100 && currentHajjMode !== 'umrah') ? labelY - 13 : labelY + 12;
     return `
     <g onclick="openHajjMapLocationInfo('${loc.id}')" style="cursor:pointer" role="button" tabindex="0" aria-label="${t(loc.labelKey)}">
-      <circle cx="${loc.x}" cy="${loc.y}" r="19" fill="${loc.color}" opacity="0.13">
+      <circle cx="${loc.x}" cy="${loc.y}" r="19" fill="${ringColor}" opacity="${done ? '0.22' : '0.13'}">
         <animate attributeName="r" values="17;21;17" dur="2.6s" repeatCount="indefinite"/>
       </circle>
-      <circle cx="${loc.x}" cy="${loc.y}" r="13" fill="#0c1210" stroke="${loc.color}" stroke-width="2"/>
-      <circle cx="${loc.x}" cy="${loc.y}" r="12" fill="${loc.color}" opacity="0.22"/>
+      <circle cx="${loc.x}" cy="${loc.y}" r="13" fill="#0c1210" stroke="${ringColor}" stroke-width="${done ? 2.5 : 2}"/>
+      <circle cx="${loc.x}" cy="${loc.y}" r="12" fill="${ringColor}" opacity="${done ? '0.35' : '0.22'}"/>
       <text x="${loc.x}" y="${loc.y + 4.5}" font-size="12" text-anchor="middle" style="pointer-events:none">${loc.icon}</text>
-      <circle cx="${loc.x + 11}" cy="${loc.y - 11}" r="7.5" fill="${loc.color}"/>
-      <text x="${loc.x + 11}" y="${loc.y - 7.6}" fill="#08100d" font-size="9.5" font-weight="800" text-anchor="middle" style="pointer-events:none">${localizeNum(loc.seq)}</text>
+      <circle cx="${loc.x + 11}" cy="${loc.y - 11}" r="7.5" fill="${ringColor}"/>
+      <text x="${loc.x + 11}" y="${loc.y - 7.6}" fill="#08100d" font-size="${done ? 10.5 : 9.5}" font-weight="800" text-anchor="middle" style="pointer-events:none">${done ? '✓' : localizeNum(loc.seq)}</text>
       <text x="${loc.x}" y="${labelY}" fill="#e8f4ef" font-size="12" font-weight="700" text-anchor="middle" style="text-shadow:0 1px 4px rgba(0,0,0,.6)">${t(loc.labelKey)}</text>
+      ${hint ? `<text x="${loc.x}" y="${hintY}" fill="#d4af6a" font-size="8.5" font-weight="600" text-anchor="middle" opacity="0.85">${hint}</text>` : ''}
     </g>`;
   }).join('');
 
-  wrap.innerHTML = `<svg width="100%" height="${height}" viewBox="0 0 320 ${height}">
+  // viewBox extends 16px above y=0 so the day-hint captions over the top nodes
+  // (which land at negative y) stay visible
+  const svgH = height + 16;
+  wrap.innerHTML = `<svg width="100%" height="${svgH}" viewBox="0 -16 320 ${svgH}">
     <defs>
       <linearGradient id="hj-route-grad" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stop-color="#34d399"/>
         <stop offset="100%" stop-color="#d4af6a"/>
       </linearGradient>
+      <radialGradient id="hj-map-glow" cx="50%" cy="48%" r="60%">
+        <stop offset="0%" stop-color="rgba(16,185,129,.09)"/>
+        <stop offset="100%" stop-color="rgba(16,185,129,0)"/>
+      </radialGradient>
     </defs>
-    ${segs}${points}</svg>`;
+    <rect x="0" y="-16" width="320" height="${svgH}" fill="url(#hj-map-glow)" rx="14"/>
+    ${stars}${segs}${points}</svg>`;
 }
 
 function openHajjMapLocationInfo(locId){
