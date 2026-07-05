@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v94-hajj-map-alive -->
+<!-- VERSION: v95-hajj-itinerary -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -395,6 +395,19 @@ html[dir="rtl"] .fc-cd-cap{white-space:nowrap}
 .hj-detail-chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:#eed9a6;background:rgba(212,175,106,.12);border:1px solid rgba(212,175,106,.3);border-radius:50px;padding:4px 12px}
 .hj-done-chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--emerald2);background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.22);border-radius:50px;padding:4px 11px}
 .hj-check{width:30px;height:30px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;padding:0;transition:all .2s;margin-top:2px}
+
+/* ── Hajj day-by-day itinerary timeline ── */
+.hj-itin-card{border:1px solid transparent;background:linear-gradient(165deg,#101a16,#0c1210) padding-box,linear-gradient(140deg,rgba(212,175,106,.32),rgba(255,255,255,.05) 50%,rgba(16,185,129,.3)) border-box;border-radius:18px;padding:16px;box-shadow:0 6px 18px rgba(0,0,0,.22)}
+.hj-itin-row{display:flex;gap:12px}
+.hj-itin-rail{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+.hj-itin-dot{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;background:rgba(16,185,129,.1);box-shadow:0 0 0 1.5px rgba(16,185,129,.35),0 0 12px rgba(16,185,129,.15)}
+.hj-itin-line{flex:1;width:2px;min-height:14px;margin:4px 0;background:linear-gradient(180deg,rgba(16,185,129,.45),rgba(212,175,106,.35))}
+.hj-itin-body{flex:1;min-width:0;padding-bottom:16px}
+.hj-itin-row:last-child .hj-itin-body{padding-bottom:2px}
+.hj-itin-date{display:inline-block;font-size:11px;font-weight:700;color:#eed9a6;background:rgba(212,175,106,.12);border:1px solid rgba(212,175,106,.3);border-radius:50px;padding:3px 11px;margin-bottom:6px}
+.hj-itin-route{font-size:15px;font-weight:800;color:var(--text);line-height:1.4}
+.hj-itin-arrow{color:var(--gold2);font-size:14px;margin:0 3px;text-shadow:0 0 8px rgba(212,175,106,.5)}
+.hj-itin-note{font-size:12.5px;color:var(--text2);line-height:1.65;margin-top:4px}
 .dw-ref::before{content:'📖'}
 /* Live-stream facade — video loads only on tap (saves data + battery) */
 .live-facade{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
@@ -1019,6 +1032,8 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
         </div>
         <div style="text-align:center;margin-top:12px"><span id="hajj-route-map-hint" style="display:inline-block;font-size:11.5px;font-weight:600;color:#eed9a6;background:rgba(212,175,106,.1);border:1px solid rgba(212,175,106,.25);border-radius:50px;padding:5px 14px">👆 মানচিত্রের পয়েন্টে ট্যাপ করুন বিস্তারিত জানতে</span></div>
       </div>
+
+      <div id="hajj-itinerary" style="margin-bottom:16px"></div>
 
       <div id="hajj-checklist"></div>
     </div>
@@ -2490,7 +2505,7 @@ function renderHajjChecklist(){
   const el = document.getElementById('hajj-checklist');
   if(!el) return;
 
-  const STEP_ICONS = {ihram:'🤍', makkah:'🕌', tawaf:'🕋', sayi:'🏃', mina:'⛺', arafat:'⛰️', muzdalifah:'🌌', jamarat:'🪨', qurbani:'🐐', shaving:'✂️'};
+  const STEP_ICONS = {ihram:'🤍', makkah:'🕌', tawaf:'🕋', sayi:'🏃', mina:'⛺', arafat:'⛰️', muzdalifah:'🌙', jamarat:'🎯', qurbani:'🐐', shaving:'✂️'};
   const detailLabel = currentLang === 'bn' ? 'বিস্তারিত দেখুন' : 'Details';
 
   el.innerHTML = steps.map((step, i) => {
@@ -2518,6 +2533,7 @@ function renderHajjChecklist(){
   }).join('');
 
   renderHajjRouteMap();
+  renderHajjItinerary();
 
   const doneCount = steps.filter(s => { const e = progress[s.id]; return e === true || (e && typeof e === 'object' && !!e.completedAt); }).length;
   const pct = steps.length ? Math.round((doneCount/steps.length)*100) : 0;
@@ -3285,7 +3301,7 @@ const HAJJ_MAP_LOCATIONS = {
     {id:'mina1', x:268, y:94, seq:2, icon:'⛺', color:'#d4af6a', labelKey:'mapLocMina', descKey:'mapDescMina', linkStepId:'h4'},
     {id:'arafat', x:218, y:164, seq:3, icon:'⛰️', color:'#34d399', labelKey:'mapLocArafat', descKey:'mapDescArafat', linkStepId:'h5'},
     {id:'muzdalifah', x:102, y:164, seq:4, icon:'🌙', color:'#7de8d3', labelKey:'mapLocMuzdalifah', descKey:'mapDescMuzdalifah', linkStepId:'h6'},
-    {id:'mina2', x:52, y:94, seq:5, icon:'🪨', color:'#d4af6a', labelKey:'mapLocMina', descKey:'mapDescMinaReturn', linkStepId:'h7'},
+    {id:'mina2', x:52, y:94, seq:5, icon:'🎯', color:'#d4af6a', labelKey:'mapLocMina', descKey:'mapDescMinaReturn', linkStepId:'h7'},
   ],
   umrah: [
     {id:'miqat', x:44, y:48, seq:1, icon:'🤍', color:'#34d399', labelKey:'mapLocMiqat', descKey:'mapDescMiqat', linkStepId:'u1'},
@@ -3295,6 +3311,53 @@ const HAJJ_MAP_LOCATIONS = {
 };
 
 let hajjMapSelectedLinkStepId = null;
+
+/* ── Day-by-day Hajj movement itinerary (dates + from ➜ to + what happens) ──
+   Bengali + English only; other UI languages fall back to English. */
+const HAJJ_ITINERARY = [
+  {icon:'⛺', bn:{date:'৮ জিলহজ্জ', from:'মক্কা', to:'মিনা', note:'ইহরাম অবস্থায় সকালে মিনায় গমন — যুহর থেকে ফজর পর্যন্ত ৫ ওয়াক্ত নামাজ ও রাত্রিযাপন (তারবিয়ার দিন)'},
+    en:{date:'8 Dhul-Hijjah', from:'Makkah', to:'Mina', note:'Set out for Mina in ihram — pray Dhuhr to Fajr there and stay the night (Yawm at-Tarwiyah)'}},
+  {icon:'⛰️', bn:{date:'৯ জিলহজ্জ (সকাল)', from:'মিনা', to:'আরাফাত', note:'ফজরের পর আরাফাতের উদ্দেশে রওনা — সূর্যাস্ত পর্যন্ত উকুফে আরাফা: হজ্জের প্রধান রুকন, দোয়া ও তালবিয়া'},
+    en:{date:'9 Dhul-Hijjah (morning)', from:'Mina', to:'Arafat', note:'After Fajr move to Arafat — wuquf until sunset: the essential pillar of Hajj, devoted to dua'}},
+  {icon:'🌙', bn:{date:'৯ জিলহজ্জ (সূর্যাস্তের পর)', from:'আরাফাত', to:'মুজদালিফা', note:'মাগরিব-ইশা মুজদালিফায় একসাথে — খোলা আকাশের নিচে রাত্রিযাপন ও জামারাতের জন্য কঙ্কর সংগ্রহ'},
+    en:{date:'9 Dhul-Hijjah (after sunset)', from:'Arafat', to:'Muzdalifah', note:'Pray Maghrib & Isha combined at Muzdalifah — overnight under the sky, collect pebbles'}},
+  {icon:'🐐', bn:{date:'১০ জিলহজ্জ (ঈদের দিন)', from:'মুজদালিফা', to:'মিনা', note:'ফজরের পর মিনায় ফিরে বড় জামারায় ৭ কঙ্কর → কুরবানি → মাথা মুণ্ডন/চুল ছোট করা'},
+    en:{date:'10 Dhul-Hijjah (Eid day)', from:'Muzdalifah', to:'Mina', note:'Return after Fajr: stone the large Jamarah (7 pebbles) → sacrifice → shave/trim hair'}},
+  {icon:'🕋', bn:{date:'১০–১১ জিলহজ্জ', from:'মিনা', to:'মক্কা ↩ মিনা', note:'তাওয়াফে ইফাদা ও সাঈ করে আবার মিনায় ফেরা — এই তাওয়াফ ফরজ'},
+    en:{date:'10-11 Dhul-Hijjah', from:'Mina', to:'Makkah ↩ Mina', note:'Perform Tawaf al-Ifadah and Sa’i, then return to Mina — this tawaf is obligatory'}},
+  {icon:'🎯', bn:{date:'১১–১২ জিলহজ্জ', from:'মিনা', to:'মিনায় অবস্থান', note:'প্রতিদিন যুহরের পর তিন জামারায় ৭টি করে কঙ্কর — ১৩ তারিখ পর্যন্ত থাকা উত্তম'},
+    en:{date:'11-12 Dhul-Hijjah', from:'Mina', to:'stay in Mina', note:'Stone all three Jamarat (7 each) daily after Dhuhr — staying through the 13th is better'}},
+  {icon:'💚', bn:{date:'বিদায়ের আগে', from:'মিনা', to:'মক্কা', note:'বিদায়ী তাওয়াফ (তাওয়াফে বিদা) করে হজ্জ সম্পন্ন — মক্কা ত্যাগের আগে সর্বশেষ আমল'},
+    en:{date:'Before departure', from:'Mina', to:'Makkah', note:'Complete Hajj with the farewell tawaf — the final act before leaving Makkah'}},
+];
+
+function renderHajjItinerary(){
+  const el = document.getElementById('hajj-itinerary');
+  if(!el) return;
+  if(currentHajjMode !== 'hajj'){ el.innerHTML = ''; el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  const lang = currentLang === 'bn' ? 'bn' : 'en';
+  const heading = lang === 'bn' ? 'দিন অনুযায়ী যাত্রা-নির্দেশনা' : 'Day-by-day route';
+  el.innerHTML = `
+    <div class="hj-itin-card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <span style="font-size:14px" aria-hidden="true">🧭</span>
+        <span style="font-size:12.5px;font-weight:800;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(180deg,#c8fff8 10%,#2dd4bf 62%,#0fb5a0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:#2dd4bf">${heading}</span>
+      </div>
+      ${HAJJ_ITINERARY.map((it, i) => { const d = it[lang]; return `
+      <div class="hj-itin-row">
+        <div class="hj-itin-rail" aria-hidden="true">
+          <span class="hj-itin-dot">${it.icon}</span>
+          ${i < HAJJ_ITINERARY.length - 1 ? '<span class="hj-itin-line"></span>' : ''}
+        </div>
+        <div class="hj-itin-body">
+          <span class="hj-itin-date">📅 ${d.date}</span>
+          <div class="hj-itin-route">${d.from} <span class="hj-itin-arrow">➜</span> ${d.to}</div>
+          <div class="hj-itin-note">${d.note}</div>
+        </div>
+      </div>`; }).join('')}
+    </div>`;
+}
 
 function renderHajjRouteMap(){
   const wrap = document.getElementById('hajj-route-map');
