@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v103-umrah-map-colors -->
+<!-- VERSION: v104-travel-helper-premium -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -255,6 +255,8 @@ html[dir="rtl"] .clock-panel{direction:rtl}
 /* native dropdown lists inherit the page's light text — unreadable on the
    OS-rendered white popup, so pin dark-on-dark colours explicitly */
 select option{background:#101a16;color:#e8f4ef}
+#hajj-subtab-travel-view textarea:focus{border-color:rgba(16,185,129,.45)!important;box-shadow:0 0 0 3px rgba(16,185,129,.08)}
+#hajj-emergency-notes:focus{border-color:rgba(224,112,112,.5)!important;box-shadow:0 0 0 3px rgba(224,112,112,.08)}
 
 .loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;gap:14px}
 .loading-dots{display:flex;gap:6px}
@@ -1077,33 +1079,36 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
 
     <div id="hajj-subtab-travel-view" style="display:none">
       <div id="hajj-travel-packing-section" style="margin-bottom:18px">
-        <div id="hajj-packing-sec-title" class="sec-title"><div class="sec-gem"></div>প্যাকিং চেকলিস্ট<div class="sec-gem"></div></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <div id="hajj-packing-sec-title" class="sec-title" style="margin-bottom:0"><div class="sec-gem"></div>প্যাকিং চেকলিস্ট<div class="sec-gem"></div></div>
+          <span id="hajj-packing-count" style="margin-left:auto;flex-shrink:0;font-size:11px;font-weight:700;color:var(--emerald2);background:rgba(16,185,129,.09);border:1px solid rgba(16,185,129,.22);border-radius:50px;padding:3px 12px"></span>
+        </div>
         <div id="hajj-packing-list"></div>
       </div>
 
       <div id="hajj-travel-notes-section" style="margin-bottom:18px">
         <div id="hajj-notes-sec-title" class="sec-title"><div class="sec-gem"></div>ভ্রমণের তথ্য<div class="sec-gem"></div></div>
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px">
+        <div style="border:1px solid transparent;background:linear-gradient(165deg,#101a16,#0c1210) padding-box,linear-gradient(140deg,rgba(16,185,129,.28),rgba(255,255,255,.05) 50%,rgba(212,175,106,.28)) border-box;border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:14px;box-shadow:0 6px 18px rgba(0,0,0,.2)">
           <div>
-            <label for="hajj-travel-flight" id="hajj-label-flight" style="font-size:12px;color:var(--text2);margin-bottom:5px;display:block">ফ্লাইট তথ্য</label>
-            <textarea id="hajj-travel-flight" oninput="saveTravelNotes()" rows="2" placeholder="ফ্লাইট নম্বর, তারিখ, সময়..." style="width:100%;background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:12px;padding:10px 14px;color:var(--text);font-size:13.5px;outline:none;font-family:'Hind Siliguri',sans-serif;resize:vertical"></textarea>
+            <label for="hajj-travel-flight" style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--emerald2);margin-bottom:6px"><span aria-hidden="true">✈️</span><span id="hajj-label-flight">ফ্লাইট তথ্য</span></label>
+            <textarea id="hajj-travel-flight" oninput="saveTravelNotes()" rows="2" placeholder="ফ্লাইট নম্বর, তারিখ, সময়..." style="width:100%;background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:12px;padding:10px 14px;color:var(--text);font-size:13.5px;outline:none;font-family:'Hind Siliguri',sans-serif;resize:vertical;transition:border-color .2s,box-shadow .2s"></textarea>
           </div>
           <div>
-            <label for="hajj-travel-hotel" id="hajj-label-hotel" style="font-size:12px;color:var(--text2);margin-bottom:5px;display:block">হোটেল তথ্য</label>
-            <textarea id="hajj-travel-hotel" oninput="saveTravelNotes()" rows="2" placeholder="হোটেলের নাম, ঠিকানা, বুকিং নম্বর..." style="width:100%;background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:12px;padding:10px 14px;color:var(--text);font-size:13.5px;outline:none;font-family:'Hind Siliguri',sans-serif;resize:vertical"></textarea>
+            <label for="hajj-travel-hotel" style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--emerald2);margin-bottom:6px"><span aria-hidden="true">🏨</span><span id="hajj-label-hotel">হোটেল তথ্য</span></label>
+            <textarea id="hajj-travel-hotel" oninput="saveTravelNotes()" rows="2" placeholder="হোটেলের নাম, ঠিকানা, বুকিং নম্বর..." style="width:100%;background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:12px;padding:10px 14px;color:var(--text);font-size:13.5px;outline:none;font-family:'Hind Siliguri',sans-serif;resize:vertical;transition:border-color .2s,box-shadow .2s"></textarea>
           </div>
           <div>
-            <label for="hajj-travel-group" id="hajj-label-group" style="font-size:12px;color:var(--text2);margin-bottom:5px;display:block">গ্রুপ লিডার / এজেন্সি যোগাযোগ</label>
-            <textarea id="hajj-travel-group" oninput="saveTravelNotes()" rows="2" placeholder="নাম ও ফোন নম্বর..." style="width:100%;background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:12px;padding:10px 14px;color:var(--text);font-size:13.5px;outline:none;font-family:'Hind Siliguri',sans-serif;resize:vertical"></textarea>
+            <label for="hajj-travel-group" style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--emerald2);margin-bottom:6px"><span aria-hidden="true">👥</span><span id="hajj-label-group">গ্রুপ লিডার / এজেন্সি যোগাযোগ</span></label>
+            <textarea id="hajj-travel-group" oninput="saveTravelNotes()" rows="2" placeholder="নাম ও ফোন নম্বর..." style="width:100%;background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:12px;padding:10px 14px;color:var(--text);font-size:13.5px;outline:none;font-family:'Hind Siliguri',sans-serif;resize:vertical;transition:border-color .2s,box-shadow .2s"></textarea>
           </div>
         </div>
       </div>
 
       <div id="hajj-emergency-section">
         <div id="hajj-emergency-sec-title" class="sec-title"><div class="sec-gem"></div>জরুরি তথ্য<div class="sec-gem"></div></div>
-        <div style="background:linear-gradient(135deg,rgba(224,112,112,.1),rgba(212,175,106,.04));border:1px solid rgba(224,112,112,.22);border-radius:16px;padding:16px;margin-bottom:10px">
-          <div id="hajj-emergency-disclaimer" style="font-size:11.5px;color:var(--text3);line-height:1.6;margin-bottom:12px">⚠️ সরাসরি জরুরি কল করার ক্ষমতা এই অ্যাপে নেই — আগে থেকেই গুরুত্বপূর্ণ নম্বরগুলো এখানে লিখে রাখুন যাতে প্রয়োজনে দ্রুত খুঁজে পান।</div>
-          <textarea id="hajj-emergency-notes" oninput="saveTravelNotes()" rows="3" placeholder="দূতাবাসের নম্বর, পরিবারের জরুরি যোগাযোগ, ব্লাড গ্রুপ, এলার্জি/ওষুধের তথ্য..." style="width:100%;background:rgba(0,0,0,.2);border:1px solid var(--border2);border-radius:12px;padding:10px 14px;color:var(--text);font-size:13.5px;outline:none;font-family:'Hind Siliguri',sans-serif;resize:vertical"></textarea>
+        <div style="border:1px solid transparent;background:linear-gradient(165deg,#1a1210,#120d0c) padding-box,linear-gradient(140deg,rgba(224,112,112,.4),rgba(255,255,255,.05) 50%,rgba(212,175,106,.3)) border-box;border-radius:18px;padding:16px;margin-bottom:10px;box-shadow:0 6px 18px rgba(0,0,0,.2)">
+          <div id="hajj-emergency-disclaimer" style="font-size:11.5px;color:#f0c9a6;line-height:1.65;margin-bottom:12px;background:rgba(224,152,112,.08);border:1px solid rgba(224,152,112,.2);border-radius:12px;padding:9px 13px">⚠️ সরাসরি জরুরি কল করার ক্ষমতা এই অ্যাপে নেই — আগে থেকেই গুরুত্বপূর্ণ নম্বরগুলো এখানে লিখে রাখুন যাতে প্রয়োজনে দ্রুত খুঁজে পান।</div>
+          <textarea id="hajj-emergency-notes" oninput="saveTravelNotes()" rows="3" placeholder="দূতাবাসের নম্বর, পরিবারের জরুরি যোগাযোগ, ব্লাড গ্রুপ, এলার্জি/ওষুধের তথ্য..." style="width:100%;background:rgba(0,0,0,.2);border:1px solid rgba(224,112,112,.25);border-radius:12px;padding:10px 14px;color:var(--text);font-size:13.5px;outline:none;font-family:'Hind Siliguri',sans-serif;resize:vertical;transition:border-color .2s,box-shadow .2s"></textarea>
         </div>
       </div>
     </div>
@@ -2725,19 +2730,26 @@ function toggleHajjPackingItem(itemId){
   renderHajjPackingList();
 }
 
+const PACKING_ICONS = {pk1:'🤍', pk2:'🛂', pk3:'💵', pk4:'💊', pk5:'👟', pk6:'🧴', pk7:'🔌', pk8:'⛱️', pk9:'📖', pk10:'👝'};
+
 function renderHajjPackingList(){
   const el = document.getElementById('hajj-packing-list');
   if(!el) return;
   const state = loadHajjPacking();
 
+  const packed = HAJJ_PACKING_ITEMS.filter(i => !!state[i.id]).length;
+  const countEl = document.getElementById('hajj-packing-count');
+  if(countEl) countEl.textContent = `🧳 ${localizeNum(packed)}/${localizeNum(HAJJ_PACKING_ITEMS.length)} ${currentLang === 'bn' ? 'প্রস্তুত' : 'packed'}`;
+
   el.innerHTML = HAJJ_PACKING_ITEMS.map(item => {
     const checked = !!state[item.id];
     return `
-    <div class="chapter-item" onclick="toggleHajjPackingItem('${item.id}')" role="button" tabindex="0" aria-pressed="${checked}" style="cursor:pointer" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHajjPackingItem('${item.id}')}">
+    <div class="chapter-item" onclick="toggleHajjPackingItem('${item.id}')" role="button" tabindex="0" aria-pressed="${checked}" style="cursor:pointer;${checked ? 'background:linear-gradient(160deg,rgba(16,185,129,.1),var(--card));border-color:rgba(16,185,129,.35)' : ''}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHajjPackingItem('${item.id}')}">
       <div style="display:flex;align-items:center;gap:12px">
-        <div style="width:24px;height:24px;border-radius:7px;border:1.5px solid ${checked?'var(--emerald)':'var(--border2)'};background:${checked?'var(--emerald)':'transparent'};color:${checked?'#000':'transparent'};display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">✓</div>
-        <div class="ch-name" style="text-decoration:${checked?'line-through':'none'};color:${checked?'var(--text2)':'var(--text)'}">${t(item.labelKey)}</div>
+        <span style="width:38px;height:38px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:17px;background:${checked?'rgba(16,185,129,.16)':'rgba(212,175,106,.08)'};box-shadow:0 0 0 1px ${checked?'rgba(16,185,129,.3)':'rgba(212,175,106,.18)'} inset" aria-hidden="true">${PACKING_ICONS[item.id] || '🎒'}</span>
+        <div class="ch-name" style="font-weight:600;text-decoration:${checked?'line-through':'none'};text-decoration-color:rgba(16,185,129,.5);color:${checked?'var(--emerald2)':'var(--text)'}">${t(item.labelKey)}</div>
       </div>
+      <div style="width:26px;height:26px;border-radius:9px;border:1.5px solid ${checked?'var(--emerald)':'var(--border2)'};background:${checked?'linear-gradient(135deg,var(--emerald2),var(--emerald))':'transparent'};color:${checked?'#000':'transparent'};display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;box-shadow:${checked?'0 2px 8px rgba(16,185,129,.35)':'none'}" aria-hidden="true">✓</div>
     </div>`;
   }).join('');
 }
