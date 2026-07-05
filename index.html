@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v63-split-ishraq-duha -->
+<!-- VERSION: v64-duha-proportional-split -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -3161,9 +3161,13 @@ function getPrayerSegments(pt){
   const F = 1/60; // one minute in decimal hours
   const nightEnd = pt.fajr + 24;                 // dawn of the next day
   const tahajjudStart = nightEnd - (nightEnd - pt.maghrib)/3; // last third of the night
-  // Ishraq runs from just after sunrise until 9:00; Chasht/Duha from 9:00 until
-  // the pre-Dhuhr forbidden window. Clamp the 9:00 split so neither inverts.
-  const duhaStart = Math.max(pt.sunrise + 15*F, Math.min(9, pt.dhuhr - 5*F));
+  // Ishraq → Chasht/Duha split. A fixed 9:00 clock time is wrong: forenoon
+  // length shifts with the season (short winter vs long summer days) and with
+  // the location's timezone/longitude. So split at the MIDPOINT of the solar
+  // forenoon — halfway between sunrise and true noon (Dhuhr) — which tracks both
+  // automatically. Clamp within the nafl window so neither half inverts.
+  const forenoonMid = (pt.sunrise + pt.dhuhr) / 2;
+  const duhaStart = Math.max(pt.sunrise + 15*F, Math.min(forenoonMid, pt.dhuhr - 5*F));
   return [
     {type:'fard',      key:'fajr',                      start: pt.fajr,            end: pt.sunrise},
     {type:'forbidden', nameK:'segSunrise',  ar:'الشروق',  start: pt.sunrise,         end: pt.sunrise + 15*F},
