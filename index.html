@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v84-daily-widget-retry -->
+<!-- VERSION: v85-daily-widget-multicolor -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -329,6 +329,25 @@ html[dir="rtl"] .fc-window-chip{align-self:flex-end}
 html[dir="rtl"] .fc-cd-cap{white-space:nowrap}
 /* Date widget — icon tile + stacked dates + weekday pill */
 /* (date card merged into the clock panel — see .cp-date) */
+/* Daily verse/hadith widget — multi-colour premium card */
+.daily-widget{margin:14px 16px 0;padding:18px 20px;border:1px solid transparent;background:linear-gradient(140deg,rgba(17,26,22,.97),rgba(9,13,11,.97)) padding-box,linear-gradient(135deg,rgba(16,185,129,.5),rgba(212,175,106,.45) 55%,rgba(45,212,191,.3)) border-box;border-radius:20px;position:relative;overflow:hidden;box-shadow:0 8px 26px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.05)}
+.dw-glow{position:absolute;border-radius:50%;pointer-events:none}
+.dw-glow-l{top:-35%;left:-10%;width:150px;height:150px;background:radial-gradient(circle,rgba(16,185,129,.14),transparent 70%)}
+.dw-glow-r{bottom:-40%;right:-8%;width:150px;height:150px;background:radial-gradient(circle,rgba(212,175,106,.12),transparent 70%)}
+.dw-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;position:relative;z-index:1}
+.dw-head-left{display:flex;align-items:center;gap:8px}
+.dw-spark{font-size:16px;filter:drop-shadow(0 0 6px rgba(212,175,106,.6))}
+.dw-label{font-size:15px;font-weight:800;letter-spacing:.5px;background:linear-gradient(180deg,#c8fff8 15%,#2dd4bf 70%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 8px rgba(45,212,191,.4))}
+.dw-toggle{padding:6px 14px;background:linear-gradient(135deg,rgba(16,185,129,.14),rgba(16,185,129,.05));border:1px solid rgba(16,185,129,.35);border-radius:50px;color:#7de8d3;font-size:11.5px;font-weight:600;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s}
+.dw-toggle:hover{background:rgba(16,185,129,.2)}
+.dw-toggle:active{transform:scale(.94)}
+.dw-arabic{font-family:serif;font-size:22px;direction:rtl;line-height:2;margin-bottom:11px;position:relative;z-index:1;font-weight:600;background:linear-gradient(180deg,#fff 30%,#7de8d3);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 10px rgba(45,212,191,.25))}
+.dw-arabic:not(:empty)::before{content:'﴿ ';-webkit-text-fill-color:var(--gold2)}
+.dw-arabic:not(:empty)::after{content:' ﴾';-webkit-text-fill-color:var(--gold2)}
+.dw-text{font-size:14.5px;color:#dce6e1;line-height:1.85;margin-bottom:11px;position:relative;z-index:1;font-weight:400}
+.dw-ref{display:inline-flex;align-items:center;gap:6px;position:relative;z-index:1;font-size:12px;font-weight:700;color:#eed9a6;padding:5px 13px;border-radius:50px;background:rgba(212,175,106,.13);border:1px solid rgba(212,175,106,.35);box-shadow:0 2px 8px rgba(212,175,106,.1)}
+.dw-ref:empty{display:none}
+.dw-ref::before{content:'📖'}
 /* Live-stream facade — video loads only on tap (saves data + battery) */
 .live-facade{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
 .live-facade::before{content:'';position:absolute;inset:0;background:rgba(6,12,10,.45)}
@@ -525,18 +544,19 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
   📡 <span id="offline-banner-text">অফলাইন মোড — আগে দেখা কন্টেন্ট পাওয়া যাচ্ছে</span>
 </div>
 
-<div id="daily-widget" role="region" aria-label="দৈনিক আয়াত বা হাদিস" style="margin:14px 16px 0;padding:18px 20px;background:linear-gradient(135deg,rgba(16,185,129,.08),rgba(212,175,106,.05));border:1px solid var(--border2);border-radius:20px;position:relative;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.15)">
-  <div style="position:absolute;top:-35%;left:-10%;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,rgba(16,185,129,.1),transparent 70%);pointer-events:none" aria-hidden="true"></div>
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;position:relative;z-index:1">
-    <div style="display:flex;align-items:center;gap:7px">
-      <span style="font-size:15px" aria-hidden="true">✨</span>
-      <span id="daily-widget-label" style="font-size:11.5px;font-weight:700;color:var(--emerald2);letter-spacing:0.5px">আজকের আয়াত</span>
+<div id="daily-widget" class="daily-widget" role="region" aria-label="দৈনিক আয়াত বা হাদিস">
+  <div class="dw-glow dw-glow-l" aria-hidden="true"></div>
+  <div class="dw-glow dw-glow-r" aria-hidden="true"></div>
+  <div class="dw-head">
+    <div class="dw-head-left">
+      <span class="dw-spark" aria-hidden="true">✨</span>
+      <span id="daily-widget-label" class="dw-label">আজকের আয়াত</span>
     </div>
-    <button type="button" onclick="toggleDailyWidgetType()" id="daily-widget-toggle-btn" aria-label="হাদিস/আয়াত পরিবর্তন করুন" style="padding:5px 12px;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:50px;color:var(--text2);font-size:10.5px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">🔄 হাদিস দেখুন</button>
+    <button type="button" onclick="toggleDailyWidgetType()" id="daily-widget-toggle-btn" class="dw-toggle" aria-label="হাদিস/আয়াত পরিবর্তন করুন">🔄 হাদিস দেখুন</button>
   </div>
-  <div id="daily-widget-arabic" style="font-family:serif;font-size:19px;color:var(--text);direction:rtl;line-height:1.9;margin-bottom:10px;position:relative;z-index:1"></div>
-  <div id="daily-widget-text" style="font-size:13.5px;color:var(--text2);line-height:1.7;margin-bottom:8px;position:relative;z-index:1"></div>
-  <div id="daily-widget-ref" style="font-size:11px;color:var(--gold2);position:relative;z-index:1"></div>
+  <div id="daily-widget-arabic" class="dw-arabic"></div>
+  <div id="daily-widget-text" class="dw-text"></div>
+  <div id="daily-widget-ref" class="dw-ref"></div>
 </div>
 
 <div id="live-stream-widget" role="region" aria-label="মক্কা ও মদিনা লাইভ সম্প্রচার" style="margin:14px 16px 0">
@@ -4488,7 +4508,7 @@ async function renderDailyWidget(){
 
       arabicEl.textContent = verse.ar;
       textEl.textContent = escapeHtml ? getVerseText(verse) || verse.bn || verse.en : (verse.bn || verse.en);
-      refEl.textContent = `${surah.name} ${localizeNum(verse.n)}`;
+      refEl.textContent = currentLang==='bn' ? `সূরা ${surah.name} • আয়াত ${localizeNum(verse.n)}` : `${surah.name} • ${localizeNum(verse.n)}`;
       _dailyWidgetRetries = 0; textEl.onclick = null; textEl.style.cursor = '';
     }catch(e){
       arabicEl.textContent = '';
