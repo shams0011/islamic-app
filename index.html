@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v104-travel-helper-premium -->
+<!-- VERSION: v105-deep-premium-pass -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -166,10 +166,12 @@ html[dir="rtl"] .clock-panel{direction:rtl}
 .tabbar-card:nth-child(7) .tabbar-card-icon{background:rgba(52,211,153,.1)}
 .tabbar-card:nth-child(8) .tabbar-card-icon{background:rgba(232,168,168,.1)}
 
-.prayer-row{display:flex;align-items:center;padding:13px 15px;background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:8px;position:relative;overflow:hidden;transition:all .25s}
-.prayer-row.cur{background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(16,185,129,.03));border-color:rgba(16,185,129,.35);box-shadow:0 4px 16px rgba(16,185,129,.1)}
+.prayer-row{display:flex;align-items:center;padding:13px 15px;background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:15px;margin-bottom:8px;position:relative;overflow:hidden;transition:all .25s;box-shadow:0 3px 10px rgba(0,0,0,.12)}
+.prayer-row::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--emerald),var(--gold));opacity:0;transition:opacity .25s}
+.prayer-row.cur{background:linear-gradient(135deg,rgba(16,185,129,.13),rgba(16,185,129,.03));border-color:rgba(16,185,129,.4);box-shadow:0 4px 20px rgba(16,185,129,.16),0 0 0 1px rgba(16,185,129,.08)}
+.prayer-row.cur::before{opacity:1}
 .prayer-row.cur::before{content:'';position:absolute;left:0;top:15%;bottom:15%;width:3px;background:linear-gradient(to bottom,transparent,var(--emerald),var(--emerald2),transparent);box-shadow:0 0 8px var(--emerald2)}
-.p-icon{width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.02);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;margin-right:12px;flex-shrink:0;transition:all .25s}
+.p-icon{width:41px;height:41px;border-radius:12px;background:rgba(212,175,106,.06);border:1px solid rgba(212,175,106,.14);display:flex;align-items:center;justify-content:center;font-size:18px;margin-right:12px;flex-shrink:0;transition:all .25s}
 .prayer-row.cur .p-icon{background:linear-gradient(135deg,rgba(16,185,129,.18),rgba(16,185,129,.06));border-color:rgba(16,185,129,.3);box-shadow:0 2px 8px rgba(16,185,129,.2)}
 .p-info{flex:1}
 .p-name{font-size:17px;font-weight:600;color:var(--text)}
@@ -183,8 +185,9 @@ html[dir="rtl"] .clock-panel{direction:rtl}
 .special-card-head{padding:12px 16px;border-bottom:1px solid var(--border);font-size:14px;color:var(--emerald2);background:rgba(16,185,129,.05)}
 .sp-row{display:flex;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.04)}
 .sp-row:last-child{border-bottom:none}
-.sp-label{font-size:15px;color:var(--text2)}
-.sp-time{font-size:15px;color:var(--emerald2);font-weight:600;font-family:monospace}
+.sp-label{font-size:15px;color:var(--text2);font-weight:500}
+.sp-time{font-size:14px;color:var(--emerald2);font-weight:700;font-family:monospace;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.16);border-radius:50px;padding:3px 12px}
+.sp-row:hover{background:rgba(255,255,255,.02)}
 .search-wrap{position:relative;margin-bottom:16px}
 .search-input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:14px;padding:12px 16px 12px 44px;color:var(--text);font-size:15px;outline:none;font-family:'Hind Siliguri',sans-serif;transition:border-color .2s}
 .search-input:focus{border-color:rgba(16,185,129,.4)}
@@ -812,7 +815,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
     <div id="qibla-display" style="display:none;flex-direction:column;align-items:center;width:100%">
       <div id="qibla-align-badge" style="font-size:12px;color:var(--text3);margin-bottom:14px;padding:6px 14px;border-radius:50px;background:rgba(255,255,255,.03);border:1px solid var(--border2);transition:all .25s">কিবলার দিকে ঘোরান</div>
       <div style="position:relative;width:270px;height:270px;margin:6px 0 22px">
-        <div id="compass-dial" style="position:absolute;inset:0;border-radius:50%;border:1px solid var(--border2);background:radial-gradient(circle,rgba(16,185,129,.06),transparent 70%);box-shadow:0 0 0 1px rgba(16,185,129,.06),0 0 40px rgba(16,185,129,.08) inset;transition:transform .15s linear" aria-hidden="true">
+        <div id="compass-dial" style="position:absolute;inset:0;border-radius:50%;border:2px solid rgba(212,175,106,.3);background:repeating-conic-gradient(from -0.75deg,rgba(212,175,106,.35) 0deg 1.5deg,transparent 1.5deg 30deg),radial-gradient(circle,rgba(16,185,129,.07),transparent 72%);box-shadow:0 0 0 1px rgba(212,175,106,.12),0 0 0 6px rgba(16,185,129,.04),0 0 40px rgba(16,185,129,.1) inset,0 8px 30px rgba(0,0,0,.3);transition:transform .15s linear" aria-hidden="true">
           <div style="position:absolute;top:10px;left:50%;transform:translateX(-50%);color:var(--emerald2);font-size:13px;font-weight:700">N</div>
           <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);color:var(--text3);font-size:12px;font-weight:600">S</div>
           <div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:12px;font-weight:600">W</div>
@@ -831,7 +834,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
       </div>
       <div style="text-align:center" role="status">
         <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:4px">কিবলার দিক (উত্তর থেকে)</div>
-        <div id="qibla-degree" style="font-size:36px;font-weight:700;color:var(--emerald2);font-family:monospace">--°</div>
+        <div id="qibla-degree" style="font-size:38px;font-weight:800;background:linear-gradient(180deg,#c8fff8 10%,#2dd4bf 62%,#0fb5a0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--emerald2);font-family:monospace;filter:drop-shadow(0 0 12px rgba(45,212,191,.4))">--°</div>
         <div style="font-size:12px;color:var(--text3);margin-top:12px;max-width:260px;line-height:1.6">ফোন সমতল রেখে ধীরে ধীরে ঘুরান — কাবা আইকন উপরে আসলে আপনি কিবলামুখী</div>
       </div>
     </div>
@@ -847,10 +850,21 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
       <button class="tasbih-preset" id="preset-33b" onclick="setTasbihTarget(33,'الْحَمْدُ لِلَّهِ','preset-33b')" style="padding:8px 16px;border-radius:50px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s">আলহামদুলিল্লাহ ৩৩</button>
       <button class="tasbih-preset" id="preset-34" onclick="setTasbihTarget(34,'اللهُ أَكْبَرُ','preset-34')" style="padding:8px 16px;border-radius:50px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s">আল্লাহু আকবার ৩৪</button>
     </div>
-    <div id="tasbih-label-ar" style="font-family:serif;font-size:22px;color:var(--emerald2);direction:rtl;margin-bottom:6px">سُبْحَانَ اللهِ</div>
-    <div id="tasbih-target-label" style="font-size:12px;color:var(--text3);margin-bottom:24px">লক্ষ্য: ৩৩</div>
-    <button type="button" id="tasbih-counter-circle" onclick="tasbihTap()" aria-label="তাসবিহ গণনা করুন, বর্তমান গণনা শূন্য থেকে শুরু" style="width:210px;height:210px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(16,185,129,.16),rgba(16,185,129,.04) 70%);border:2px solid rgba(16,185,129,.35);display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;transition:transform .12s,box-shadow .2s;margin-bottom:24px;font-family:'Hind Siliguri',sans-serif;box-shadow:0 0 0 1px rgba(16,185,129,.1),0 8px 28px rgba(16,185,129,.15),inset 0 2px 12px rgba(255,255,255,.04)">
-      <div id="tasbih-count" aria-live="polite" style="font-size:56px;font-weight:700;color:var(--emerald2);font-family:monospace">০</div>
+    <div id="tasbih-label-ar" style="font-family:serif;font-size:27px;background:linear-gradient(180deg,#f0d795,#c9a45c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--gold2);direction:rtl;margin-bottom:6px;filter:drop-shadow(0 0 10px rgba(212,175,106,.3))">سُبْحَانَ اللهِ</div>
+    <div id="tasbih-target-label" style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:24px;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:50px;padding:3px 13px">লক্ষ্য: ৩৩</div>
+    <button type="button" id="tasbih-counter-circle" onclick="tasbihTap()" aria-label="তাসবিহ গণনা করুন, বর্তমান গণনা শূন্য থেকে শুরু" style="position:relative;width:210px;height:210px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(16,185,129,.16),rgba(16,185,129,.04) 70%);border:2px solid rgba(16,185,129,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none;transition:transform .12s,box-shadow .3s;margin-bottom:24px;font-family:'Hind Siliguri',sans-serif;box-shadow:0 0 0 1px rgba(16,185,129,.1),0 8px 28px rgba(16,185,129,.15),inset 0 2px 12px rgba(255,255,255,.04)">
+      <svg width="210" height="210" viewBox="0 0 210 210" style="position:absolute;inset:-2px;transform:rotate(-90deg);pointer-events:none" aria-hidden="true">
+        <defs>
+          <linearGradient id="tasbih-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#34d399"/>
+            <stop offset="100%" stop-color="#f0d795"/>
+          </linearGradient>
+        </defs>
+        <circle cx="105" cy="105" r="99" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="5"/>
+        <circle id="tasbih-ring-fg" cx="105" cy="105" r="99" fill="none" stroke="url(#tasbih-ring-grad)" stroke-width="5" stroke-linecap="round" stroke-dasharray="622" stroke-dashoffset="622" style="transition:stroke-dashoffset .25s ease;filter:drop-shadow(0 0 5px rgba(16,185,129,.5))"/>
+      </svg>
+      <div id="tasbih-count" aria-live="polite" style="font-size:56px;font-weight:700;color:var(--emerald2);font-family:monospace;text-shadow:0 0 18px rgba(16,185,129,.35)">০</div>
+      <div id="tasbih-of-target" style="font-size:12px;color:var(--text3);font-weight:600;margin-top:-4px">/ ৩৩</div>
     </button>
     <div style="display:flex;gap:12px">
       <button onclick="tasbihReset()" style="padding:10px 22px;border-radius:12px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:14px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">রিসেট</button>
@@ -4130,70 +4144,70 @@ const AI_MODULES = [
     disclaimer:'⚠️ এই AI একজন প্রকৃত মুফতি বা ইসলামিক স্কলারের বিকল্প নয়। জটিল বা ব্যক্তিগত মাসআলার জন্য অনুগ্রহ করে স্থানীয় নির্ভরযোগ্য আলেমের কাছে যান।'
   },
   {
-    id:'fatwa', icon:'📜', title:'AI Fatwa Assistant', sub:'ফাতওয়া সম্পর্কিত তথ্য ও রেফারেন্স',
+    id:'fatwa', icon:'📜', title:'AI ফাতওয়া সহায়ক', sub:'ফাতওয়া সম্পর্কিত তথ্য ও রেফারেন্স',
     emptyTitle:'ফাতওয়া সম্পর্কে জিজ্ঞেস করুন', emptyDesc:'কোনো বিষয়ে প্রচলিত ফাতওয়া ও মতামত জানুন',
     chips:['মিউজিক শোনা প্রসঙ্গে','ব্যাংক সুদ প্রসঙ্গে','ছবি তোলা প্রসঙ্গে','চাকরিতে হালাল-হারাম'],
     system:'আপনি একজন ইসলামিক ফিকহ গবেষণা সহায়ক। বিভিন্ন বিষয়ে প্রচলিত ফাতওয়া, বিভিন্ন মাযহাবের অবস্থান ও যুক্তি সংক্ষেপে তুলে ধরুন। সবসময় স্পষ্ট করুন যে এটি একটি তথ্যভিত্তিক সারসংক্ষেপ, প্রকৃত ফাতওয়া নয়, এবং নির্দিষ্ট সিদ্ধান্তের জন্য স্বীকৃত মুফতির কাছে যেতে বলুন। বাংলায় উত্তর দিন।',
     disclaimer:'⚠️ এটি কোনো প্রকৃত ফাতওয়া প্রদান করে না — শুধু বিদ্যমান ফাতওয়া ও মতামতের তথ্যভিত্তিক সারসংক্ষেপ দেয়। চূড়ান্ত সিদ্ধান্তের জন্য স্বীকৃত মুফতির শরণাপন্ন হোন।'
   },
   {
-    id:'khutbah', icon:'🎙️', title:'AI Khutbah Writer', sub:'জুমার খুতবা লেখায় সহায়তা',
+    id:'khutbah', icon:'🎙️', title:'AI খুতবা লেখক', sub:'জুমার খুতবা লেখায় সহায়তা',
     emptyTitle:'খুতবার বিষয় দিন', emptyDesc:'যেকোনো ইসলামিক বিষয়ে খুতবার খসড়া তৈরি করুন',
     chips:['সবরের উপর খুতবা','মা-বাবার হক নিয়ে খুতবা','ঐক্য নিয়ে খুতবা','রমজানের প্রস্তুতি নিয়ে খুতবা'],
     system:'আপনি একজন দক্ষ খতিব ও খুতবা লেখক। প্রদত্ত বিষয়ের উপর একটি কাঠামোবদ্ধ জুমার খুতবার খসড়া তৈরি করুন — শুরুতে আল্লাহর প্রশংসা ও দরুদ, প্রাসঙ্গিক কুরআন আয়াত ও হাদিস উদ্ধৃতি সহ মূল বিষয়বস্তু, এবং শেষে দোয়া দিয়ে সমাপ্তি। বাংলায় লিখুন।',
     disclaimer:'এই খসড়া একটি প্রাথমিক কাঠামো মাত্র — উপস্থাপনের আগে অবশ্যই একজন আলেম দ্বারা পর্যালোচনা করিয়ে নিন।'
   },
   {
-    id:'lifecoach', icon:'🌱', title:'AI Life Coach', sub:'ইসলামিক দৃষ্টিভঙ্গিতে ব্যক্তিগত উন্নয়ন',
+    id:'lifecoach', icon:'🌱', title:'AI লাইফ কোচ', sub:'ইসলামিক দৃষ্টিভঙ্গিতে ব্যক্তিগত উন্নয়ন',
     emptyTitle:'লক্ষ্য নিয়ে কথা বলুন', emptyDesc:'অভ্যাস, লক্ষ্য, আত্ম-উন্নয়ন নিয়ে পরামর্শ নিন',
     chips:['সময় ব্যবস্থাপনা উন্নত করব কীভাবে','অলসতা দূর করার উপায়','লক্ষ্য অর্জনে ইসলামিক দৃষ্টিভঙ্গি','দৈনন্দিন রুটিন গোছানো'],
     system:'আপনি একজন ইসলামিক জীবন-কোচ। কুরআন-হাদিসের শিক্ষা ও ব্যবহারিক আত্ম-উন্নয়ন কৌশল একত্রে মিশিয়ে উৎসাহব্যঞ্জক, বাস্তবসম্মত পরামর্শ দিন। ছোট ছোট কার্যকর পদক্ষেপ প্রস্তাব করুন। বাংলায় উত্তর দিন।',
     disclaimer:null
   },
   {
-    id:'marriage', icon:'💍', title:'AI Marriage Advisor', sub:'দাম্পত্য জীবন বিষয়ক ইসলামিক পরামর্শ',
+    id:'marriage', icon:'💍', title:'AI দাম্পত্য পরামর্শক', sub:'দাম্পত্য জীবন বিষয়ক ইসলামিক পরামর্শ',
     emptyTitle:'প্রশ্ন করুন', emptyDesc:'বিবাহ, দাম্পত্য সম্পর্ক নিয়ে সাধারণ পরামর্শ নিন',
     chips:['স্বামী-স্ত্রীর হক কী কী','মতবিরোধ মেটানোর ইসলামিক উপায়','বিবাহের আগে কী জানা দরকার','দাম্পত্য সুখী রাখার উপায়'],
     system:'আপনি একজন সংবেদনশীল ইসলামিক দাম্পত্য-পরামর্শদাতা। কুরআন-হাদিসের আলোকে সাধারণ, নীতিনির্ভর পরামর্শ দিন। ব্যক্তিগত পারিবারিক সংকট, নির্যাতন, বা আইনি জটিলতার ইঙ্গিত পেলে স্পষ্টভাবে বলুন যে এসব ক্ষেত্রে অভিজ্ঞ কাউন্সেলর, আলেম বা প্রয়োজনে আইনি সহায়তা নেওয়া জরুরি — শুধু সাধারণ উপদেশে সীমাবদ্ধ থাকবেন না। বাংলায় উত্তর দিন।',
     disclaimer:'⚠️ জটিল বা গুরুতর পারিবারিক সমস্যার জন্য অভিজ্ঞ কাউন্সেলর বা আলেমের সরাসরি সহায়তা নিন।'
   },
   {
-    id:'parenting', icon:'👨‍👩‍👧', title:'AI Parenting Advisor', sub:'সন্তান লালন-পালনে ইসলামিক দিকনির্দেশনা',
+    id:'parenting', icon:'👨‍👩‍👧', title:'AI প্যারেন্টিং পরামর্শক', sub:'সন্তান লালন-পালনে ইসলামিক দিকনির্দেশনা',
     emptyTitle:'প্রশ্ন করুন', emptyDesc:'সন্তান প্রতিপালন নিয়ে ইসলামিক পরামর্শ নিন',
     chips:['সন্তানকে নামাজ শেখানোর বয়স','সন্তানের সাথে আচরণ কেমন হবে','মোবাইল আসক্তি থেকে রক্ষা','ইসলামিক শিক্ষা কীভাবে শুরু করব'],
     system:'আপনি একজন অভিজ্ঞ ইসলামিক প্যারেন্টিং পরামর্শদাতা। কুরআন-হাদিস ও আধুনিক child-development জ্ঞানের সমন্বয়ে ব্যবহারিক পরামর্শ দিন। বাংলায় উত্তর দিন।',
     disclaimer:null
   },
   {
-    id:'wellness', icon:'💚', title:'AI Mental Wellness Coach', sub:'মানসিক প্রশান্তির জন্য ইসলামিক সহায়তা',
+    id:'wellness', icon:'💚', title:'AI মানসিক প্রশান্তি কোচ', sub:'মানসিক প্রশান্তির জন্য ইসলামিক সহায়তা',
     emptyTitle:'মন খুলে বলুন', emptyDesc:'দুশ্চিন্তা, মানসিক চাপ নিয়ে কথা বলুন',
     chips:['দুশ্চিন্তা কমানোর দোয়া ও উপায়','মানসিক প্রশান্তির জন্য কী করব','অস্থিরতা লাগলে কী করব','কৃতজ্ঞতা অনুশীলনের উপায়'],
     system:'আপনি একজন সহানুভূতিশীল ইসলামিক মানসিক সুস্থতা সহায়ক। ইসলামিক শিক্ষা (সবর, দোয়া, তাওয়াক্কুল) ও সাধারণ মানসিক সুস্থতার কৌশল একত্রে দিন, সবসময় উষ্ণ ও বিচারহীন সুরে। অত্যন্ত গুরুত্বপূর্ণ: যদি ব্যবহারকারীর বার্তায় আত্মহত্যা, নিজের ক্ষতি করা, বা গুরুতর মানসিক সংকটের কোনো ইঙ্গিত থাকে, তাহলে সাথে সাথে দয়ালুভাবে তাকে এখনই কোনো বিশ্বস্ত মানুষ, পরিবার, বা পেশাদার মানসিক স্বাস্থ্য সহায়তা ও জরুরি হেল্পলাইনের সাথে যোগাযোগ করতে উৎসাহিত করুন — এটি শুধুমাত্র ধর্মীয় উপদেশে সীমাবদ্ধ রাখবেন না। বাংলায় উত্তর দিন।',
     disclaimer:'এই AI পেশাদার মানসিক স্বাস্থ্যসেবার বিকল্প নয়। গুরুতর মানসিক কষ্টে থাকলে অনুগ্রহ করে দ্রুত একজন মানসিক স্বাস্থ্য বিশেষজ্ঞ বা বিশ্বস্ত মানুষের সাহায্য নিন।'
   },
   {
-    id:'arabicteacher', icon:'🔤', title:'AI Arabic Teacher', sub:'আরবি ভাষা শেখার সহায়ক',
+    id:'arabicteacher', icon:'🔤', title:'AI আরবি শিক্ষক', sub:'আরবি ভাষা শেখার সহায়ক',
     emptyTitle:'আরবি শিখুন', emptyDesc:'শব্দ, ব্যাকরণ, উচ্চারণ নিয়ে প্রশ্ন করুন',
     chips:['কুরআনিক আরবি বর্ণমালা শেখান','সাধারণ ইসলামিক শব্দের অর্থ','আরবি বাক্য গঠনের নিয়ম','নামাজের আরবি শব্দের অর্থ'],
     system:'আপনি একজন ধৈর্যশীল আরবি ভাষা শিক্ষক, বিশেষত কুরআনিক/ক্লাসিক্যাল আরবির উপর দক্ষ। বাংলাভাষী শিক্ষার্থীদের ধাপে ধাপে, সহজ উদাহরণসহ আরবি শব্দ, ব্যাকরণ ও উচ্চারণ শেখান। প্রতিটি আরবি শব্দের সাথে উচ্চারণ (বাংলা হরফে) ও অর্থ দিন। বাংলায় উত্তর দিন।',
     disclaimer:null
   },
   {
-    id:'qurantheacher', icon:'📗', title:'AI Quran Teacher', sub:'কুরআনের আয়াত ও তাফসীর বুঝতে সহায়তা',
+    id:'qurantheacher', icon:'📗', title:'AI কুরআন শিক্ষক', sub:'কুরআনের আয়াত ও তাফসীর বুঝতে সহায়তা',
     emptyTitle:'কুরআন সম্পর্কে জিজ্ঞেস করুন', emptyDesc:'যেকোনো আয়াত বা সূরা নিয়ে ব্যাখ্যা জানুন',
     chips:['সূরা ফাতিহার ব্যাখ্যা','আয়াতুল কুরসির অর্থ ও তাৎপর্য','সবরের উপর কুরআনের আয়াত','তাওবা সংক্রান্ত আয়াত'],
     system:'আপনি একজন জ্ঞানী কুরআন শিক্ষক। প্রশ্নকৃত আয়াত বা সূরার আরবি টেক্সট, বাংলা অনুবাদ এবং সংক্ষিপ্ত তাফসীর (প্রসিদ্ধ তাফসীরের আলোকে) উপস্থাপন করুন। জটিল বিষয়ে একাধিক প্রসিদ্ধ ব্যাখ্যাকারের মতামত উল্লেখ করুন। বাংলায় উত্তর দিন।',
     disclaimer:'গভীর তাফসীর-সংক্রান্ত জটিল বিষয়ে প্রসিদ্ধ তাফসীর গ্রন্থ বা আলেমের সাথে যাচাই করে নিন।'
   },
   {
-    id:'speechgen', icon:'🎤', title:'AI Speech Generator', sub:'ইসলামিক বক্তৃতা ও বক্তব্য তৈরি',
+    id:'speechgen', icon:'🎤', title:'AI বক্তৃতা সহায়ক', sub:'ইসলামিক বক্তৃতা ও বক্তব্য তৈরি',
     emptyTitle:'বক্তৃতার বিষয় দিন', emptyDesc:'যেকোনো অনুষ্ঠানের জন্য বক্তব্যের খসড়া তৈরি করুন',
     chips:['মিলাদুন্নবী অনুষ্ঠানের বক্তব্য','ইসলামিক বিবাহ অনুষ্ঠানের বক্তব্য','রমজান নিয়ে সংক্ষিপ্ত বক্তব্য','ইসলামিক শিক্ষা প্রতিষ্ঠানের বক্তব্য'],
     system:'আপনি একজন দক্ষ ইসলামিক বক্তা ও বক্তৃতা লেখক। প্রদত্ত উপলক্ষ ও বিষয়ের জন্য একটি কাঠামোবদ্ধ, প্রাণবন্ত বক্তব্যের খসড়া তৈরি করুন — উপযুক্ত শুরু (সালাম, আল্লাহর প্রশংসা), মূল বক্তব্য প্রাসঙ্গিক উদাহরণ ও কুরআন-হাদিস উদ্ধৃতি সহ, এবং উপযুক্ত সমাপ্তি। বাংলায় লিখুন।',
     disclaimer:null
   },
   {
-    id:'research', icon:'🔬', title:'AI Research Assistant', sub:'ইসলামিক বিষয়ে গবেষণা সহায়ক',
+    id:'research', icon:'🔬', title:'AI গবেষণা সহায়ক', sub:'ইসলামিক বিষয়ে গবেষণা সহায়ক',
     emptyTitle:'গবেষণার বিষয় দিন', emptyDesc:'ইসলামিক ইতিহাস, চিন্তাধারা, বিষয়ভিত্তিক গবেষণায় সহায়তা নিন',
     chips:['ইসলামি স্বর্ণযুগের বিজ্ঞানীদের অবদান','চার মাযহাবের ইতিহাস','ইসলামি অর্থনীতির মূলনীতি','হাদিস বিজ্ঞানের পদ্ধতি'],
     system:'আপনি একজন একাডেমিক ইসলামিক গবেষণা সহায়ক। প্রশ্নকৃত বিষয়ে সুসংগঠিত, তথ্যবহুল ও নিরপেক্ষ বিশ্লেষণ দিন — ঐতিহাসিক প্রেক্ষাপট, বিভিন্ন পণ্ডিতের মতামত, এবং প্রাসঙ্গিক সূত্র উল্লেখ করুন। বিতর্কিত বিষয়ে একাধিক দৃষ্টিভঙ্গি ভারসাম্যপূর্ণভাবে উপস্থাপন করুন। বাংলায় উত্তর দিন।',
@@ -4426,12 +4440,25 @@ function loadTasbihState(){
 
 function toBn(n){ return localizeNum(n); } // follows the active UI language (Bengali/Arabic digits or plain)
 
+// progress ring: dasharray 622 = 2πr (r=99); offset shrinks as count approaches target
+function updateTasbihRing(){
+  const fg = document.getElementById('tasbih-ring-fg');
+  if(fg) fg.style.strokeDashoffset = String(622 * (1 - Math.min(tasbihCount, tasbihTarget) / tasbihTarget));
+  const ofEl = document.getElementById('tasbih-of-target');
+  if(ofEl) ofEl.textContent = '/ ' + toBn(tasbihTarget);
+  const circle = document.getElementById('tasbih-counter-circle');
+  if(circle) circle.style.boxShadow = tasbihCount >= tasbihTarget
+    ? '0 0 0 1px rgba(16,185,129,.3), 0 8px 40px rgba(16,185,129,.45), inset 0 2px 12px rgba(255,255,255,.06)'
+    : '0 0 0 1px rgba(16,185,129,.1), 0 8px 28px rgba(16,185,129,.15), inset 0 2px 12px rgba(255,255,255,.04)';
+}
+
 function setTasbihTarget(target, arabicLabel, btnId){
   tasbihTarget = target;
   tasbihCount = 0;
   document.getElementById('tasbih-count').textContent = '০';
   document.getElementById('tasbih-target-label').textContent = t('target')+': '+toBn(target);
   document.getElementById('tasbih-label-ar').textContent = arabicLabel;
+  updateTasbihRing();
 
   document.querySelectorAll('.tasbih-preset').forEach(btn => {
     const isActive = btn.id === btnId;
@@ -4446,6 +4473,7 @@ function setTasbihTarget(target, arabicLabel, btnId){
 function tasbihTap(){
   tasbihCount++;
   document.getElementById('tasbih-count').textContent = toBn(tasbihCount);
+  updateTasbihRing();
   const circle = document.getElementById('tasbih-counter-circle');
   circle.style.transform = 'scale(0.93)';
   setTimeout(()=>{ circle.style.transform = 'scale(1)'; }, 100);
@@ -4468,6 +4496,7 @@ function tasbihTap(){
 function tasbihReset(){
   tasbihCount = 0;
   document.getElementById('tasbih-count').textContent = '০';
+  updateTasbihRing();
 }
 
 /* ══ DUA COLLECTION ══ */
