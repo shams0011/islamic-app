@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v83-standard-digit-size -->
+<!-- VERSION: v84-daily-widget-retry -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -4443,6 +4443,19 @@ function toggleDailyWidgetType(){
   renderDailyWidget();
 }
 
+let _dailyWidgetRetries = 0;
+// On a failed load (e.g. a brief mobile-network hiccup) retry automatically a
+// couple of times, and let the user tap the error text to retry manually.
+function dailyWidgetFailed(textEl){
+  textEl.textContent = t('dailyWidgetLoadFailed') + ' 🔄';
+  textEl.style.cursor = 'pointer';
+  textEl.onclick = () => { _dailyWidgetRetries = 0; renderDailyWidget(); };
+  if(_dailyWidgetRetries < 2){
+    _dailyWidgetRetries++;
+    setTimeout(() => renderDailyWidget(), 4000);
+  }
+}
+
 async function renderDailyWidget(){
   const labelEl = document.getElementById('daily-widget-label');
   const toggleBtn = document.getElementById('daily-widget-toggle-btn');
@@ -4476,9 +4489,10 @@ async function renderDailyWidget(){
       arabicEl.textContent = verse.ar;
       textEl.textContent = escapeHtml ? getVerseText(verse) || verse.bn || verse.en : (verse.bn || verse.en);
       refEl.textContent = `${surah.name} ${localizeNum(verse.n)}`;
+      _dailyWidgetRetries = 0; textEl.onclick = null; textEl.style.cursor = '';
     }catch(e){
       arabicEl.textContent = '';
-      textEl.textContent = t('dailyWidgetLoadFailed');
+      dailyWidgetFailed(textEl);
       refEl.textContent = '';
     }
   } else {
@@ -4517,9 +4531,10 @@ async function renderDailyWidget(){
       arabicEl.textContent = '';
       textEl.innerHTML = colorizeHadith(getHadithText(hadith));
       refEl.textContent = `${book.name} — ${chapter.name}, ${t('hadithNo')} ${localizeNum(hadith.n)}`;
+      _dailyWidgetRetries = 0; textEl.onclick = null; textEl.style.cursor = '';
     }catch(e){
       arabicEl.textContent = '';
-      textEl.textContent = t('dailyWidgetLoadFailed');
+      dailyWidgetFailed(textEl);
       refEl.textContent = '';
     }
   }
