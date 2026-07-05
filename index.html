@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v68-analog-clock-kalima -->
+<!-- VERSION: v69-kalima-calligraphy -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -19,7 +19,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :focus-visible{outline:2px solid var(--emerald2);outline-offset:2px;border-radius:4px}
@@ -65,13 +65,15 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
 .ac-hand{fill:var(--gold2)}
 .ac-sec{stroke:#e05c5c;stroke-width:1.1;stroke-linecap:round}
 .ac-cap{fill:var(--gold2)}
-.cp-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;align-items:flex-end;text-align:right;position:relative;z-index:1}
-.kalima{font-family:serif;direction:rtl;font-size:21px;line-height:1.75;font-weight:700;color:#fff;text-shadow:0 0 16px rgba(212,175,106,.5),0 0 36px rgba(16,185,129,.3)}
+.cp-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;align-items:center;text-align:center;position:relative;z-index:1}
+.kalima{font-family:'Amiri',serif;direction:rtl;font-weight:700;display:flex;flex-direction:column;gap:2px}
+.kalima-l1{font-size:29px;line-height:1.55;background:linear-gradient(180deg,#fff 25%,var(--gold2) 70%,var(--gold3));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 12px rgba(212,175,106,.45)) drop-shadow(0 2px 4px rgba(0,0,0,.6))}
+.kalima-l2{font-size:20px;line-height:1.5;background:linear-gradient(180deg,#f6f9f7 20%,var(--emerald2) 80%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 10px rgba(16,185,129,.4)) drop-shadow(0 2px 4px rgba(0,0,0,.6))}
+.kalima-orn{font-size:11px;vertical-align:3px;letter-spacing:0}
 .cp-digital{display:flex;align-items:baseline;gap:7px}
 #clock{font-size:23px;font-weight:700;color:var(--emerald2);font-family:ui-monospace,monospace;letter-spacing:.5px;line-height:1;text-shadow:0 0 16px rgba(16,185,129,.4)}
 #clock-ampm{font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase}
 html[dir="rtl"] .clock-panel{direction:rtl}
-html[dir="rtl"] .cp-right{align-items:flex-start;text-align:left}
 .header-row{display:flex;justify-content:space-between;align-items:center}
 .header-loc{font-size:13px;color:var(--text3);display:flex;align-items:center;gap:5px}
 .live-dot{width:6px;height:6px;background:var(--emerald2);border-radius:50%;box-shadow:0 0 7px var(--emerald2);animation:blink 2s ease-in-out infinite}
@@ -407,7 +409,10 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
       </svg>
     </div>
     <div class="cp-right">
-      <div class="kalima" lang="ar" dir="rtl">لَا إِلَٰهَ إِلَّا اللَّهُ مُحَمَّدٌ رَسُولُ اللَّهِ</div>
+      <div class="kalima" lang="ar" dir="rtl">
+        <span class="kalima-l1">لَا إِلَٰهَ إِلَّا اللَّهُ</span>
+        <span class="kalima-l2"><span class="kalima-orn" aria-hidden="true">✦</span> مُحَمَّدٌ رَسُولُ اللَّهِ <span class="kalima-orn" aria-hidden="true">✦</span></span>
+      </div>
       <div class="cp-digital">
         <span id="clock" role="timer" aria-live="off" aria-label="বর্তমান সময়">--:--:--</span>
         <span id="clock-ampm">--</span>
