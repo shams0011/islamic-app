@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v89-az-premium-polish -->
+<!-- VERSION: v90-menu-2col -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -148,11 +148,12 @@ html[dir="rtl"] .clock-panel{direction:rtl}
 .quick-item:nth-child(3) .quick-icon{background:rgba(16,185,129,.14);box-shadow:0 0 0 1px rgba(16,185,129,.18) inset}
 .quick-item:nth-child(4) .quick-icon{background:rgba(52,211,153,.14);box-shadow:0 0 0 1px rgba(52,211,153,.18) inset}
 .quick-label{font-size:11px;color:var(--text2);font-weight:500;text-align:center}
-.tabbar-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;padding:14px;border-bottom:1px solid var(--border);background:rgba(10,13,18,.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);position:sticky;top:0;z-index:30}
-.tabbar-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;user-select:none;transition:transform .15s,box-shadow .25s,background .25s,border-color .25s;padding:12px 4px;background:linear-gradient(160deg,rgba(255,255,255,.04),rgba(255,255,255,.015));border:1px solid var(--border2);border-radius:15px;font-family:'Hind Siliguri',sans-serif;box-shadow:0 3px 10px rgba(0,0,0,.15)}
+/* 2-wide menu grid — not sticky: at this size 4 pinned rows would swallow the viewport */
+.tabbar-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.tabbar-card{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:12px;cursor:pointer;user-select:none;transition:transform .15s,box-shadow .25s,background .25s,border-color .25s;padding:14px 16px;background:linear-gradient(160deg,rgba(255,255,255,.04),rgba(255,255,255,.015));border:1px solid var(--border2);border-radius:17px;font-family:'Hind Siliguri',sans-serif;box-shadow:0 3px 10px rgba(0,0,0,.15)}
 .tabbar-card:active{transform:scale(.92)}
-.tabbar-card-icon{font-size:17px;line-height:1;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:rgba(255,255,255,.05);transition:background .25s,box-shadow .25s}
-.tabbar-card-label{font-size:10px;color:var(--text2);font-weight:500;text-align:center;white-space:nowrap;transition:color .2s}
+.tabbar-card-icon{font-size:23px;line-height:1;width:44px;height:44px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:13px;background:rgba(255,255,255,.05);transition:background .25s,box-shadow .25s;box-shadow:0 0 0 1px rgba(255,255,255,.05) inset}
+.tabbar-card-label{font-size:15.5px;color:var(--text2);font-weight:600;text-align:left;white-space:nowrap;transition:color .2s}
 .tabbar-card.active{background:linear-gradient(160deg,rgba(16,185,129,.2),rgba(16,185,129,.07));border-color:rgba(16,185,129,.45);box-shadow:0 5px 16px rgba(16,185,129,.22)}
 .tabbar-card.active .tabbar-card-label{color:var(--emerald2);font-weight:700}
 .tabbar-card.active .tabbar-card-icon{background:rgba(16,185,129,.18);box-shadow:0 0 0 1px rgba(16,185,129,.25) inset}
@@ -627,10 +628,6 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
 
 
 <div class="tabbar-grid" role="tablist" aria-label="মূল মেনু" id="tabbar-scroll">
-  <button class="tabbar-card active" id="tabbtn-prayer" role="tab" aria-selected="true" aria-controls="tab-prayer" onclick="showTab('prayer',this)">
-    <span class="tabbar-card-icon" aria-hidden="true">🕌</span>
-    <span class="tabbar-card-label">নামাজ</span>
-  </button>
   <button class="tabbar-card" id="tabbtn-quran" role="tab" aria-selected="false" aria-controls="tab-quran" onclick="showTab('quran',this)">
     <span class="tabbar-card-icon" aria-hidden="true">📖</span>
     <span class="tabbar-card-label">কুরআন</span>
@@ -639,17 +636,21 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
     <span class="tabbar-card-icon" aria-hidden="true">📚</span>
     <span class="tabbar-card-label">হাদিস</span>
   </button>
+  <button class="tabbar-card active" id="tabbtn-prayer" role="tab" aria-selected="true" aria-controls="tab-prayer" onclick="showTab('prayer',this)">
+    <span class="tabbar-card-icon" aria-hidden="true">🕌</span>
+    <span class="tabbar-card-label">নামাজ</span>
+  </button>
   <button class="tabbar-card" id="tabbtn-dua" role="tab" aria-selected="false" aria-controls="tab-dua" onclick="showTab('dua',this)">
     <span class="tabbar-card-icon" aria-hidden="true">🤲</span>
     <span class="tabbar-card-label">দোয়া</span>
   </button>
-  <button class="tabbar-card" id="tabbtn-tasbih" role="tab" aria-selected="false" aria-controls="tab-tasbih" onclick="showTab('tasbih',this)">
-    <span class="tabbar-card-icon" aria-hidden="true">📿</span>
-    <span class="tabbar-card-label">তাসবিহ</span>
-  </button>
   <button class="tabbar-card" id="tabbtn-qibla" role="tab" aria-selected="false" aria-controls="tab-qibla" onclick="showTab('qibla',this)">
     <span class="tabbar-card-icon" aria-hidden="true">🧭</span>
     <span class="tabbar-card-label">কিবলা</span>
+  </button>
+  <button class="tabbar-card" id="tabbtn-tasbih" role="tab" aria-selected="false" aria-controls="tab-tasbih" onclick="showTab('tasbih',this)">
+    <span class="tabbar-card-icon" aria-hidden="true">📿</span>
+    <span class="tabbar-card-label">তাসবিহ</span>
   </button>
   <button class="tabbar-card" id="tabbtn-tools" role="tab" aria-selected="false" aria-controls="tab-tools" onclick="showTab('tools',this)">
     <span class="tabbar-card-icon" aria-hidden="true">🧰</span>
@@ -1865,7 +1866,8 @@ function fmtHM(hours){
   const h=Math.floor(hours), m=Math.round((hours-h)*60);
   const hh=String(m===60?h+1:h).padStart(2,'0');
   const mm=String(m===60?0:m).padStart(2,'0');
-  return hh+':'+mm;
+  // display-only: localized digits so the waqt list matches the rest of the UI
+  return localizeNum(hh+':'+mm);
 }
 
 function getPrayerTimes(date){
