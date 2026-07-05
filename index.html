@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v85-daily-widget-multicolor -->
+<!-- VERSION: v86-verse-word-colors -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -341,9 +341,19 @@ html[dir="rtl"] .fc-cd-cap{white-space:nowrap}
 .dw-toggle{padding:6px 14px;background:linear-gradient(135deg,rgba(16,185,129,.14),rgba(16,185,129,.05));border:1px solid rgba(16,185,129,.35);border-radius:50px;color:#7de8d3;font-size:11.5px;font-weight:600;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s}
 .dw-toggle:hover{background:rgba(16,185,129,.2)}
 .dw-toggle:active{transform:scale(.94)}
-.dw-arabic{font-family:serif;font-size:22px;direction:rtl;line-height:2;margin-bottom:11px;position:relative;z-index:1;font-weight:600;background:linear-gradient(180deg,#fff 30%,#7de8d3);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 10px rgba(45,212,191,.25))}
-.dw-arabic:not(:empty)::before{content:'﴿ ';-webkit-text-fill-color:var(--gold2)}
-.dw-arabic:not(:empty)::after{content:' ﴾';-webkit-text-fill-color:var(--gold2)}
+.dw-arabic{font-family:serif;font-size:22px;direction:rtl;line-height:2;margin-bottom:11px;position:relative;z-index:1;font-weight:600;filter:drop-shadow(0 0 10px rgba(45,212,191,.18))}
+.dw-arabic:not(:empty)::before{content:'﴿ ';color:var(--gold2)}
+.dw-arabic:not(:empty)::after{content:' ﴾';color:var(--gold2)}
+.dw-w1{color:#f4faf7}
+.dw-w2{color:#7de8d3;text-shadow:0 0 10px rgba(45,212,191,.3)}
+.dw-w3{color:#cfeee0}
+.dw-allah{color:#f0d795;font-weight:700;text-shadow:0 0 12px rgba(212,175,106,.55)}
+/* hadith-style term colouring inside the widget translation */
+.dw-text .narrator-name{color:var(--gold2);font-weight:600;background:rgba(212,175,106,.12);padding:1px 6px;border-radius:6px}
+.dw-text .ref-num{color:var(--emerald2);font-weight:600;background:rgba(16,185,129,.12);padding:1px 6px;border-radius:6px;font-size:13px}
+.dw-text .holy-name{color:#f0d795;font-weight:700;text-shadow:0 0 10px rgba(212,175,106,.35)}
+.dw-text .key-term{color:#7de8d3;font-weight:600}
+.dw-text .quoted-speech{color:var(--gold2);font-style:italic}
 .dw-text{font-size:14.5px;color:#dce6e1;line-height:1.85;margin-bottom:11px;position:relative;z-index:1;font-weight:400}
 .dw-ref{display:inline-flex;align-items:center;gap:6px;position:relative;z-index:1;font-size:12px;font-weight:700;color:#eed9a6;padding:5px 13px;border-radius:50px;background:rgba(212,175,106,.13);border:1px solid rgba(212,175,106,.35);box-shadow:0 2px 8px rgba(212,175,106,.1)}
 .dw-ref:empty{display:none}
@@ -4463,6 +4473,19 @@ function toggleDailyWidgetType(){
   renderDailyWidget();
 }
 
+// Colour the verse word-by-word, mushaf-style: Allah's name in glowing gold,
+// the remaining words cycling through white / teal / mint shades.
+function colorizeVerseArabic(ar){
+  let i = 0;
+  const palette = ['dw-w1','dw-w2','dw-w3'];
+  return escapeHtml(ar || '').split(/\s+/).map(w => {
+    // strip harakat/tanween/superscript-alef and unify wasla-alef, then look for الله/لله
+    const bare = w.replace(/[ً-ٰٟ]/g, '').replace(/ٱ/g, 'ا');
+    const cls = /الله|لله/.test(bare) ? 'dw-allah' : palette[(i++) % palette.length];
+    return `<span class="${cls}">${w}</span>`;
+  }).join(' ');
+}
+
 let _dailyWidgetRetries = 0;
 // On a failed load (e.g. a brief mobile-network hiccup) retry automatically a
 // couple of times, and let the user tap the error text to retry manually.
@@ -4506,8 +4529,8 @@ async function renderDailyWidget(){
       const verseIdx = seededRandom(seed + 'verse') % verses.length;
       const verse = verses[verseIdx];
 
-      arabicEl.textContent = verse.ar;
-      textEl.textContent = escapeHtml ? getVerseText(verse) || verse.bn || verse.en : (verse.bn || verse.en);
+      arabicEl.innerHTML = colorizeVerseArabic(verse.ar);
+      textEl.innerHTML = colorizeHadith(getVerseText(verse) || verse.bn || verse.en);
       refEl.textContent = currentLang==='bn' ? `সূরা ${surah.name} • আয়াত ${localizeNum(verse.n)}` : `${surah.name} • ${localizeNum(verse.n)}`;
       _dailyWidgetRetries = 0; textEl.onclick = null; textEl.style.cursor = '';
     }catch(e){
