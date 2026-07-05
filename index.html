@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v79-fast-names-trimmed -->
+<!-- VERSION: v80-small-text-beauty-pass -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -108,7 +108,8 @@ html[dir="rtl"] .clock-panel{direction:rtl}
 .np-divider{width:1px;background:linear-gradient(180deg,transparent,rgba(255,255,255,.22),transparent)}
 .np-col{display:flex;flex-direction:column;gap:4px;min-width:0}
 .np-col-next{text-align:right;align-items:flex-end}
-.np-label{font-size:11.5px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);font-weight:700;margin-bottom:6px;white-space:nowrap}
+.np-label{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;margin-bottom:8px;white-space:nowrap;padding:4px 12px;border-radius:50px;background:rgba(16,185,129,.11);border:1px solid rgba(16,185,129,.28);color:#7de8d3;display:inline-flex;align-items:center;align-self:flex-start}
+.np-col-next .np-label{background:rgba(212,175,106,.11);border-color:rgba(212,175,106,.3);color:var(--gold2);align-self:flex-end}
 .np-live-dot{display:inline-block;width:7px;height:7px;background:var(--emerald2);border-radius:50%;box-shadow:0 0 9px var(--emerald2);animation:blink 2s ease-in-out infinite;margin-right:6px;vertical-align:1px}
 .np-name{font-size:31px;font-weight:800;line-height:1.15;color:#fff;background:linear-gradient(135deg,#fff 25%,var(--emerald2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.3px;text-shadow:0 0 24px rgba(16,185,129,.25)}
 .np-name-next{background:linear-gradient(135deg,#fff 25%,var(--gold2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 24px rgba(212,175,106,.25)}
@@ -116,14 +117,15 @@ html[dir="rtl"] .clock-panel{direction:rtl}
 .np-col-next .np-name-row{justify-content:flex-end}
 .np-arabic{font-size:16px;color:var(--emerald2);font-family:serif;direction:rtl;font-weight:600;opacity:.95}
 .np-col-next .np-arabic{color:var(--gold2)}
-.np-time-chip{margin-top:auto;padding:6px 11px;border-radius:10px;background:rgba(16,185,129,.13);border:1px solid rgba(16,185,129,.3);font-size:13px;font-weight:700;color:#5eead4;font-family:ui-monospace,monospace;align-self:flex-start;letter-spacing:0.2px;box-shadow:0 2px 10px rgba(16,185,129,.1);white-space:nowrap}
-.np-col-next .np-time-chip{background:rgba(212,175,106,.13);border-color:rgba(212,175,106,.32);color:var(--gold2);align-self:flex-end;box-shadow:0 2px 10px rgba(212,175,106,.1)}
-.np-cd-cap{font-size:10px;letter-spacing:1px;color:var(--text3);margin-top:8px;font-weight:500;white-space:nowrap}
+.np-time-chip{margin-top:auto;padding:7px 13px;border-radius:11px;background:rgba(16,185,129,.16);border:1px solid rgba(16,185,129,.42);font-size:14px;font-weight:700;color:#7ff0dc;font-family:ui-monospace,monospace;align-self:flex-start;letter-spacing:.3px;box-shadow:0 3px 12px rgba(16,185,129,.16);white-space:nowrap}
+.np-col-next .np-time-chip{background:rgba(212,175,106,.16);border-color:rgba(212,175,106,.45);color:#eed9a6;align-self:flex-end;box-shadow:0 3px 12px rgba(212,175,106,.15)}
+.np-cd-cap{font-size:11px;letter-spacing:.6px;color:#9fc3b8;margin-top:9px;font-weight:600;white-space:nowrap}
+.np-col-next .np-cd-cap{color:#cfc09a}
 .np-countdown{font-size:24px;font-weight:600;font-family:ui-monospace,monospace;letter-spacing:1px;margin:1px 0 8px;line-height:1}
 #countdown-cur{color:#5eead4;text-shadow:0 0 16px rgba(16,185,129,.22)}
 #countdown{color:var(--gold2);text-shadow:0 0 16px rgba(212,175,106,.22)}
-.progress-bar{margin-top:16px;height:5px;background:rgba(255,255,255,.07);border-radius:5px;position:relative;z-index:1;overflow:hidden}
-.progress-fill{height:100%;width:35%;background:linear-gradient(90deg,var(--emerald3),var(--emerald2),var(--gold2));border-radius:3px;position:relative;overflow:hidden;transition:width 1s linear}
+.progress-bar{margin-top:16px;height:6px;background:rgba(255,255,255,.07);border-radius:6px;position:relative;z-index:1;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}
+.progress-fill{height:100%;width:35%;background:linear-gradient(90deg,var(--emerald3),var(--emerald2),var(--gold2));border-radius:6px;position:relative;overflow:hidden;transition:width 1s linear;box-shadow:0 0 10px rgba(16,185,129,.55)}
 .progress-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);animation:shimmer 2.2s ease-in-out infinite}
 @keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
 @keyframes moonGlow{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.75;transform:scale(1.08)}}
@@ -306,19 +308,19 @@ html[dir="rtl"] .clock-panel{direction:rtl}
 .fasting-card:active{transform:scale(.995)}
 .fc-dot{background:var(--gold2);box-shadow:0 0 8px var(--gold2)}
 .fc-meta{display:flex;align-items:center;gap:7px;margin-top:5px;flex-wrap:wrap}
-.fc-badge{font-size:10px;font-weight:700;padding:2px 9px;border-radius:50px;letter-spacing:.3px;white-space:nowrap;background:rgba(212,175,106,.14);color:var(--gold2);border:1px solid rgba(212,175,106,.28)}
+.fc-badge{font-size:11px;font-weight:700;padding:3px 11px;border-radius:50px;letter-spacing:.4px;white-space:nowrap;background:rgba(212,175,106,.16);color:#eed9a6;border:1px solid rgba(212,175,106,.4);box-shadow:0 2px 8px rgba(212,175,106,.12)}
 .fc-badge.fard{background:rgba(16,185,129,.14);color:var(--emerald2);border-color:rgba(16,185,129,.28)}
 .fc-badge.forbidden{background:rgba(224,112,112,.14);color:#e88a8a;border-color:rgba(224,112,112,.3)}
 .fc-badge:empty{display:none}
-.fc-sub{font-size:11.5px;color:var(--text3);min-height:14px}
-.fc-window-chip{margin-top:auto;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--border2);font-size:13px;font-weight:700;color:var(--text2);font-family:ui-monospace,monospace;align-self:flex-start;letter-spacing:.3px;white-space:nowrap}
+.fc-sub{font-size:12.5px;color:var(--text2);min-height:14px;font-weight:500}
+.fc-window-chip{margin-top:auto;display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:11px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.16);font-size:14px;font-weight:700;color:#dce8e3;font-family:ui-monospace,monospace;align-self:flex-start;letter-spacing:.3px;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.2)}
 .fc-right{gap:9px;justify-content:center}
-.fc-cd-block{width:100%;text-align:right;padding:8px 12px;border-radius:13px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.16)}
-.fc-cd-block.iftar{background:rgba(212,175,106,.06);border-color:rgba(212,175,106,.16)}
-.fc-cd-cap{font-size:9.5px;letter-spacing:.4px;color:var(--text3);font-weight:600;margin-bottom:3px;white-space:nowrap}
-.fc-cd{font-size:20px;font-weight:700;font-family:ui-monospace,monospace;letter-spacing:.5px;line-height:1;color:#5eead4;text-shadow:0 0 14px rgba(16,185,129,.2)}
-.fc-cd-iftar{color:var(--gold2);text-shadow:0 0 14px rgba(212,175,106,.2)}
-.fc-hint{font-size:10.5px;color:var(--text3);text-align:center;margin-top:13px;position:relative;z-index:1}
+.fc-cd-block{width:100%;text-align:right;padding:10px 14px;border-radius:14px;background:rgba(16,185,129,.09);border:1px solid rgba(16,185,129,.26);box-shadow:0 3px 10px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.04)}
+.fc-cd-block.iftar{background:rgba(212,175,106,.09);border-color:rgba(212,175,106,.28)}
+.fc-cd-cap{font-size:10.5px;letter-spacing:.5px;color:#a9c4ba;font-weight:600;margin-bottom:4px;white-space:nowrap}
+.fc-cd{font-size:22px;font-weight:700;font-family:ui-monospace,monospace;letter-spacing:.5px;line-height:1;color:#6ff2dd;text-shadow:0 0 15px rgba(16,185,129,.35)}
+.fc-cd-iftar{color:#eed9a6;text-shadow:0 0 15px rgba(212,175,106,.35)}
+.fc-hint{font-size:11px;color:#b7a06d;text-align:center;margin-top:13px;position:relative;z-index:1;font-weight:500}
 .fc-check{position:absolute;top:14px;right:15px;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border2);background:rgba(255,255,255,.02);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;z-index:3;transition:all .2s}
 .fc-check:hover{border-color:rgba(16,185,129,.4)}
 .fc-check:active{transform:scale(.88)}
@@ -3496,7 +3498,9 @@ function updateFastingCard(now, pt, curHour){
   const nameEl = document.getElementById('fc-name');
   if(!nameEl) return;
   const dotEl = document.getElementById('fc-dot');
-  const setAccent = col => {
+  // col = solid colour override; goldGrad = use the gold gradient (np-name-next)
+  const setAccent = (col, goldGrad) => {
+    nameEl.classList.toggle('np-name-next', !!goldGrad);
     if(col){ nameEl.style.background='none'; nameEl.style.webkitTextFillColor=col; nameEl.style.color=col; }
     else   { nameEl.style.background='';     nameEl.style.webkitTextFillColor='';  nameEl.style.color=''; }
     if(dotEl) dotEl.style.background = col || 'var(--gold2)';
@@ -3526,7 +3530,7 @@ function updateFastingCard(now, pt, curHour){
     setTextIfExists('fc-arabic', '');
     setTextIfExists('fc-sub', '');
     setBadge('forbidden');
-    setAccent('#e88a8a'); // red — no fasting today
+    setAccent('#e88a8a', false); // red — no fasting today
   } else if(today){
     const isRamadan = today.key==='fastRamadan';
     setTextIfExists('fc-label', t('todaysFast'));
@@ -3534,7 +3538,7 @@ function updateFastingCard(now, pt, curHour){
     setTextIfExists('fc-arabic', 'صَوْم');
     setTextIfExists('fc-sub', (today.others && today.others.length) ? '+ ' + today.others.map(k=>t(k)).join(', ') : '');
     setBadge(today.type);
-    setAccent(today.type==='fard' ? '' : 'var(--gold2)'); // fard green (default), nafl gold
+    setAccent('', today.type!=='fard'); // fard = emerald gradient, nafl = gold gradient
   } else {
     const nx = findNextFast(now);
     setTextIfExists('fc-label', t('nextFast'));
@@ -3542,7 +3546,7 @@ function updateFastingCard(now, pt, curHour){
     setTextIfExists('fc-sub', nx ? t('fastDaysAway').replace('{n}', localizeNum(nx.daysAway)) : '');
     setTextIfExists('fc-arabic', '');
     setBadge(nx ? nx.fast.type : null);
-    setAccent('var(--text2)');
+    setAccent('', true); // upcoming fast — gold gradient
   }
 
   // Fasting window chip: sehri end (fajr − 10 min, matching the special-times card) → iftar (Maghrib)
