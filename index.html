@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v100-map-clarity -->
+<!-- VERSION: v101-map-color-tune -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -3410,8 +3410,8 @@ function renderHajjRouteMap(){
       <text x="${loc.x + badgeOff}" y="${loc.y - badgeOff + 3.7}" fill="#08100d" font-size="${done ? 10.5 : 9.5}" font-weight="800" text-anchor="middle" style="pointer-events:none">${done ? '✓' : localizeNum(loc.seq)}</text>`
       : (done ? `<circle cx="${loc.x + badgeOff}" cy="${loc.y - badgeOff}" r="${badgeR}" fill="#34d399"/>
       <text x="${loc.x + badgeOff}" y="${loc.y - badgeOff + 3.7}" fill="#08100d" font-size="10.5" font-weight="800" text-anchor="middle" style="pointer-events:none">✓</text>` : '')}
-      <text x="${loc.x}" y="${loc.y + (opts.big ? 33 : 30)}" fill="#f4fbf8" font-size="${opts.big ? 12.5 : 12}" font-weight="800" text-anchor="middle" style="text-shadow:0 1px 4px rgba(0,0,0,.7)">${t(loc.labelKey)}</text>
-      ${hint ? `<text x="${loc.x}" y="${loc.y + (opts.big ? 46 : 42)}" fill="#eed9a6" font-size="${opts.big ? 9.5 : 8.5}" font-weight="700" text-anchor="middle" opacity="0.95" style="paint-order:stroke;stroke:#0c1210;stroke-width:2px">${hint}</text>` : ''}
+      <text x="${loc.x}" y="${loc.y + (opts.big ? 32 : 30)}" fill="#4fe3c8" font-size="${opts.big ? 11 : 12}" font-weight="800" text-anchor="middle" style="text-shadow:0 0 8px rgba(45,212,191,.45),0 1px 4px rgba(0,0,0,.7)">${t(loc.labelKey)}</text>
+      ${hint ? `<text x="${loc.x}" y="${loc.y + (opts.big ? 45 : 42)}" fill="#ff9d9d" font-size="${opts.big ? 9.5 : 8.5}" font-weight="700" text-anchor="middle" opacity="0.95" style="paint-order:stroke;stroke:#0c1210;stroke-width:2px">${hint}</text>` : ''}
     </g>`;
   };
 
@@ -3450,7 +3450,7 @@ function renderHajjRouteMap(){
       chipsSvg += `
       <circle cx="${apexX}" cy="${chipY}" r="8.5" fill="#d4af6a" stroke="#0c1210" stroke-width="1.5"/>
       <text x="${apexX}" y="${chipY + 3.8}" fill="#08100d" font-size="10.5" font-weight="800" text-anchor="middle">${localizeNum(leg.n)}</text>
-      <text x="${apexX}" y="${capY}" fill="#f4e3b8" font-size="9.5" font-weight="700" text-anchor="middle" style="paint-order:stroke;stroke:#0c1210;stroke-width:3px">${bn ? leg.bn : leg.en}</text>`;
+      <text x="${apexX}" y="${capY}" fill="#ff9d9d" font-size="9.5" font-weight="700" text-anchor="middle" style="paint-order:stroke;stroke:#0c1210;stroke-width:3px">${bn ? leg.bn : leg.en}</text>`;
     });
 
     const traveler = `
