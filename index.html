@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v91-hajj-banner -->
+<!-- VERSION: v92-hajj-guide-premium -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -379,6 +379,22 @@ html[dir="rtl"] .fc-cd-cap{white-space:nowrap}
 .hajj-banner-sub{font-size:11.5px;color:var(--text3);font-weight:500}
 .hajj-banner-arrow{margin-left:auto;font-size:24px;color:rgba(212,175,106,.6);flex-shrink:0;transition:transform .18s}
 .hajj-banner:hover .hajj-banner-arrow{transform:translateX(3px)}
+
+/* ── Hajj guide step cards — journey-timeline look ── */
+.hj-step{position:relative;display:flex;align-items:flex-start;gap:13px;padding:15px 16px;margin-bottom:10px;border-radius:17px;border:1px solid transparent;background:linear-gradient(160deg,var(--card2),var(--card)) padding-box,linear-gradient(160deg,rgba(16,185,129,.28),rgba(255,255,255,.05) 50%,rgba(212,175,106,.28)) border-box;cursor:pointer;transition:transform .18s,box-shadow .22s;box-shadow:0 4px 12px rgba(0,0,0,.16)}
+.hj-step:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(16,185,129,.12)}
+.hj-step.done{background:linear-gradient(160deg,rgba(16,185,129,.09),var(--card)) padding-box,linear-gradient(160deg,rgba(16,185,129,.55),rgba(16,185,129,.15)) border-box}
+.hj-medal{width:44px;height:44px;border-radius:14px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(212,175,106,.22),rgba(212,175,106,.06));box-shadow:0 0 0 1px rgba(212,175,106,.3) inset,0 3px 8px rgba(0,0,0,.2);font-size:18px;line-height:1.15}
+.hj-no{font-size:9.5px;font-weight:800;color:var(--gold2)}
+.hj-step.done .hj-medal{background:linear-gradient(135deg,var(--emerald2),var(--emerald));box-shadow:0 3px 12px rgba(16,185,129,.35);font-size:20px;color:#000}
+.hj-step.done .hj-no{color:rgba(0,0,0,.65)}
+.hj-title{font-size:15.5px;font-weight:700;color:var(--text);line-height:1.4}
+.hj-step.done .hj-title{color:var(--emerald2);text-decoration:line-through;text-decoration-color:rgba(16,185,129,.5)}
+.hj-desc{font-size:13px;color:var(--text2);line-height:1.65;margin-top:3px}
+.hj-meta-row{display:flex;align-items:center;gap:8px;margin-top:9px;flex-wrap:wrap}
+.hj-detail-chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:#eed9a6;background:rgba(212,175,106,.12);border:1px solid rgba(212,175,106,.3);border-radius:50px;padding:4px 12px}
+.hj-done-chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--emerald2);background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.22);border-radius:50px;padding:4px 11px}
+.hj-check{width:30px;height:30px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;padding:0;transition:all .2s;margin-top:2px}
 .dw-ref::before{content:'📖'}
 /* Live-stream facade — video loads only on tap (saves data + battery) */
 .live-facade{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
@@ -2471,6 +2487,9 @@ function renderHajjChecklist(){
   const el = document.getElementById('hajj-checklist');
   if(!el) return;
 
+  const STEP_ICONS = {ihram:'🤍', makkah:'🕌', tawaf:'🕋', sayi:'🏃', mina:'⛺', arafat:'⛰️', muzdalifah:'🌌', jamarat:'🪨', qurbani:'🐐', shaving:'✂️'};
+  const detailLabel = currentLang === 'bn' ? 'বিস্তারিত দেখুন' : 'Details';
+
   el.innerHTML = steps.map((step, i) => {
     const entry = progress[step.id];
     // 'done' reflects explicit completion only — a note alone (without completedAt) should not
@@ -2481,19 +2500,17 @@ function renderHajjChecklist(){
       ? new Date(entry.completedAt).toLocaleString(undefined, {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})
       : null;
     return `
-    <div class="hadith-card" style="cursor:pointer;padding:14px 16px" onclick="openHajjStepModal('${step.id}')" role="button" tabindex="0" aria-label="${t(step.titleKey)}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openHajjStepModal('${step.id}')}">
-      <div style="display:flex;align-items:flex-start;gap:12px">
-        <button type="button" onclick="event.stopPropagation();toggleHajjStep('${step.id}')" aria-label="${t(step.titleKey)}" aria-pressed="${done}" style="width:26px;height:26px;border-radius:8px;border:1.5px solid ${done?'var(--emerald)':'var(--border2)'};background:${done?'linear-gradient(135deg,var(--emerald2),var(--emerald))':'transparent'};color:${done?'#000':'transparent'};display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px;cursor:pointer;padding:0;transition:all .2s;box-shadow:${done?'0 2px 6px rgba(16,185,129,.3)':'none'}">✓</button>
-        <div style="flex:1">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-            <span style="width:19px;height:19px;border-radius:50%;background:rgba(16,185,129,.12);color:var(--emerald2);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0" aria-hidden="true">${localizeNum(i+1)}</span>
-            <span style="font-size:14px;font-weight:600;color:${done?'var(--text2)':'var(--text)'};text-decoration:${done?'line-through':'none'}">${t(step.titleKey)}</span>
-          </div>
-          <div style="font-size:12.5px;color:var(--text3);line-height:1.6;padding-left:27px">${t(step.descKey)}</div>
-          ${completedAtStr ? `<div style="font-size:11px;color:var(--emerald2);padding-left:27px;margin-top:5px">✓ ${completedAtStr}${hasNote ? ' · 📝' : ''}</div>` : ''}
+    <div class="hj-step ${done?'done':''}" onclick="openHajjStepModal('${step.id}')" role="button" tabindex="0" aria-label="${t(step.titleKey)}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openHajjStepModal('${step.id}')}">
+      <div class="hj-medal" aria-hidden="true"><span>${done ? '✓' : (STEP_ICONS[step.diagram] || '🕋')}</span><span class="hj-no">${localizeNum(i+1)}</span></div>
+      <div style="flex:1;min-width:0">
+        <div class="hj-title">${t(step.titleKey)}</div>
+        <div class="hj-desc">${t(step.descKey)}</div>
+        <div class="hj-meta-row">
+          <span class="hj-detail-chip">👁 ${detailLabel}</span>
+          ${completedAtStr ? `<span class="hj-done-chip">✓ ${completedAtStr}${hasNote ? ' · 📝' : ''}</span>` : ''}
         </div>
-        <div style="color:var(--emerald2);font-size:15px;flex-shrink:0;margin-top:2px;background:rgba(16,185,129,.08);width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center" aria-hidden="true">👁</div>
       </div>
+      <button type="button" class="hj-check" onclick="event.stopPropagation();toggleHajjStep('${step.id}')" aria-label="${t(step.titleKey)}" aria-pressed="${done}" style="border:1.5px solid ${done?'var(--emerald)':'var(--border2)'};background:${done?'linear-gradient(135deg,var(--emerald2),var(--emerald))':'rgba(255,255,255,.02)'};color:${done?'#000':'transparent'};box-shadow:${done?'0 2px 8px rgba(16,185,129,.35)':'none'}">✓</button>
     </div>`;
   }).join('');
 
