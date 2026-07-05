@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v75-panel-premium-pass -->
+<!-- VERSION: v76-fix-frozen-hands -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -3345,13 +3345,16 @@ function tick(){
   if(ampmEl) ampmEl.textContent = ampm === 'AM' ? ampmMap.AM : ampmMap.PM;
 
   // Analog clock hands (location wall-clock, same instant as the digital
-  // readout). Angles are computed from a monotonically increasing seconds
-  // counter (day count × 86400 + seconds-of-day) rather than modulo values, so
-  // the CSS tick transitions never animate backwards at the 12 o'clock wrap.
+  // readout). Angles increase monotonically so the CSS tick transitions never
+  // animate backwards at the 12 o'clock wrap — but they are anchored to the
+  // first day seen this session to KEEP THE NUMBERS SMALL: epoch-based degrees
+  // (~1e10) exceed float32 precision in the compositor, which froze the hands.
   const acH = document.getElementById('ac-hour');
   if(acH){
+    const dayN = Math.floor(now.getTime()/86400000);
+    if(window._acDay0 === undefined) window._acDay0 = dayN;
     const secOfDay = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
-    const totalSec = Math.floor(now.getTime()/86400000)*86400 + secOfDay;
+    const totalSec = (dayN - window._acDay0)*86400 + secOfDay;
     acH.setAttribute('transform', `rotate(${(totalSec/3600)*30} 50 50)`);
     document.getElementById('ac-min').setAttribute('transform', `rotate(${(totalSec/60)*6} 50 50)`);
     document.getElementById('ac-sec').setAttribute('transform', `rotate(${totalSec*6} 50 50)`);
