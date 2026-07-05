@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v88-adfree-live-streams -->
+<!-- VERSION: v89-az-premium-polish -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -133,9 +133,9 @@ html[dir="rtl"] .clock-panel{direction:rtl}
 .tabbar::-webkit-scrollbar{display:none}
 .section{display:none;padding:14px 16px 48px}
 .section.active{display:block}
-.sec-title{display:flex;align-items:center;gap:10px;margin-bottom:16px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
+.sec-title{display:flex;align-items:center;gap:10px;margin-bottom:16px;font-size:13px;font-weight:800;letter-spacing:3.5px;text-transform:uppercase;background:linear-gradient(180deg,#c8fff8 10%,#2dd4bf 62%,#0fb5a0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:#2dd4bf;filter:drop-shadow(0 0 8px rgba(45,212,191,.35))}
 .sec-title::before,.sec-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--border2),transparent)}
-.sec-gem{width:5px;height:5px;background:var(--emerald);transform:rotate(45deg);border-radius:1px;flex-shrink:0}
+.sec-gem{width:6px;height:6px;background:linear-gradient(135deg,#e3c98a,#b8934e);transform:rotate(45deg);border-radius:1px;flex-shrink:0;box-shadow:0 0 8px rgba(212,175,106,.5)}
 
 /* Quick action grid for new Tier-1 tools (Qibla/Tasbih/Dua) */
 .quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
@@ -205,21 +205,26 @@ html[dir="rtl"] .clock-panel{direction:rtl}
 .ai-card:nth-child(5n+3){--ai-glow:rgba(232,168,168,.12);--ai-bg1:rgba(232,168,168,.2);--ai-bg2:rgba(232,168,168,.06)}
 .ai-card:nth-child(5n+4){--ai-glow:rgba(52,211,153,.14);--ai-bg1:rgba(52,211,153,.2);--ai-bg2:rgba(52,211,153,.06)}
 .ai-card:nth-child(5n+5){--ai-glow:rgba(147,197,253,.1);--ai-bg1:rgba(147,197,253,.18);--ai-bg2:rgba(147,197,253,.05)}
-.book-card{background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:16px;padding:16px 14px;cursor:pointer;transition:all .25s cubic-bezier(.34,1.56,.64,1);user-select:none;position:relative;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.15)}
-.book-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold3),transparent);opacity:0;transition:opacity .25s}
+.book-card{background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid transparent;background:linear-gradient(160deg,var(--card2),var(--card)) padding-box,linear-gradient(160deg,rgba(16,185,129,.28),rgba(255,255,255,.05) 45%,var(--bk-tint,rgba(212,175,106,.3))) border-box;border-radius:16px;padding:16px 14px;cursor:pointer;transition:all .25s cubic-bezier(.34,1.56,.64,1);user-select:none;position:relative;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.book-card::before{content:'';position:absolute;top:-40%;right:-25%;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,var(--bk-glow,rgba(212,175,106,.1)),transparent 70%);pointer-events:none}
+.book-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold3),transparent);opacity:.35;transition:opacity .25s}
 .book-card:active{transform:scale(.96)}
 .book-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(16,185,129,.1)}
+.book-card:hover::after{opacity:1}
 .book-card.sel{border-color:rgba(16,185,129,.45);background:var(--card2)}
 .book-card.sel::after{opacity:1}
-.b-arabic{font-family:serif;font-size:14px;color:var(--gold);direction:rtl;text-align:right;line-height:1.7;margin-bottom:7px}
-.b-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px}
-.b-count{font-size:11px;color:var(--text3)}
+.book-card:nth-child(even){--bk-tint:rgba(16,185,129,.3);--bk-glow:rgba(16,185,129,.1)}
+.b-arabic{font-family:serif;font-size:17px;background:linear-gradient(180deg,#f0d795,#c9a45c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--gold);direction:rtl;text-align:right;line-height:1.7;margin-bottom:7px;filter:drop-shadow(0 0 6px rgba(212,175,106,.25))}
+.b-name{font-size:14.5px;font-weight:700;color:var(--text);margin-bottom:6px}
+.b-count{display:inline-block;font-size:10.5px;color:var(--emerald2);background:rgba(16,185,129,.09);border:1px solid rgba(16,185,129,.18);border-radius:50px;padding:2px 9px;font-weight:600}
 .b-sel-tag{font-size:11px;color:var(--gold);margin-top:6px}
 
 .back-btn{display:flex;align-items:center;gap:6px;color:var(--emerald2);font-size:14px;cursor:pointer;margin-bottom:14px;font-weight:500;padding:8px 0;background:none;border:none;font-family:'Hind Siliguri',sans-serif;min-height:44px}
 
-.chapter-item{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:13px;margin-bottom:7px;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.12)}
-.chapter-item:hover{border-color:rgba(16,185,129,.3);background:var(--card2)}
+.chapter-item{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:13px;margin-bottom:7px;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.12);position:relative;overflow:hidden}
+.chapter-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2.5px;background:linear-gradient(180deg,var(--emerald),var(--gold));opacity:0;transition:opacity .2s}
+.chapter-item:hover{border-color:rgba(16,185,129,.3);background:var(--card2);transform:translateX(3px)}
+.chapter-item:hover::before{opacity:1}
 .ch-name{font-size:15px;color:var(--text);font-weight:500}
 .ch-count{font-size:12px;color:var(--text3);margin-top:2px}
 
@@ -242,6 +247,10 @@ html[dir="rtl"] .clock-panel{direction:rtl}
 .bt{background:rgba(16,185,129,.1);color:var(--emerald2);border:1px solid rgba(16,185,129,.16)}
 .h-narrator{font-size:12px;color:var(--text3);margin-left:auto;font-style:italic}
 .h-hint{font-size:12px;color:var(--text3);margin-top:9px}
+/* Quran verse view: mushaf-sized Arabic + gold ayah medallion */
+#verse-list .h-arabic{font-size:20px;line-height:2.2;color:#d8f5ec;border-bottom-color:rgba(212,175,106,.15)}
+#verse-list .badge.bg{background:linear-gradient(135deg,rgba(212,175,106,.16),rgba(212,175,106,.05));color:var(--gold2);border:1px solid rgba(212,175,106,.3);font-weight:700}
+#qibla-static-info:empty{display:none}
 
 .loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;gap:14px}
 .loading-dots{display:flex;gap:6px}
@@ -4556,7 +4565,7 @@ async function renderDailyWidget(){
 
       arabicEl.innerHTML = colorizeVerseArabic(verse.ar);
       textEl.innerHTML = colorizeHadith(getVerseText(verse) || verse.bn || verse.en);
-      refEl.textContent = currentLang==='bn' ? `সূরা ${surah.name} • আয়াত ${localizeNum(verse.n)}` : `${surah.name} • ${localizeNum(verse.n)}`;
+      refEl.textContent = currentLang==='bn' ? `সূরা ${surahDisplayName(surah)} • আয়াত ${localizeNum(verse.n)}` : `${surah.name} • ${localizeNum(verse.n)}`;
       _dailyWidgetRetries = 0; textEl.onclick = null; textEl.style.cursor = '';
     }catch(e){
       arabicEl.textContent = '';
@@ -4609,6 +4618,21 @@ async function renderDailyWidget(){
 }
 
 /* ══ QURAN ══ */
+// Bengali surah names + meanings — the quran-data index only carries English
+// transliteration/meaning, which looked out of place in the Bengali UI.
+const SURAH_BN = {1:['আল-ফাতিহা','সূচনা'],2:['আল-বাকারা','গাভী'],3:['আলে-ইমরান','ইমরানের পরিবার'],4:['আন-নিসা','নারী'],5:['আল-মায়িদা','খাদ্য পরিবেশিত টেবিল'],6:['আল-আনআম','গবাদি পশু'],7:['আল-আরাফ','উঁচু স্থানসমূহ'],8:['আল-আনফাল','যুদ্ধলব্ধ সম্পদ'],9:['আত-তাওবা','অনুশোচনা'],10:['ইউনুস','নবী ইউনুস (আঃ)'],11:['হুদ','নবী হুদ (আঃ)'],12:['ইউসুফ','নবী ইউসুফ (আঃ)'],13:['আর-রাদ','বজ্রধ্বনি'],14:['ইবরাহীম','নবী ইবরাহীম (আঃ)'],15:['আল-হিজর','পাথুরে পাহাড়'],16:['আন-নাহল','মৌমাছি'],17:['আল-ইসরা','রাত্রি ভ্রমণ'],18:['আল-কাহফ','গুহা'],19:['মারইয়াম','মারইয়াম (আঃ)'],20:['ত্বা-হা','ত্বা-হা'],21:['আল-আম্বিয়া','নবীগণ'],22:['আল-হাজ্জ','হজ্জ'],23:['আল-মুমিনুন','মুমিনগণ'],24:['আন-নূর','আলো'],25:['আল-ফুরকান','সত্য-মিথ্যার মানদণ্ড'],26:['আশ-শুআরা','কবিগণ'],27:['আন-নামল','পিপীলিকা'],28:['আল-কাসাস','কাহিনী'],29:['আল-আনকাবুত','মাকড়সা'],30:['আর-রূম','রোমানরা'],31:['লুকমান','লুকমান হাকীম'],32:['আস-সাজদা','সিজদা'],33:['আল-আহযাব','সম্মিলিত বাহিনী'],34:['সাবা','সাবা জাতি'],35:['ফাতির','স্রষ্টা'],36:['ইয়াসীন','ইয়াসীন'],37:['আস-সাফফাত','সারিবদ্ধ ফেরেশতা'],38:['সোয়াদ','সোয়াদ'],39:['আয-যুমার','দলসমূহ'],40:['গাফির','ক্ষমাকারী'],41:['ফুসসিলাত','সুবিন্যস্ত'],42:['আশ-শূরা','পরামর্শ'],43:['আয-যুখরুফ','সোনার অলংকার'],44:['আদ-দুখান','ধোঁয়া'],45:['আল-জাসিয়া','নতজানু'],46:['আল-আহকাফ','বালুর পাহাড়'],47:['মুহাম্মাদ','নবী মুহাম্মাদ ﷺ'],48:['আল-ফাতহ','বিজয়'],49:['আল-হুজুরাত','কক্ষসমূহ'],50:['ক্বাফ','ক্বাফ'],51:['আয-যারিয়াত','বিক্ষেপকারী বাতাস'],52:['আত-তূর','তূর পাহাড়'],53:['আন-নাজম','নক্ষত্র'],54:['আল-কামার','চাঁদ'],55:['আর-রাহমান','পরম করুণাময়'],56:['আল-ওয়াকিয়া','নিশ্চিত ঘটনা'],57:['আল-হাদীদ','লোহা'],58:['আল-মুজাদালা','অনুযোগকারিণী'],59:['আল-হাশর','সমাবেশ'],60:['আল-মুমতাহিনা','পরীক্ষিতা নারী'],61:['আস-সাফ','সারি'],62:['আল-জুমুআ','জুমার দিন'],63:['আল-মুনাফিকুন','মুনাফিকরা'],64:['আত-তাগাবুন','লাভ-ক্ষতি প্রকাশ'],65:['আত-তালাক','তালাক'],66:['আত-তাহরীম','নিষিদ্ধকরণ'],67:['আল-মুলক','সার্বভৌমত্ব'],68:['আল-কলম','কলম'],69:['আল-হাক্কা','অবশ্যম্ভাবী'],70:['আল-মাআরিজ','ঊর্ধ্বগমনের সোপান'],71:['নূহ','নবী নূহ (আঃ)'],72:['আল-জিন','জিন জাতি'],73:['আল-মুযযাম্মিল','বস্ত্রাবৃত'],74:['আল-মুদ্দাসসির','চাদরাবৃত'],75:['আল-কিয়ামা','কিয়ামত'],76:['আল-ইনসান','মানুষ'],77:['আল-মুরসালাত','প্রেরিত বাতাস'],78:['আন-নাবা','মহাসংবাদ'],79:['আন-নাযিআত','প্রাণ হরণকারী ফেরেশতা'],80:['আবাসা','ভ্রুকুটি'],81:['আত-তাকভীর','গুটিয়ে নেওয়া'],82:['আল-ইনফিতার','বিদীর্ণ হওয়া'],83:['আল-মুতাফফিফীন','মাপে কম দেওয়া'],84:['আল-ইনশিকাক','খণ্ড-বিখণ্ড হওয়া'],85:['আল-বুরুজ','নক্ষত্রপুঞ্জ'],86:['আত-তারিক','রাতের আগন্তুক'],87:['আল-আলা','সর্বোচ্চ'],88:['আল-গাশিয়া','আচ্ছন্নকারী'],89:['আল-ফাজর','ভোর'],90:['আল-বালাদ','নগর'],91:['আশ-শামস','সূর্য'],92:['আল-লাইল','রাত'],93:['আদ-দুহা','পূর্বাহ্ণের আলো'],94:['আশ-শারহ','বক্ষ প্রশস্তকরণ'],95:['আত-তীন','ডুমুর'],96:['আল-আলাক','জমাট রক্ত'],97:['আল-কদর','মহিমান্বিত রাত'],98:['আল-বাইয়িনা','সুস্পষ্ট প্রমাণ'],99:['আয-যিলযাল','ভূমিকম্প'],100:['আল-আদিয়াত','ধাবমান অশ্ব'],101:['আল-কারিয়া','মহাপ্রলয়'],102:['আত-তাকাসুর','প্রাচুর্যের প্রতিযোগিতা'],103:['আল-আসর','সময়'],104:['আল-হুমাযা','নিন্দাকারী'],105:['আল-ফীল','হাতি'],106:['কুরাইশ','কুরাইশ বংশ'],107:['আল-মাউন','সাহায্য-সামগ্রী'],108:['আল-কাউসার','প্রাচুর্য'],109:['আল-কাফিরুন','অবিশ্বাসীরা'],110:['আন-নাসর','বিজয়'],111:['আল-মাসাদ','খেজুর আঁশের রশি'],112:['আল-ইখলাস','একনিষ্ঠতা'],113:['আল-ফালাক','নিশিভোর'],114:['আন-নাস','মানবজাতি']};
+
+// Bengali name in the Bengali UI, index transliteration everywhere else
+function surahBnName(no){ const e = SURAH_BN[no]; return e ? e[0] : ''; }
+function surahDisplayName(s){
+  if(!s) return '';
+  return (currentLang === 'bn' && SURAH_BN[s.no]) ? SURAH_BN[s.no][0] : s.name;
+}
+function surahDisplayMeaning(s){
+  if(!s) return '';
+  return (currentLang === 'bn' && SURAH_BN[s.no]) ? SURAH_BN[s.no][1] : s.en;
+}
+
 let quranIndexCache = null;
 let surahCache = {};
 let currentSurahVerses = [];
@@ -4631,7 +4655,10 @@ async function renderSurahList(){
       surahs = surahs.filter(s =>
         s.name.toLowerCase().includes(q) ||
         s.en.toLowerCase().includes(q) ||
-        String(s.no).includes(q)
+        surahBnName(s.no).includes(q) ||
+        (SURAH_BN[s.no] && SURAH_BN[s.no][1].includes(q)) ||
+        String(s.no).includes(q) ||
+        localizeNum(s.no).includes(q)
       );
     }
     if(!surahs.length){
@@ -4643,8 +4670,8 @@ async function renderSurahList(){
         <div style="display:flex;align-items:center;gap:12px">
           <div style="width:32px;height:32px;border-radius:10px;background:rgba(16,185,129,.1);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--emerald2);font-weight:700;flex-shrink:0">${localizeNum(s.no)}</div>
           <div>
-            <div class="ch-name">${s.name} <span style="font-family:serif;color:var(--emerald2);direction:rtl">${s.ar}</span></div>
-            <div class="ch-count">${s.en} • ${s.verseCount} আয়াত • ${s.revelation==='Mecca'?'মক্কী':'মাদানী'}</div>
+            <div class="ch-name">${surahDisplayName(s)} <span style="font-family:serif;color:var(--emerald2);direction:rtl">${s.ar}</span></div>
+            <div class="ch-count">${surahDisplayMeaning(s)} • ${localizeNum(s.verseCount)} আয়াত • ${s.revelation==='Mecca'?'মক্কী':'মাদানী'}</div>
           </div>
         </div>
         <div style="color:var(--text3);font-size:18px" aria-hidden="true">›</div>
@@ -4662,7 +4689,7 @@ async function openSurah(no){
   try{
     const data = await loadQuranIndex();
     const surah = data.surahs.find(s => s.no === no);
-    document.getElementById('surah-title').innerHTML = `<div class="sec-gem"></div>${surah ? surah.name : ''}<div class="sec-gem"></div>`;
+    document.getElementById('surah-title').innerHTML = `<div class="sec-gem"></div>${surahDisplayName(surah)}<div class="sec-gem"></div>`;
 
     let chapterData = surahCache[no];
     if(!chapterData){
