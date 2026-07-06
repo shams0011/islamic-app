@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v116-inapp-mosque-map -->
+<!-- VERSION: v117-mosque-map-polish -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -260,7 +260,9 @@ html[dir="rtl"] .clock-panel{direction:rtl}
 .gps-dot{width:26px;height:26px;border-radius:50%;background:rgba(52,211,153,.22);display:flex;align-items:center;justify-content:center;animation:gpsPulse 2s ease-out infinite}
 .gps-dot-core{width:12px;height:12px;border-radius:50%;background:#34d399;border:2.5px solid #fff;box-shadow:0 0 10px rgba(52,211,153,.9)}
 @keyframes gpsPulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.55)}70%{box-shadow:0 0 0 16px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
-.mosque-pin{font-size:26px;line-height:1;filter:drop-shadow(0 2px 5px rgba(0,0,0,.65))}
+.mosque-pin{position:relative;font-size:26px;line-height:1;filter:drop-shadow(0 2px 5px rgba(0,0,0,.65))}
+.mosque-pin-n{position:absolute;top:-7px;right:-9px;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,var(--emerald2),var(--emerald));color:#04120c;font-size:9.5px;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:'Hind Siliguri',sans-serif;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+.mosque-pin.nearest .mosque-pin-n{background:linear-gradient(135deg,#f0d795,#c9a45c);color:#1a1206;box-shadow:0 0 8px rgba(212,175,106,.7)}
 .leaflet-container{background:#0a0d12!important;font-family:'Hind Siliguri',sans-serif!important}
 .leaflet-popup-content-wrapper{background:#101a16!important;color:#e8f4ef!important;border:1px solid rgba(16,185,129,.35);border-radius:12px!important;box-shadow:0 6px 18px rgba(0,0,0,.5)!important}
 .leaflet-popup-tip{background:#101a16!important}
@@ -4949,9 +4951,11 @@ async function initMosqueMap(lat, lon, mosques){
   const bounds = [[lat, lon]];
   mosqueMarkers = [];
   mosques.forEach((m, i) => {
-    const icon = L.divIcon({className: '', html: '<div class="mosque-pin">🕌</div>', iconSize: [30,30], iconAnchor: [15,26], popupAnchor: [0,-24]});
+    const nearest = i === 0; // list is distance-sorted, so #1 is the closest
+    const icon = L.divIcon({className: '', html: `<div class="mosque-pin${nearest ? ' nearest' : ''}">🕌<span class="mosque-pin-n">${localizeNum(i+1)}</span></div>`, iconSize: [30,30], iconAnchor: [15,26], popupAnchor: [0,-24]});
+    const walkMin = Math.max(1, Math.round(m.dist * 12));
     const mk = L.marker([m.lat, m.lon], {icon}).addTo(mosqueMap)
-      .bindPopup(`<b>${escapeHtml(m.name)}</b><br>📏 ${localizeNum(m.dist.toFixed(1))} কিমি দূরে`);
+      .bindPopup(`<b>${nearest ? '⭐ ' : ''}${escapeHtml(m.name)}</b>${nearest ? '<br><span style="color:#eed9a6">সবচেয়ে কাছের মসজিদ</span>' : ''}<br>📏 ${localizeNum(m.dist.toFixed(1))} কিমি · 🚶 ~${localizeNum(walkMin)} মিনিট হাঁটা`);
     mosqueMarkers[i] = mk;
     bounds.push([m.lat, m.lon]);
   });
@@ -5003,14 +5007,25 @@ function renderMosqueResults(elements, myLat, myLon){
   }).sort((a,b) => a.dist - b.dist);
 
   // list rows focus the in-app map; the small compass link is the only exit
-  resultsDiv.innerHTML = withDistance.map((m, i) => `
-    <div class="chapter-item" onclick="focusMosqueOnMap(${i})" role="button" tabindex="0" style="cursor:pointer" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();focusMosqueOnMap(${i})}">
+  const countChip = `<div style="text-align:center;margin-bottom:12px"><span style="display:inline-block;font-size:12px;font-weight:700;color:var(--emerald2);background:rgba(16,185,129,.09);border:1px solid rgba(16,185,129,.22);border-radius:50px;padding:5px 15px">🕌 ${localizeNum(withDistance.length)}টি মসজিদ পাওয়া গেছে (৩ কিমির মধ্যে)</span></div>`;
+  resultsDiv.innerHTML = countChip + withDistance.map((m, i) => {
+    const nearest = i === 0;
+    const walkMin = Math.max(1, Math.round(m.dist * 12));
+    const medal = nearest
+      ? 'background:linear-gradient(135deg,#f0d795,#c9a45c);color:#1a1206;box-shadow:0 0 10px rgba(212,175,106,.4);'
+      : 'background:rgba(16,185,129,.12);color:var(--emerald2);box-shadow:0 0 0 1px rgba(16,185,129,.2) inset;';
+    return `
+    <div class="chapter-item" onclick="focusMosqueOnMap(${i})" role="button" tabindex="0" style="cursor:pointer${nearest ? ';background:linear-gradient(160deg,rgba(212,175,106,.08),var(--card));border-color:rgba(212,175,106,.3)' : ''}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();focusMosqueOnMap(${i})}">
       <div style="display:flex;align-items:center;gap:12px;min-width:0">
-        <span style="width:38px;height:38px;border-radius:11px;background:rgba(16,185,129,.1);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0" aria-hidden="true">🕌</span>
-        <div style="min-width:0"><div class="ch-name">${escapeHtml(m.name)}</div><div class="ch-count">📏 ${localizeNum(m.dist.toFixed(1))} কিমি · 🗺️ ম্যাপে দেখতে ট্যাপ করুন</div></div>
+        <span style="width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0;${medal}" aria-hidden="true">${localizeNum(i+1)}</span>
+        <div style="min-width:0">
+          <div class="ch-name">${nearest ? '⭐ ' : ''}${escapeHtml(m.name)}</div>
+          <div class="ch-count">📏 ${localizeNum(m.dist.toFixed(1))} কিমি · 🚶 ~${localizeNum(walkMin)} মিনিট${nearest ? ' · <span style="color:#eed9a6;font-weight:700">সবচেয়ে কাছের</span>' : ''}</div>
+        </div>
       </div>
       <a href="https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lon}" target="_blank" rel="noopener" onclick="event.stopPropagation()" aria-label="নেভিগেশন" title="Google Maps-এ নেভিগেশন" style="flex-shrink:0;display:flex;align-items:center;gap:4px;padding:6px 11px;background:rgba(212,175,106,.1);border:1px solid rgba(212,175,106,.28);border-radius:50px;color:#eed9a6;font-size:11.5px;font-weight:700;text-decoration:none">🧭 পথ</a>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   initMosqueMap(myLat, myLon, withDistance).catch(() => {
     showToast('ম্যাপ লোড করা যায়নি — তালিকা থেকে নেভিগেশন ব্যবহার করুন');
