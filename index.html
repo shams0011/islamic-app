@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v112-alarm-settings -->
+<!-- VERSION: v113-khatm-tracker -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -918,6 +918,11 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
         <div class="ai-card-title" id="tool-title-hafz">হেফজ ট্র্যাকার</div>
         <div class="ai-card-desc" id="tool-desc-hafz">কুরআন মুখস্থের অগ্রগতি রাখুন</div>
       </div>
+      <div class="ai-card" onclick="openTool('khatm')" role="button" tabindex="0" aria-label="খতম ট্র্যাকার" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTool('khatm')}">
+        <div class="ai-card-icon" aria-hidden="true">📖</div>
+        <div class="ai-card-title">খতম ট্র্যাকার</div>
+        <div class="ai-card-desc">তিলাওয়াতের অগ্রগতি ও খতম পরিকল্পনা</div>
+      </div>
       <div class="ai-card" onclick="openTool('streak')" role="button" tabindex="0" aria-label="নামাজের স্ট্রিক" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTool('streak')}">
         <div class="ai-card-icon" aria-hidden="true">🔥</div>
         <div class="ai-card-title" id="tool-title-streak">নামাজের স্ট্রিক</div>
@@ -1023,6 +1028,64 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
     <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px">
       <div id="streak-calendar-label" style="font-size:11px;color:var(--text3);margin-bottom:10px;letter-spacing:1px;text-transform:uppercase">গত ৩০ দিন</div>
       <div id="streak-calendar"></div>
+    </div>
+  </div>
+
+  <!-- Khatm (Quran recitation) Tracker -->
+  <div id="tool-khatm-view" style="display:none">
+    <button type="button" class="back-btn" onclick="closeToolView()">← টুলসে ফিরুন</button>
+    <div class="sec-title"><div class="sec-gem"></div>খতম ট্র্যাকার<div class="sec-gem"></div></div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;padding:6px 0 2px">
+      <div style="position:relative;width:190px;height:190px;margin-bottom:10px">
+        <svg width="190" height="190" viewBox="0 0 190 190" style="transform:rotate(-90deg)" aria-hidden="true">
+          <defs>
+            <linearGradient id="khatm-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#34d399"/><stop offset="100%" stop-color="#f0d795"/>
+            </linearGradient>
+          </defs>
+          <circle cx="95" cy="95" r="85" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="9"/>
+          <circle id="khatm-ring-fg" cx="95" cy="95" r="85" fill="none" stroke="url(#khatm-ring-grad)" stroke-width="9" stroke-linecap="round" stroke-dasharray="534" stroke-dashoffset="534" style="transition:stroke-dashoffset .4s ease;filter:drop-shadow(0 0 6px rgba(16,185,129,.5))"/>
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div id="khatm-pct" style="font-size:34px;font-weight:800;color:var(--emerald2);font-family:monospace;text-shadow:0 0 14px rgba(16,185,129,.3)">০%</div>
+          <div style="font-size:11px;color:var(--text3);font-weight:600">খতমের অগ্রগতি</div>
+        </div>
+      </div>
+      <div id="khatm-page-label" style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">০ / ৬০৪ পৃষ্ঠা</div>
+      <div id="khatm-count-label" style="font-size:12px;font-weight:700;color:var(--gold2);margin-bottom:14px"></div>
+    </div>
+
+    <div style="height:8px;background:rgba(255,255,255,.06);border-radius:8px;overflow:hidden;margin-bottom:16px">
+      <div id="khatm-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--emerald3),var(--emerald2));border-radius:8px;transition:width .4s ease;box-shadow:0 0 8px rgba(16,185,129,.5)"></div>
+    </div>
+
+    <div style="background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:12px">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px">📖 আজ যত পৃষ্ঠা পড়লেন যোগ করুন</div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px">
+        <button type="button" onclick="khatmAddPages(1)" class="alarm-tgl on" style="flex:1;min-width:56px">+১</button>
+        <button type="button" onclick="khatmAddPages(2)" class="alarm-tgl on" style="flex:1;min-width:56px">+২</button>
+        <button type="button" onclick="khatmAddPages(5)" class="alarm-tgl on" style="flex:1;min-width:56px">+৫</button>
+        <button type="button" onclick="khatmAddPages(10)" class="alarm-tgl on" style="flex:1;min-width:56px">+১০</button>
+        <button type="button" onclick="khatmAddPages(20)" class="alarm-tgl on" style="flex:1;min-width:56px">+২০</button>
+      </div>
+      <div style="display:flex;gap:8px">
+        <input type="number" inputmode="numeric" id="khatm-page-input" placeholder="সরাসরি পৃষ্ঠা নম্বর (০–৬০৪)" style="flex:1;background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:10px 14px;color:var(--text);font-size:14px;outline:none;font-family:'Hind Siliguri',sans-serif">
+        <button type="button" onclick="khatmSetPage()" style="padding:10px 18px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--emerald3),var(--emerald));color:#000;font-weight:700;font-size:13px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">সেট</button>
+      </div>
+    </div>
+
+    <div style="border:1px solid transparent;background:linear-gradient(165deg,#16130c,#0f0d09) padding-box,linear-gradient(140deg,rgba(212,175,106,.35),rgba(255,255,255,.05) 55%,rgba(16,185,129,.25)) border-box;border-radius:16px;padding:14px 16px;margin-bottom:12px">
+      <div style="font-size:12px;font-weight:700;color:#eed9a6;margin-bottom:10px">🗓️ খতম পরিকল্পনা — দৈনিক যত পৃষ্ঠা পড়তে হবে</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
+        <div style="background:rgba(212,175,106,.07);border:1px solid rgba(212,175,106,.18);border-radius:12px;padding:10px 6px"><div id="khatm-plan-30" style="font-size:22px;font-weight:800;color:var(--gold2);font-family:monospace">২১</div><div style="font-size:10.5px;color:var(--text3);font-weight:600">৩০ দিনে (রমজান)</div></div>
+        <div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.16);border-radius:12px;padding:10px 6px"><div id="khatm-plan-60" style="font-size:22px;font-weight:800;color:var(--emerald2);font-family:monospace">১১</div><div style="font-size:10.5px;color:var(--text3);font-weight:600">৬০ দিনে</div></div>
+        <div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.16);border-radius:12px;padding:10px 6px"><div id="khatm-plan-90" style="font-size:22px;font-weight:800;color:var(--emerald2);font-family:monospace">৭</div><div style="font-size:10.5px;color:var(--text3);font-weight:600">৯০ দিনে</div></div>
+      </div>
+    </div>
+
+    <div style="text-align:center">
+      <button type="button" onclick="khatmReset()" style="padding:10px 22px;border-radius:12px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:13px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">🔄 নতুন খতম শুরু করুন</button>
     </div>
   </div>
 
@@ -4860,16 +4923,13 @@ function openCalendarFromHome(){
   if(main) main.scrollIntoView({behavior:'smooth'});
 }
 
+const TOOL_VIEW_IDS = ['zakat','mosque','hafz','streak','hajj','asma','calendar','media','khatm'];
 function openTool(toolId){
   document.getElementById('tools-grid-view').style.display = 'none';
-  document.getElementById('tool-zakat-view').style.display = toolId === 'zakat' ? 'block' : 'none';
-  document.getElementById('tool-mosque-view').style.display = toolId === 'mosque' ? 'block' : 'none';
-  document.getElementById('tool-hafz-view').style.display = toolId === 'hafz' ? 'block' : 'none';
-  document.getElementById('tool-streak-view').style.display = toolId === 'streak' ? 'block' : 'none';
-  document.getElementById('tool-hajj-view').style.display = toolId === 'hajj' ? 'block' : 'none';
-  document.getElementById('tool-asma-view').style.display = toolId === 'asma' ? 'block' : 'none';
-  document.getElementById('tool-calendar-view').style.display = toolId === 'calendar' ? 'block' : 'none';
-  document.getElementById('tool-media-view').style.display = toolId === 'media' ? 'block' : 'none';
+  TOOL_VIEW_IDS.forEach(id => {
+    const el = document.getElementById('tool-' + id + '-view');
+    if(el) el.style.display = id === toolId ? 'block' : 'none';
+  });
   if(toolId === 'zakat') renderZakatForm();
   if(toolId === 'hafz') renderHafzList();
   if(toolId === 'streak') renderStreakView();
@@ -4877,17 +4937,66 @@ function openTool(toolId){
   if(toolId === 'asma'){ setAsmaMode('browse'); renderAsmaList(); }
   if(toolId === 'calendar'){ resetCalendarToToday(); renderCalendar(); }
   if(toolId === 'media'){ goMediaCategoryGrid(); renderMediaCategoryGrid(); }
+  if(toolId === 'khatm') renderKhatm();
 }
 function closeToolView(){
   document.getElementById('tools-grid-view').style.display = 'block';
-  document.getElementById('tool-zakat-view').style.display = 'none';
-  document.getElementById('tool-mosque-view').style.display = 'none';
-  document.getElementById('tool-hafz-view').style.display = 'none';
-  document.getElementById('tool-streak-view').style.display = 'none';
-  document.getElementById('tool-hajj-view').style.display = 'none';
-  document.getElementById('tool-asma-view').style.display = 'none';
-  document.getElementById('tool-calendar-view').style.display = 'none';
-  document.getElementById('tool-media-view').style.display = 'none';
+  TOOL_VIEW_IDS.forEach(id => {
+    const el = document.getElementById('tool-' + id + '-view');
+    if(el) el.style.display = 'none';
+  });
+}
+
+/* ══ KHATM TRACKER — Quran recitation progress (604-page mushaf) ══ */
+const KHATM_TOTAL_PAGES = 604;
+function loadKhatm(){
+  try{ return Object.assign({page:0, khatams:0}, JSON.parse(localStorage.getItem(profileKey('khatm_state')) || '{}')); }
+  catch(e){ return {page:0, khatams:0}; }
+}
+function saveKhatm(s){ try{ localStorage.setItem(profileKey('khatm_state'), JSON.stringify(s)); }catch(e){} }
+
+function khatmAddPages(n){
+  const s = loadKhatm();
+  s.page = Math.max(0, Math.min(KHATM_TOTAL_PAGES, s.page + n));
+  if(s.page >= KHATM_TOTAL_PAGES){
+    s.khatams = (s.khatams || 0) + 1;
+    s.page = 0;
+    saveKhatm(s);
+    showToast('🎉 মাশাআল্লাহ! খতম সম্পন্ন হয়েছে — মোট ' + localizeNum(s.khatams) + ' খতম');
+    if(navigator.vibrate) navigator.vibrate([60,40,60,40,120]);
+  } else {
+    saveKhatm(s);
+  }
+  renderKhatm();
+}
+function khatmSetPage(){
+  const inp = document.getElementById('khatm-page-input');
+  const v = parseInt(inp && inp.value, 10);
+  if(isNaN(v) || v < 0 || v > KHATM_TOTAL_PAGES){ showToast('০ থেকে ৬০৪-এর মধ্যে পৃষ্ঠা নম্বর দিন'); return; }
+  const s = loadKhatm(); s.page = v; saveKhatm(s);
+  if(inp) inp.value = '';
+  renderKhatm();
+}
+function khatmReset(){
+  const s = loadKhatm(); s.page = 0; saveKhatm(s); renderKhatm();
+  showToast('নতুন খতম শুরু হলো — বারাকাল্লাহু ফীক');
+}
+
+function renderKhatm(){
+  const s = loadKhatm();
+  const pct = Math.round((s.page / KHATM_TOTAL_PAGES) * 100);
+  const para = s.page === 0 ? 0 : Math.min(30, Math.floor((s.page - 1) / 20.133) + 1);
+  const remaining = KHATM_TOTAL_PAGES - s.page;
+  setTextIfExists('khatm-pct', localizeNum(pct) + '%');
+  setTextIfExists('khatm-page-label', `${localizeNum(s.page)} / ${localizeNum(KHATM_TOTAL_PAGES)} পৃষ্ঠা` + (para ? ` · ${localizeNum(para)} পারা চলছে` : ''));
+  setTextIfExists('khatm-count-label', s.khatams ? `🏆 সম্পন্ন খতম: ${localizeNum(s.khatams)}` : '');
+  setTextIfExists('khatm-plan-30', localizeNum(Math.ceil(remaining / 30)));
+  setTextIfExists('khatm-plan-60', localizeNum(Math.ceil(remaining / 60)));
+  setTextIfExists('khatm-plan-90', localizeNum(Math.ceil(remaining / 90)));
+  const bar = document.getElementById('khatm-bar');
+  if(bar) bar.style.width = pct + '%';
+  const ring = document.getElementById('khatm-ring-fg');
+  if(ring) ring.style.strokeDashoffset = String(534 * (1 - s.page / KHATM_TOTAL_PAGES));
 }
 
 /* ══ DAILY VERSE/HADITH WIDGET ══ */
