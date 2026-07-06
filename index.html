@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v115-khatm-beauty -->
+<!-- VERSION: v116-inapp-mosque-map -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -256,6 +256,16 @@ html[dir="rtl"] .clock-panel{direction:rtl}
 #verse-list .badge.bg{background:linear-gradient(135deg,rgba(212,175,106,.16),rgba(212,175,106,.05));color:var(--gold2);border:1px solid rgba(212,175,106,.3);font-weight:700}
 #qibla-static-info:empty{display:none}
 #khatm-count-label:empty{display:none}
+/* ── in-app mosque map (Leaflet) ── */
+.gps-dot{width:26px;height:26px;border-radius:50%;background:rgba(52,211,153,.22);display:flex;align-items:center;justify-content:center;animation:gpsPulse 2s ease-out infinite}
+.gps-dot-core{width:12px;height:12px;border-radius:50%;background:#34d399;border:2.5px solid #fff;box-shadow:0 0 10px rgba(52,211,153,.9)}
+@keyframes gpsPulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.55)}70%{box-shadow:0 0 0 16px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+.mosque-pin{font-size:26px;line-height:1;filter:drop-shadow(0 2px 5px rgba(0,0,0,.65))}
+.leaflet-container{background:#0a0d12!important;font-family:'Hind Siliguri',sans-serif!important}
+.leaflet-popup-content-wrapper{background:#101a16!important;color:#e8f4ef!important;border:1px solid rgba(16,185,129,.35);border-radius:12px!important;box-shadow:0 6px 18px rgba(0,0,0,.5)!important}
+.leaflet-popup-tip{background:#101a16!important}
+.leaflet-popup-content{font-size:13px!important;line-height:1.6!important}
+.leaflet-bar a{background:#101a16!important;color:#e8f4ef!important;border-color:rgba(16,185,129,.25)!important}
 /* native dropdown lists inherit the page's light text — unreadable on the
    OS-rendered white popup, so pin dark-on-dark colours explicitly */
 select option{background:#101a16;color:#e8f4ef}
@@ -978,6 +988,10 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
       <div style="width:64px;height:64px;border-radius:50%;background:radial-gradient(circle,rgba(16,185,129,.16),transparent 70%);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 16px">🕌</div>
       <div id="mosque-permission-text" style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:18px">নিকটস্থ মসজিদ খুঁজতে আপনার লোকেশন ব্যবহারের অনুমতি দিন</div>
       <button onclick="findNearbyMosques()" id="mosque-find-btn" style="padding:13px 26px;background:linear-gradient(135deg,var(--emerald3),var(--emerald));border:none;border-radius:14px;color:#000;font-weight:700;font-size:14px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;box-shadow:0 4px 14px rgba(16,185,129,.3)">মসজিদ খুঁজুন</button>
+    </div>
+    <div id="mosque-map-wrap" style="display:none;margin:14px 0;border:1px solid transparent;background:linear-gradient(165deg,#101a16,#0c1210) padding-box,linear-gradient(140deg,rgba(16,185,129,.35),rgba(255,255,255,.06) 55%,rgba(212,175,106,.35)) border-box;border-radius:18px;padding:5px;box-shadow:0 8px 24px rgba(0,0,0,.3)">
+      <div id="mosque-map" style="height:320px;border-radius:14px;overflow:hidden"></div>
+      <div style="text-align:center;padding:7px 4px 4px;font-size:10.5px;color:var(--text3)">🟢 সবুজ বিন্দু = আপনি (লাইভ GPS) · 🕌 = মসজিদ — মার্কারে ট্যাপ করুন</div>
     </div>
     <div id="mosque-results" style="display:none"></div>
   </div>
@@ -4897,6 +4911,82 @@ function showMosqueError(msg){
   resultsDiv.innerHTML = `<div style="text-align:center;padding:30px 16px;color:#e07070;font-size:14px">${msg}</div>`;
 }
 
+/* ── In-app map: Leaflet loaded lazily from CDN only when the tool is used ── */
+let _leafletPromise = null;
+function loadLeaflet(){
+  if(window.L) return Promise.resolve();
+  if(_leafletPromise) return _leafletPromise;
+  _leafletPromise = new Promise((resolve, reject) => {
+    const css = document.createElement('link');
+    css.rel = 'stylesheet'; css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    document.head.appendChild(css);
+    const s = document.createElement('script');
+    s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    s.onload = () => resolve();
+    s.onerror = () => { _leafletPromise = null; reject(new Error('leaflet load failed')); };
+    document.head.appendChild(s);
+  });
+  return _leafletPromise;
+}
+
+let mosqueMap = null, mosqueUserMarker = null, mosqueAccCircle = null, mosqueMarkers = [], mosqueGpsWatchId = null;
+
+async function initMosqueMap(lat, lon, mosques){
+  await loadLeaflet();
+  const wrap = document.getElementById('mosque-map-wrap');
+  if(wrap) wrap.style.display = 'block';
+  if(mosqueMap){ mosqueMap.remove(); mosqueMap = null; }
+  mosqueMap = L.map('mosque-map', {zoomControl: true});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO'
+  }).addTo(mosqueMap);
+
+  // "you are here" — pulsing emerald dot + accuracy halo, updated live below
+  const userIcon = L.divIcon({className: '', html: '<div class="gps-dot"><div class="gps-dot-core"></div></div>', iconSize: [26,26], iconAnchor: [13,13]});
+  mosqueUserMarker = L.marker([lat, lon], {icon: userIcon, zIndexOffset: 1000}).addTo(mosqueMap).bindPopup('📍 আপনি এখানে');
+  mosqueAccCircle = L.circle([lat, lon], {radius: 50, color: '#34d399', weight: 1, opacity: .35, fillColor: '#34d399', fillOpacity: .07}).addTo(mosqueMap);
+
+  const bounds = [[lat, lon]];
+  mosqueMarkers = [];
+  mosques.forEach((m, i) => {
+    const icon = L.divIcon({className: '', html: '<div class="mosque-pin">🕌</div>', iconSize: [30,30], iconAnchor: [15,26], popupAnchor: [0,-24]});
+    const mk = L.marker([m.lat, m.lon], {icon}).addTo(mosqueMap)
+      .bindPopup(`<b>${escapeHtml(m.name)}</b><br>📏 ${localizeNum(m.dist.toFixed(1))} কিমি দূরে`);
+    mosqueMarkers[i] = mk;
+    bounds.push([m.lat, m.lon]);
+  });
+  mosqueMap.fitBounds(bounds, {padding: [40, 40], maxZoom: 16});
+
+  // live GPS tracking — the dot follows the user as they walk
+  if(mosqueGpsWatchId !== null){ navigator.geolocation.clearWatch(mosqueGpsWatchId); mosqueGpsWatchId = null; }
+  try{
+    mosqueGpsWatchId = navigator.geolocation.watchPosition(p => {
+      const ll = [p.coords.latitude, p.coords.longitude];
+      if(mosqueUserMarker) mosqueUserMarker.setLatLng(ll);
+      if(mosqueAccCircle){
+        mosqueAccCircle.setLatLng(ll);
+        mosqueAccCircle.setRadius(Math.min(150, p.coords.accuracy || 50));
+      }
+    }, () => {}, {enableHighAccuracy: true, maximumAge: 4000});
+  }catch(e){ /* watch unsupported — static dot still shows */ }
+}
+
+function stopMosqueGps(){
+  if(mosqueGpsWatchId !== null){
+    try{ navigator.geolocation.clearWatch(mosqueGpsWatchId); }catch(e){}
+    mosqueGpsWatchId = null;
+  }
+}
+
+function focusMosqueOnMap(i){
+  const mk = mosqueMarkers[i];
+  if(!mk || !mosqueMap) return;
+  const wrap = document.getElementById('mosque-map-wrap');
+  if(wrap) wrap.scrollIntoView({behavior: 'smooth', block: 'center'});
+  mosqueMap.flyTo(mk.getLatLng(), 17, {duration: .8});
+  setTimeout(() => mk.openPopup(), 850);
+}
+
 function renderMosqueResults(elements, myLat, myLon){
   const resultsDiv = document.getElementById('mosque-results');
   resultsDiv.style.display = 'block';
@@ -4912,14 +5002,19 @@ function renderMosqueResults(elements, myLat, myLon){
     return {name, dist, lat: el.lat, lon: el.lon};
   }).sort((a,b) => a.dist - b.dist);
 
-  resultsDiv.innerHTML = withDistance.map(m => `
-    <div class="chapter-item" style="cursor:default">
-      <div style="display:flex;align-items:center;gap:12px">
-        <span style="font-size:20px" aria-hidden="true">🕌</span>
-        <div><div class="ch-name">${escapeHtml(m.name)}</div><div class="ch-count">${m.dist.toFixed(1)} km</div></div>
+  // list rows focus the in-app map; the small compass link is the only exit
+  resultsDiv.innerHTML = withDistance.map((m, i) => `
+    <div class="chapter-item" onclick="focusMosqueOnMap(${i})" role="button" tabindex="0" style="cursor:pointer" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();focusMosqueOnMap(${i})}">
+      <div style="display:flex;align-items:center;gap:12px;min-width:0">
+        <span style="width:38px;height:38px;border-radius:11px;background:rgba(16,185,129,.1);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0" aria-hidden="true">🕌</span>
+        <div style="min-width:0"><div class="ch-name">${escapeHtml(m.name)}</div><div class="ch-count">📏 ${localizeNum(m.dist.toFixed(1))} কিমি · 🗺️ ম্যাপে দেখতে ট্যাপ করুন</div></div>
       </div>
-      <a href="https://www.openstreetmap.org/?mlat=${m.lat}&mlon=${m.lon}#map=18/${m.lat}/${m.lon}" target="_blank" rel="noopener" style="color:var(--emerald2);font-size:13px;text-decoration:none">${t('mosqueViewMap')}</a>
+      <a href="https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lon}" target="_blank" rel="noopener" onclick="event.stopPropagation()" aria-label="নেভিগেশন" title="Google Maps-এ নেভিগেশন" style="flex-shrink:0;display:flex;align-items:center;gap:4px;padding:6px 11px;background:rgba(212,175,106,.1);border:1px solid rgba(212,175,106,.28);border-radius:50px;color:#eed9a6;font-size:11.5px;font-weight:700;text-decoration:none">🧭 পথ</a>
     </div>`).join('');
+
+  initMosqueMap(myLat, myLon, withDistance).catch(() => {
+    showToast('ম্যাপ লোড করা যায়নি — তালিকা থেকে নেভিগেশন ব্যবহার করুন');
+  });
 }
 
 /* ══ TOOLS — Navigation ══ */
@@ -4961,6 +5056,7 @@ function closeToolView(){
     const el = document.getElementById('tool-' + id + '-view');
     if(el) el.style.display = 'none';
   });
+  if(typeof stopMosqueGps === 'function') stopMosqueGps(); // don't drain battery after leaving the map
 }
 
 /* ══ KHATM TRACKER — Quran recitation progress (604-page mushaf) ══ */
