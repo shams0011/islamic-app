@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v105-deep-premium-pass -->
+<!-- VERSION: v106-inner-screens-premium -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -258,7 +258,8 @@ html[dir="rtl"] .clock-panel{direction:rtl}
 /* native dropdown lists inherit the page's light text — unreadable on the
    OS-rendered white popup, so pin dark-on-dark colours explicitly */
 select option{background:#101a16;color:#e8f4ef}
-#hajj-subtab-travel-view textarea:focus{border-color:rgba(16,185,129,.45)!important;box-shadow:0 0 0 3px rgba(16,185,129,.08)}
+/* app-wide premium focus ring on every text field */
+input:focus,textarea:focus,select:focus{border-color:rgba(16,185,129,.45)!important;box-shadow:0 0 0 3px rgba(16,185,129,.08)}
 #hajj-emergency-notes:focus{border-color:rgba(224,112,112,.5)!important;box-shadow:0 0 0 3px rgba(224,112,112,.08)}
 
 .loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;gap:14px}
@@ -936,16 +937,16 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
     <button type="button" class="back-btn" onclick="closeToolView()">← টুলসে ফিরুন</button>
     <div class="sec-title"><div class="sec-gem"></div><span id="zakat-sec-title">যাকাত ক্যালকুলেটর</span><div class="sec-gem"></div></div>
 
-    <div style="background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 4px 14px rgba(0,0,0,.15)">
-      <div id="zakat-nisab-info" style="font-size:12.5px;color:var(--text2);line-height:1.7;margin-bottom:4px"></div>
+    <div style="border:1px solid transparent;background:linear-gradient(165deg,#16130c,#0f0d09) padding-box,linear-gradient(140deg,rgba(212,175,106,.38),rgba(255,255,255,.05) 55%,rgba(16,185,129,.25)) border-box;border-radius:16px;padding:14px 16px;margin-bottom:14px;box-shadow:0 4px 14px rgba(0,0,0,.18)">
+      <div id="zakat-nisab-info" style="font-size:12.5px;color:#eed9a6;line-height:1.7"></div>
     </div>
 
     <div id="zakat-form" style="display:flex;flex-direction:column;gap:12px"></div>
 
-    <div style="margin-top:18px;padding:18px;background:linear-gradient(135deg,rgba(16,185,129,.1),rgba(212,175,106,.04));border:1px solid rgba(16,185,129,.2);border-radius:16px;text-align:center">
-      <div id="zakat-result-label" style="font-size:12px;color:var(--text3);margin-bottom:6px">মোট প্রদেয় যাকাত</div>
-      <div id="zakat-result-amount" style="font-size:32px;font-weight:800;color:var(--emerald2);font-family:monospace">০</div>
-      <div id="zakat-nisab-status" style="font-size:12.5px;color:var(--text2);margin-top:8px"></div>
+    <div style="margin-top:18px;padding:20px 18px;border:1px solid transparent;background:linear-gradient(165deg,#101a16,#0c1210) padding-box,linear-gradient(140deg,rgba(16,185,129,.4),rgba(255,255,255,.06) 50%,rgba(212,175,106,.4)) border-box;border-radius:18px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.25),0 0 30px rgba(16,185,129,.05)">
+      <div id="zakat-result-label" style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px;text-transform:uppercase">মোট প্রদেয় যাকাত</div>
+      <div id="zakat-result-amount" style="font-size:38px;font-weight:800;background:linear-gradient(180deg,#c8fff8 10%,#2dd4bf 62%,#0fb5a0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--emerald2);font-family:monospace;filter:drop-shadow(0 0 14px rgba(45,212,191,.35))">০</div>
+      <div id="zakat-nisab-status" style="font-size:12.5px;color:var(--text2);margin-top:10px"></div>
     </div>
   </div>
 
@@ -2219,6 +2220,13 @@ function localizeNum(n){
 }
 function bnNum(n){ return localizeNum(n); } // kept for backward compatibility with existing call sites
 
+// "২৬ আগস্ট, ২০২৬" instead of raw toLocaleDateString() — follows the UI language
+function formatLocalDate(d){
+  const mo = (typeof MONTHS !== 'undefined' && (MONTHS[currentLang] || MONTHS.bn)) || null;
+  if(!mo) return d.toLocaleDateString();
+  return `${localizeNum(d.getDate())} ${mo[d.getMonth()]}, ${localizeNum(d.getFullYear())}`;
+}
+
 const WEEKDAYS = {
   bn: ['রবিবার','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার'],
   en: ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
@@ -2698,7 +2706,7 @@ function renderHajjExpenses(){
     } else {
       listEl.innerHTML = expenses.slice(0, 20).map(e => {
         const cat = HAJJ_EXPENSE_CATEGORIES.find(c => c.id === e.category);
-        const dateStr = new Date(e.date).toLocaleDateString();
+        const dateStr = formatLocalDate(new Date(e.date));
         return `
         <div class="chapter-item" style="cursor:default">
           <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
@@ -3030,7 +3038,7 @@ function renderUpcomingEvents(){
     <div class="chapter-item" style="cursor:default">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="width:38px;height:38px;border-radius:11px;background:rgba(212,175,106,.12);color:var(--gold2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🌙</div>
-        <div><div class="ch-name">${u.event}</div><div class="ch-count">${u.date.toLocaleDateString()} ${u.daysAway === 0 ? `(${t('calendarToday')})` : `· ${localizeNum(u.daysAway)} ${t('calendarDaysAway')}`}</div></div>
+        <div><div class="ch-name">${u.event}</div><div class="ch-count">${formatLocalDate(u.date)} ${u.daysAway === 0 ? `(${t('calendarToday')})` : `· ${localizeNum(u.daysAway)} ${t('calendarDaysAway')}`}</div></div>
       </div>
     </div>`).join('');
 }
@@ -4605,7 +4613,7 @@ function renderZakatForm(){
 
   const nisabValue = SILVER_NISAB_GRAMS * silverPricePerGram;
   const nisabEl = document.getElementById('zakat-nisab-info');
-  if(nisabEl) nisabEl.textContent = t('zakatNisabInfo').replace('{amount}', Math.round(nisabValue).toLocaleString());
+  if(nisabEl) nisabEl.textContent = t('zakatNisabInfo').replace('{amount}', localizeNum(Math.round(nisabValue).toLocaleString()));
 
   setTextIfExists('zakat-sec-title', t('zakatCalculator'));
   setTextIfExists('zakat-result-label', t('zakatTotalDue'));
@@ -4626,11 +4634,11 @@ function calculateZakat(){
 
   if(total >= nisabValue){
     const zakatDue = total * ZAKAT_RATE;
-    resultEl.textContent = Math.round(zakatDue).toLocaleString();
+    resultEl.textContent = '৳ ' + localizeNum(Math.round(zakatDue).toLocaleString());
     statusEl.textContent = t('zakatAboveNisab');
     statusEl.style.color = 'var(--emerald2)';
   } else {
-    resultEl.textContent = '0';
+    resultEl.textContent = localizeNum('0');
     statusEl.textContent = t('zakatBelowNisab');
     statusEl.style.color = 'var(--text3)';
   }
