@@ -6,7 +6,7 @@
 //   - Everything else (Anthropic API calls, geolocation/time APIs): always network, never cached
 //     (these need live data and must not be served stale)
 
-const CACHE_VERSION = 'v87';
+const CACHE_VERSION = 'v88';
 const SHELL_CACHE = `islamic-ai-shell-${CACHE_VERSION}`;
 const DATA_CACHE = `islamic-ai-data-${CACHE_VERSION}`;
 
@@ -56,6 +56,7 @@ function isExternalApi(url) {
     || url.includes('everyayah.com')
     || url.includes('unpkg.com')          // Leaflet library (mosque map)
     || url.includes('cartocdn.com')       // dark map tiles — never cache, unbounded
+    || url.includes('project-osrm.org')   // in-app routing
     || url.includes('openstreetmap.org');
 }
 

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v117-mosque-map-polish -->
+<!-- VERSION: v118-inapp-routing -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -993,7 +993,10 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
     </div>
     <div id="mosque-map-wrap" style="display:none;margin:14px 0;border:1px solid transparent;background:linear-gradient(165deg,#101a16,#0c1210) padding-box,linear-gradient(140deg,rgba(16,185,129,.35),rgba(255,255,255,.06) 55%,rgba(212,175,106,.35)) border-box;border-radius:18px;padding:5px;box-shadow:0 8px 24px rgba(0,0,0,.3)">
       <div id="mosque-map" style="height:320px;border-radius:14px;overflow:hidden"></div>
-      <div style="text-align:center;padding:7px 4px 4px;font-size:10.5px;color:var(--text3)">🟢 সবুজ বিন্দু = আপনি (লাইভ GPS) · 🕌 = মসজিদ — মার্কারে ট্যাপ করুন</div>
+      <div style="text-align:center;padding:7px 4px 4px;font-size:10.5px;color:var(--text3)">
+        <span id="mosque-route-info" style="display:none;font-size:11.5px;font-weight:700;color:var(--emerald2);background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);border-radius:50px;padding:3px 12px;margin-bottom:5px"></span><br>
+        🟢 সবুজ বিন্দু = আপনি (লাইভ GPS) · 🕌 = মসজিদ · 🧭 পথ বোতামে রাস্তা আঁকা হবে
+      </div>
     </div>
     <div id="mosque-results" style="display:none"></div>
   </div>
@@ -4991,6 +4994,50 @@ function focusMosqueOnMap(i){
   setTimeout(() => mk.openPopup(), 850);
 }
 
+// In-app routing: fetch a real street route from the free OSRM service and
+// draw it on the map — no more bouncing users out to Google Maps.
+let mosqueRouteLine = null, mosqueRouteGlow = null;
+async function drawRouteToMosque(i){
+  const mk = mosqueMarkers[i];
+  if(!mk || !mosqueMap || !mosqueUserMarker) return;
+  const from = mosqueUserMarker.getLatLng(), to = mk.getLatLng();
+  showToast('🧭 পথ আঁকা হচ্ছে...');
+
+  let coords = null, meta = null;
+  for(const prof of ['foot', 'driving']){ // demo server may lack the foot profile
+    try{
+      const r = await fetch(`https://router.project-osrm.org/route/v1/${prof}/${from.lng},${from.lat};${to.lng},${to.lat}?overview=full&geometries=geojson`);
+      if(!r.ok) continue;
+      const d = await r.json();
+      if(d.routes && d.routes[0] && d.routes[0].geometry){
+        coords = d.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+        meta = d.routes[0];
+        break;
+      }
+    }catch(e){ /* try the next profile */ }
+  }
+
+  [mosqueRouteLine, mosqueRouteGlow].forEach(l => { if(l) mosqueMap.removeLayer(l); });
+  mosqueRouteLine = mosqueRouteGlow = null;
+  const straight = !coords;
+  if(straight) coords = [[from.lat, from.lng], [to.lat, to.lng]]; // offline fallback: direct line
+
+  mosqueRouteGlow = L.polyline(coords, {color: '#34d399', weight: 10, opacity: .18, lineCap: 'round'}).addTo(mosqueMap);
+  mosqueRouteLine = L.polyline(coords, {color: '#34d399', weight: 4.5, opacity: .95, lineCap: 'round', dashArray: straight ? '8 9' : null}).addTo(mosqueMap);
+  mosqueMap.fitBounds(mosqueRouteLine.getBounds(), {padding: [46, 46]});
+
+  const km = meta ? meta.distance / 1000 : haversineDistanceKm(from.lat, from.lng, to.lat, to.lng);
+  const walkMin = Math.max(1, Math.round(km * 12));
+  const infoEl = document.getElementById('mosque-route-info');
+  if(infoEl){
+    infoEl.style.display = 'inline-block';
+    infoEl.textContent = `🧭 ${straight ? 'সরাসরি দূরত্ব' : 'পথ'}: ${localizeNum(km.toFixed(1))} কিমি · 🚶 ~${localizeNum(walkMin)} মিনিট`;
+  }
+  const wrap = document.getElementById('mosque-map-wrap');
+  if(wrap) wrap.scrollIntoView({behavior: 'smooth', block: 'center'});
+  setTimeout(() => mk.openPopup(), 500);
+}
+
 function renderMosqueResults(elements, myLat, myLon){
   const resultsDiv = document.getElementById('mosque-results');
   resultsDiv.style.display = 'block';
@@ -5023,7 +5070,7 @@ function renderMosqueResults(elements, myLat, myLon){
           <div class="ch-count">📏 ${localizeNum(m.dist.toFixed(1))} কিমি · 🚶 ~${localizeNum(walkMin)} মিনিট${nearest ? ' · <span style="color:#eed9a6;font-weight:700">সবচেয়ে কাছের</span>' : ''}</div>
         </div>
       </div>
-      <a href="https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lon}" target="_blank" rel="noopener" onclick="event.stopPropagation()" aria-label="নেভিগেশন" title="Google Maps-এ নেভিগেশন" style="flex-shrink:0;display:flex;align-items:center;gap:4px;padding:6px 11px;background:rgba(212,175,106,.1);border:1px solid rgba(212,175,106,.28);border-radius:50px;color:#eed9a6;font-size:11.5px;font-weight:700;text-decoration:none">🧭 পথ</a>
+      <button type="button" onclick="event.stopPropagation();drawRouteToMosque(${i})" aria-label="অ্যাপের ম্যাপে পথ দেখুন" style="flex-shrink:0;display:flex;align-items:center;gap:4px;padding:6px 11px;background:rgba(212,175,106,.1);border:1px solid rgba(212,175,106,.28);border-radius:50px;color:#eed9a6;font-size:11.5px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif">🧭 পথ</button>
     </div>`;
   }).join('');
 
