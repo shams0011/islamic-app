@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v121-events-premium -->
+<!-- VERSION: v122-progress-layout -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -610,13 +610,18 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
       </div>
     </div>
   </div>
-  <div id="fc-day-progress-wrap" style="display:none;position:relative;margin:14px 4px 2px;height:7px;background:rgba(255,255,255,.06);border-radius:8px" aria-hidden="true">
-    <div id="fc-day-progress" style="height:100%;width:0%;background:linear-gradient(90deg,var(--emerald2),#f0d795);border-radius:8px;transition:width 1s linear;box-shadow:0 0 9px rgba(212,175,106,.4)"></div>
-    <span id="fc-day-sun" style="position:absolute;top:-9px;left:0%;transform:translateX(-50%);font-size:15px;filter:drop-shadow(0 0 6px rgba(240,215,149,.8));transition:left 1s linear">☀️</span>
-    <span style="position:absolute;left:2px;top:11px;font-size:9px;color:var(--text3)">🌙 সেহরি</span>
-    <span style="position:absolute;right:2px;top:11px;font-size:9px;color:var(--text3)">ইফতার 🍽️</span>
+  <div id="fc-day-progress-wrap" style="display:none;margin:16px 4px 0" aria-hidden="true">
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;color:var(--text3);font-weight:600;margin-bottom:6px">
+      <span>🌙 সেহরি</span>
+      <span id="fc-day-pct" style="font-size:10.5px;font-weight:800;color:#eed9a6;background:rgba(212,175,106,.1);border:1px solid rgba(212,175,106,.25);border-radius:50px;padding:2px 10px"></span>
+      <span>ইফতার 🍽️</span>
+    </div>
+    <div style="position:relative;height:7px;background:rgba(255,255,255,.06);border-radius:8px">
+      <div id="fc-day-progress" style="height:100%;width:0%;background:linear-gradient(90deg,var(--emerald2),#f0d795);border-radius:8px;transition:width 1s linear;box-shadow:0 0 9px rgba(212,175,106,.4)"></div>
+      <span id="fc-day-sun" style="position:absolute;top:-8px;left:0%;transform:translateX(-50%);font-size:14px;line-height:1;filter:drop-shadow(0 0 6px rgba(240,215,149,.8));transition:left 1s linear">☀️</span>
+    </div>
   </div>
-  <div class="fc-hint" id="fc-hint" style="margin-top:26px">👆 ইফতারের দোয়া দেখতে ট্যাপ করুন</div>
+  <div class="fc-hint" id="fc-hint" style="margin-top:14px">👆 ইফতারের দোয়া দেখতে ট্যাপ করুন</div>
 </div>
 
 <div id="ramadan-banner" role="region" aria-label="রমজান ড্যাশবোর্ড" style="display:none;margin:14px 16px 0;padding:18px 20px;background:linear-gradient(135deg,rgba(16,185,129,.14),rgba(212,175,106,.09));border:1px solid rgba(212,175,106,.28);border-radius:22px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.05)">
@@ -4159,6 +4164,7 @@ function updateFastingCard(now, pt, curHour){
       const sun = document.getElementById('fc-day-sun');
       if(fill) fill.style.width = pctDay + '%';
       if(sun) sun.style.left = pctDay + '%';
+      setTextIfExists('fc-day-pct', (isBn ? 'দিনের ' : 'day ') + localizeNum(Math.round(pctDay)) + '%');
     } else {
       progWrap.style.display = 'none';
     }
