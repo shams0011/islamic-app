@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v109-date-opens-calendar -->
+<!-- VERSION: v110-inline-day-info -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -1189,6 +1189,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
     <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:16px">
       <div id="calendar-weekday-header" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px"></div>
       <div id="calendar-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px"></div>
+      <div id="calendar-day-info" style="display:none"></div>
     </div>
 
     <div id="calendar-events-sec-title" class="sec-title"><div class="sec-gem"></div>আসন্ন গুরুত্বপূর্ণ দিন<div class="sec-gem"></div></div>
@@ -3003,16 +3004,22 @@ function renderCalendar(){
     if(isForbiddenFast) dots += dot('#e07070');
 
     return `
-    <div onclick="${clickable ? `showCalendarDayEvent(${day})` : ''}" style="aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:9px;background:${bg};border:${border};cursor:${clickable?'pointer':'default'};position:relative">
+    <div data-cal-day="${day}" onclick="showCalendarDayEvent(${day})" style="aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;background:${bg};border:${border};cursor:pointer;position:relative">
       <div style="font-size:15.5px;font-weight:${isToday||event||isFast?'800':'600'};color:${textColor};line-height:1.15">${localizeNum(day)}</div>
       <div style="font-size:10px;font-weight:700;color:${isToday?'rgba(0,0,0,.65)':'#e3c98a'};line-height:1.15">${localizeNum(hijri.day)}</div>
       ${dots ? `<div style="display:flex;gap:2.5px;margin-top:2px">${dots}</div>` : ''}
     </div>`;
   }).join('');
 
+  // month changed — clear the day-detail panel until a new day is tapped
+  const dayInfo = document.getElementById('calendar-day-info');
+  if(dayInfo){ dayInfo.style.display = 'none'; dayInfo.innerHTML = ''; }
+
   renderUpcomingEvents();
 }
 
+// Day details render INSIDE the calendar card, right under the grid, with the
+// tapped cell highlighted — a bottom toast made users hunt for the info.
 function showCalendarDayEvent(day){
   const year = calendarViewDate.getFullYear();
   const month = calendarViewDate.getMonth();
@@ -3020,17 +3027,38 @@ function showCalendarDayEvent(day){
   const hijri = gregorianToHijri(date);
   const event = getHijriEventForDate(hijri);
   const fast = getFastForDate(hijri, date.getDay());
-  const parts = [];
-  if(event) parts.push('✨ ' + event);
+
+  // highlight the tapped cell
+  document.querySelectorAll('#calendar-grid [data-cal-day]').forEach(c => { c.style.outline = 'none'; });
+  const cell = document.querySelector(`#calendar-grid [data-cal-day="${day}"]`);
+  if(cell) cell.style.outline = '2px solid rgba(212,175,106,.65)';
+
+  const weekday = (WEEKDAYS[currentLang] || WEEKDAYS.bn)[date.getDay()];
+  const mo = (MONTHS[currentLang] || MONTHS.bn)[month];
+  const hijriMo = (HIJRI_MONTHS[currentLang] || HIJRI_MONTHS.bn)[hijri.month-1] || '';
+  const hijriWord = {bn:'হিজরি', en:'AH', ar:'هـ', zh:'伊斯兰历', ur:'ھ', fr:'H'}[currentLang] || 'AH';
+
+  const chips = [];
+  const chip = (txt, color, bg, bd) => `<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:${color};background:${bg};border:1px solid ${bd};border-radius:50px;padding:4px 12px">${txt}</span>`;
+  if(event) chips.push(chip('✨ ' + event, '#eed9a6', 'rgba(212,175,106,.12)', 'rgba(212,175,106,.3)'));
   if(fast){
     const fname = t(fast.key);
-    parts.push(fast.type==='forbidden' ? ('🚫 ' + t('fastForbidden') + ' (' + fname + ')')
-      : ('🌙 ' + fname + (fast.type==='fard' ? '' : ' — ' + t('naflNow'))));
+    if(fast.type === 'forbidden') chips.push(chip('🚫 ' + t('fastForbidden') + ' (' + fname + ')', '#ff9d9d', 'rgba(224,112,112,.1)', 'rgba(224,112,112,.28)'));
+    else chips.push(chip('🌙 ' + fname + (fast.type==='fard' ? '' : ' — ' + t('naflNow')), 'var(--emerald2)', 'rgba(16,185,129,.1)', 'rgba(16,185,129,.25)'));
   }
-  if(parts.length){
-    const mo = (MONTHS[currentLang] || MONTHS.bn)[month];
-    showToast(`${localizeNum(day)} ${mo} · ${parts.join('  ·  ')}`, 4000);
-  }
+  if(!chips.length) chips.push(`<span style="font-size:12px;color:var(--text3)">${currentLang==='bn' ? 'এই দিনে কোনো বিশেষ ইভেন্ট বা রোজা নেই' : 'No special event or fast on this day'}</span>`);
+
+  const infoEl = document.getElementById('calendar-day-info');
+  if(!infoEl) return;
+  infoEl.style.display = 'block';
+  infoEl.innerHTML = `
+  <div style="margin-top:12px;padding:13px 15px;border-radius:14px;border:1px solid transparent;background:linear-gradient(165deg,#101a16,#0c1210) padding-box,linear-gradient(140deg,rgba(16,185,129,.32),rgba(255,255,255,.05) 55%,rgba(212,175,106,.32)) border-box;box-shadow:0 4px 14px rgba(0,0,0,.2)">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:9px">
+      <span style="font-size:13.5px;font-weight:800;color:var(--text)">${weekday}, ${localizeNum(day)} ${mo} ${localizeNum(year)}</span>
+      <span style="font-size:12px;font-weight:700;color:#e3c98a">☾ ${localizeNum(hijri.day)} ${hijriMo}, ${localizeNum(hijri.year)} ${hijriWord}</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">${chips.join('')}</div>
+  </div>`;
 }
 
 function renderUpcomingEvents(){
