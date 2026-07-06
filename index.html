@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v111-share-card -->
+<!-- VERSION: v112-alarm-settings -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -260,6 +260,9 @@ html[dir="rtl"] .clock-panel{direction:rtl}
 select option{background:#101a16;color:#e8f4ef}
 /* app-wide premium focus ring on every text field */
 input:focus,textarea:focus,select:focus{border-color:rgba(16,185,129,.45)!important;box-shadow:0 0 0 3px rgba(16,185,129,.08)}
+/* alarm on/off pill toggles */
+.alarm-tgl{min-width:64px;padding:5px 14px;border-radius:50px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;border:1px solid var(--border2);background:rgba(255,255,255,.04);color:var(--text3)}
+.alarm-tgl.on{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.15);color:var(--emerald2);box-shadow:0 0 10px rgba(16,185,129,.15)}
 #hajj-emergency-notes:focus{border-color:rgba(224,112,112,.5)!important;box-shadow:0 0 0 3px rgba(224,112,112,.08)}
 
 .loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;gap:14px}
@@ -747,6 +750,14 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
     <div class="sp-row"><span class="sp-label" id="makruh-label-zawal">ঠিক দ্বিপ্রহরে (ইস্তিওয়া)</span><span class="sp-time" id="makruh-time-zawal" style="color:var(--gold2)">--:-- - --:--</span></div>
     <div class="sp-row"><span class="sp-label" id="makruh-label-sunset">সূর্যাস্তের সময়</span><span class="sp-time" id="makruh-time-sunset" style="color:var(--gold2)">--:-- - --:--</span></div>
     <div id="makruh-active-banner" style="display:none;margin-top:10px;padding:9px 12px;background:rgba(212,175,106,.14);border:1px solid rgba(212,175,106,.3);border-radius:11px;text-align:center;font-size:12px;color:var(--gold2);font-weight:600">⚠️ <span id="makruh-active-text">এখন মাকরুহ সময় চলছে</span></div>
+  </div>
+
+  <div class="special-card" style="margin-top:14px">
+    <div class="special-card-head"><span>⏰ অ্যালার্ম সেটিংস</span></div>
+    <div class="sp-row"><span class="sp-label">🕌 ওয়াক্ত শুরুর অ্যালার্ম</span><button type="button" id="alarm-tgl-prayer" class="alarm-tgl" onclick="toggleAlarmSetting('prayer')">চালু</button></div>
+    <div class="sp-row"><span class="sp-label">🌙 সেহরির অ্যালার্ম (শেষের ৩০ মিনিট আগে)</span><button type="button" id="alarm-tgl-sehri" class="alarm-tgl" onclick="toggleAlarmSetting('sehri')">বন্ধ</button></div>
+    <div class="sp-row"><span class="sp-label">🌅 ইফতারের অ্যালার্ম</span><button type="button" id="alarm-tgl-iftar" class="alarm-tgl" onclick="toggleAlarmSetting('iftar')">বন্ধ</button></div>
+    <div style="padding:9px 16px 12px;font-size:11px;color:var(--text3);line-height:1.6">💡 অ্যালার্ম বাজতে হলে অ্যাপটা খোলা (বা ব্যাকগ্রাউন্ডে) থাকতে হবে এবং নোটিফিকেশনের অনুমতি দেওয়া থাকতে হবে।</div>
   </div>
 </div>
 
@@ -2091,6 +2102,8 @@ function updateActivePrayerHighlight(){
     window._lastAlarmedPrayer = currentName;
     if(currentName) triggerPrayerAlarm(currentName);
   }
+
+  checkFastAlarms();
 }
 
 /* ══ PRAYER ALARM SYSTEM ══ */
@@ -2117,7 +2130,65 @@ function playAlarmTone(){
   }catch(e){ /* audio not available, alarm still shows visually */ }
 }
 
+/* ── Alarm preferences: which alarms fire (prayer waqt / sehri / iftar) ── */
+function loadAlarmSettings(){
+  try{ return Object.assign({prayer:true, sehri:false, iftar:false}, JSON.parse(localStorage.getItem(profileKey('alarm_settings')) || '{}')); }
+  catch(e){ return {prayer:true, sehri:false, iftar:false}; }
+}
+function saveAlarmSettings(s){ try{ localStorage.setItem(profileKey('alarm_settings'), JSON.stringify(s)); }catch(e){} }
+function toggleAlarmSetting(key){
+  const s = loadAlarmSettings();
+  s[key] = !s[key];
+  saveAlarmSettings(s);
+  renderAlarmSettings();
+  if(s[key]) requestNotificationPermission(); // enabling an alarm should also secure permission
+}
+function renderAlarmSettings(){
+  const s = loadAlarmSettings();
+  ['prayer','sehri','iftar'].forEach(k => {
+    const btn = document.getElementById('alarm-tgl-' + k);
+    if(!btn) return;
+    btn.classList.toggle('on', !!s[k]);
+    btn.textContent = s[k] ? 'চালু' : 'বন্ধ';
+    btn.setAttribute('aria-pressed', String(!!s[k]));
+  });
+}
+
+// Sehri/iftar alerts — checked once a minute from the main tick. Fires at
+// most once per day each; both derive from today's computed prayer times.
+function fireSimpleAlarm(title, body){
+  playAlarmTone();
+  if(navigator.vibrate) navigator.vibrate([200,100,200]);
+  try{
+    if('Notification' in window && Notification.permission === 'granted'){
+      new Notification(title, {body: body || '', tag: 'fast-alarm'});
+    }
+  }catch(e){}
+  showToast(title, 7000);
+}
+function checkFastAlarms(){
+  const s = loadAlarmSettings();
+  if(!s.sehri && !s.iftar) return;
+  const pt = PRAYER_TIMES_TODAY;
+  if(!pt || isNaN(pt.fajr) || isNaN(pt.maghrib)) return;
+  const now = getLocationNow();
+  const mins = now.getHours() * 60 + now.getMinutes();
+  const dayKey = now.toDateString();
+  if(!window._fastAlarmFired || window._fastAlarmFired.day !== dayKey) window._fastAlarmFired = {day: dayKey};
+  const sehriEndMin = Math.round((pt.fajr - 10/60) * 60);
+  if(s.sehri && !window._fastAlarmFired.sehri && mins >= sehriEndMin - 30 && mins < sehriEndMin){
+    window._fastAlarmFired.sehri = true;
+    fireSimpleAlarm('🌙 সেহরির সময় প্রায় শেষ', `সেহরি শেষ হবে ${fmtHM(pt.fajr - 10/60)}-এ — খেয়ে নিন ও নিয়্যত করুন`);
+  }
+  const iftarMin = Math.round(pt.maghrib * 60);
+  if(s.iftar && !window._fastAlarmFired.iftar && mins >= iftarMin && mins < iftarMin + 3){
+    window._fastAlarmFired.iftar = true;
+    fireSimpleAlarm('🌅 ইফতারের সময় হয়েছে — আলহামদুলিল্লাহ', 'اللَّهُمَّ لَكَ صُمْتُ وَعَلَى رِزْقِكَ أَفْطَرْتُ');
+  }
+}
+
 function triggerPrayerAlarm(prayerKey){
+  if(!loadAlarmSettings().prayer) return; // user turned waqt alarms off
   const label = PRAYER_LABELS[prayerKey];
   if(!label) return;
 
@@ -2167,6 +2238,7 @@ function initNotificationBanner(){
       if(banner) banner.style.display = 'flex';
     }
   }catch(e){}
+  renderAlarmSettings();
 }
 
 /* ══ NETWORK TIME SYNC — corrects wrong system clock ══ */
