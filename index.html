@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v120-fast-day-progress -->
+<!-- VERSION: v121-events-premium -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -3257,7 +3257,7 @@ function renderUpcomingEvents(){
     const hijri = gregorianToHijri(date);
     const event = getHijriEventForDate(hijri);
     if(event){
-      upcoming.push({date, event, daysAway: i});
+      upcoming.push({date, event, daysAway: i, hijri});
     }
   }
 
@@ -3266,13 +3266,39 @@ function renderUpcomingEvents(){
     return;
   }
 
-  el.innerHTML = upcoming.map(u => `
-    <div class="chapter-item" style="cursor:default">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="width:38px;height:38px;border-radius:11px;background:rgba(212,175,106,.12);color:var(--gold2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🌙</div>
-        <div><div class="ch-name">${u.event}</div><div class="ch-count">${formatLocalDate(u.date)} ${u.daysAway === 0 ? `(${t('calendarToday')})` : `· ${localizeNum(u.daysAway)} ${t('calendarDaysAway')}`}</div></div>
+  // icon + tint chosen from the event name so every occasion feels distinct
+  const evStyle = name => {
+    if(/কদর|Qadr/i.test(name)) return {ic:'✨', tint:'212,175,106'};
+    if(/রমজান|Ramadan|রমযান/i.test(name)) return {ic:'🌙', tint:'16,185,129'};
+    if(/ঈদ|Eid/i.test(name) && !/মিলাদ/i.test(name)) return {ic:'🎉', tint:'212,175,106'};
+    if(/মেরাজ|Mi.?raj|Isra|বরাত|Barat|Baraat|Sha.?ban/i.test(name)) return {ic:'🌠', tint:'147,197,253'};
+    if(/আশুরা|Ashura|মুহাররম|Muharram/i.test(name)) return {ic:'🕊️', tint:'232,168,168'};
+    if(/আরাফা|Arafah/i.test(name)) return {ic:'⛰️', tint:'16,185,129'};
+    if(/হজ্জ|Hajj/i.test(name)) return {ic:'🕋', tint:'212,175,106'};
+    if(/মিলাদ|নবী|Mawlid/i.test(name)) return {ic:'💚', tint:'16,185,129'};
+    return {ic:'🌙', tint:'212,175,106'};
+  };
+  const hijriMo = HIJRI_MONTHS[currentLang] || HIJRI_MONTHS.bn;
+
+  el.innerHTML = upcoming.map((u, idx) => {
+    const {ic, tint} = evStyle(u.event);
+    const nearest = idx === 0;
+    const today = u.daysAway === 0;
+    const daysPill = today
+      ? `<span style="font-size:10.5px;font-weight:800;color:#04120c;background:linear-gradient(135deg,var(--emerald2),var(--emerald));border-radius:50px;padding:3px 11px;white-space:nowrap">✨ ${t('calendarToday')}</span>`
+      : `<span style="font-size:10.5px;font-weight:700;color:${u.daysAway <= 30 ? 'var(--emerald2)' : '#eed9a6'};background:rgba(${u.daysAway <= 30 ? '16,185,129' : '212,175,106'},.1);border:1px solid rgba(${u.daysAway <= 30 ? '16,185,129' : '212,175,106'},.28);border-radius:50px;padding:3px 11px;white-space:nowrap">⏳ ${localizeNum(u.daysAway)} ${t('calendarDaysAway')}</span>`;
+    return `
+    <div class="chapter-item" style="cursor:default${nearest ? ';background:linear-gradient(160deg,rgba(212,175,106,.08),var(--card));border-color:rgba(212,175,106,.3)' : ''}">
+      <div style="display:flex;align-items:center;gap:12px;min-width:0">
+        <div style="width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,rgba(${tint},.2),rgba(${tint},.06));box-shadow:0 0 0 1px rgba(${tint},.3) inset;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0" aria-hidden="true">${ic}</div>
+        <div style="min-width:0">
+          <div class="ch-name" style="font-weight:700">${u.event}</div>
+          <div class="ch-count" style="margin-top:2px">${formatLocalDate(u.date)} · <span style="color:#e3c98a;font-weight:600">☾ ${localizeNum(u.hijri.day)} ${hijriMo[u.hijri.month-1] || ''}</span></div>
+        </div>
       </div>
-    </div>`).join('');
+      <div style="flex-shrink:0;margin-left:8px">${daysPill}</div>
+    </div>`;
+  }).join('');
 }
 
 /* ══ MEDIA LIBRARY ══
