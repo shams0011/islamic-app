@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v110-inline-day-info -->
+<!-- VERSION: v111-share-card -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -622,7 +622,10 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
       <span class="dw-spark" aria-hidden="true">✨</span>
       <span id="daily-widget-label" class="dw-label">আজকের আয়াত</span>
     </div>
-    <button type="button" onclick="toggleDailyWidgetType()" id="daily-widget-toggle-btn" class="dw-toggle" aria-label="হাদিস/আয়াত পরিবর্তন করুন">🔄 হাদিস দেখুন</button>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button type="button" onclick="shareDailyWidget()" class="dw-toggle" aria-label="ছবি হিসেবে শেয়ার করুন">📤 শেয়ার</button>
+      <button type="button" onclick="toggleDailyWidgetType()" id="daily-widget-toggle-btn" class="dw-toggle" aria-label="হাদিস/আয়াত পরিবর্তন করুন">🔄 হাদিস দেখুন</button>
+    </div>
   </div>
   <div id="daily-widget-arabic" class="dw-arabic"></div>
   <div id="daily-widget-text" class="dw-text"></div>
@@ -4874,6 +4877,114 @@ function dailyWidgetFailed(textEl){
     _dailyWidgetRetries++;
     setTimeout(() => renderDailyWidget(), 4000);
   }
+}
+
+/* ══ SHARE CARD — render the daily verse/hadith as a shareable image ══ */
+function cvWrapText(ctx, text, maxW){
+  const words = text.split(/\s+/).filter(Boolean);
+  const lines = []; let line = '';
+  for(const w of words){
+    const cand = line ? line + ' ' + w : w;
+    if(ctx.measureText(cand).width > maxW && line){ lines.push(line); line = w; }
+    else line = cand;
+  }
+  if(line) lines.push(line);
+  return lines;
+}
+
+function shareDailyWidget(){
+  const ar = (document.getElementById('daily-widget-arabic')?.textContent || '').trim();
+  const bn = (document.getElementById('daily-widget-text')?.textContent || '').trim();
+  const ref = (document.getElementById('daily-widget-ref')?.textContent || '').trim();
+  const label = (document.getElementById('daily-widget-label')?.textContent || '').trim();
+  if(!bn || bn.includes(t('dailyWidgetLoadFailed'))){ showToast('শেয়ার করার মতো কনটেন্ট এখনো লোড হয়নি'); return; }
+
+  const W = 1080, P = 96, maxW = W - P * 2;
+  const c = document.createElement('canvas');
+  const x = c.getContext('2d');
+
+  // measure pass → dynamic height so long hadiths fit
+  const AR_FONT = '600 54px serif', AR_LH = 92;
+  const BN_FONT = "500 40px 'Hind Siliguri', sans-serif", BN_LH = 62;
+  x.font = AR_FONT; const arLines = ar ? cvWrapText(x, ar, maxW) : [];
+  x.font = BN_FONT; const bnLines = cvWrapText(x, bn, maxW);
+  const topPad = 200, gap = ar ? 66 : 0, refBlock = 200;
+  const contentH = topPad + arLines.length * AR_LH + gap + bnLines.length * BN_LH + refBlock;
+  const H = Math.max(1080, contentH);
+  const vShift = Math.max(0, (H - contentH) / 2); // centre short content vertically
+  c.width = W; c.height = H;
+
+  // background: deep green-black gradient + soft emerald glow + stars
+  const bg = x.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#0a0d12'); bg.addColorStop(.55, '#0d1512'); bg.addColorStop(1, '#0a0d12');
+  x.fillStyle = bg; x.fillRect(0, 0, W, H);
+  const glow = x.createRadialGradient(W/2, H*0.42, 60, W/2, H*0.42, W*0.75);
+  glow.addColorStop(0, 'rgba(16,185,129,.14)'); glow.addColorStop(1, 'rgba(16,185,129,0)');
+  x.fillStyle = glow; x.fillRect(0, 0, W, H);
+  x.fillStyle = 'rgba(232,244,239,.16)';
+  [[80,120],[W-90,140],[140,H-160],[W-150,H-180],[W/2-260,90],[W/2+300,H-110],[60,H/2],[W-70,H/2+80]]
+    .forEach(([sx,sy],i) => { x.beginPath(); x.arc(sx, sy, i%3===0?3:2, 0, 7); x.fill(); });
+
+  // gold gradient frame
+  const frame = x.createLinearGradient(0, 0, W, H);
+  frame.addColorStop(0, 'rgba(212,175,106,.85)'); frame.addColorStop(.5, 'rgba(212,175,106,.25)'); frame.addColorStop(1, 'rgba(212,175,106,.85)');
+  x.strokeStyle = frame; x.lineWidth = 5;
+  x.beginPath(); x.roundRect(28, 28, W-56, H-56, 34); x.stroke();
+  x.lineWidth = 1.5; x.strokeStyle = 'rgba(212,175,106,.35)';
+  x.beginPath(); x.roundRect(44, 44, W-88, H-88, 26); x.stroke();
+
+  x.textAlign = 'center';
+
+  // header label
+  x.font = "700 34px 'Hind Siliguri', sans-serif";
+  x.fillStyle = '#e3c98a';
+  x.fillText('✨ ' + label + ' ✨', W/2, 128);
+
+  // Arabic
+  let y = topPad + 40 + vShift;
+  if(ar){
+    x.font = AR_FONT; x.fillStyle = '#d8f5ec'; x.direction = 'rtl';
+    x.shadowColor = 'rgba(16,185,129,.35)'; x.shadowBlur = 18;
+    arLines.forEach(l => { x.fillText(l, W/2, y); y += AR_LH; });
+    x.shadowBlur = 0; x.direction = 'ltr';
+    // divider
+    x.font = '400 30px serif'; x.fillStyle = 'rgba(212,175,106,.8)';
+    x.fillText('﴾ ﴿', W/2, y - 12); y += gap - 12;
+  }
+
+  // Bengali/translation
+  x.font = BN_FONT; x.fillStyle = '#e8f4ef';
+  bnLines.forEach(l => { x.fillText(l, W/2, y); y += BN_LH; });
+
+  // reference pill
+  if(ref){
+    y += 34;
+    x.font = "700 30px 'Hind Siliguri', sans-serif";
+    const rw = x.measureText(ref).width + 76;
+    x.fillStyle = 'rgba(212,175,106,.13)';
+    x.strokeStyle = 'rgba(212,175,106,.5)'; x.lineWidth = 2;
+    x.beginPath(); x.roundRect(W/2 - rw/2, y - 34, rw, 56, 28); x.fill(); x.stroke();
+    x.fillStyle = '#eed9a6';
+    x.fillText('📖 ' + ref, W/2, y + 6);
+  }
+
+  // footer branding
+  x.font = "600 26px 'Hind Siliguri', sans-serif";
+  x.fillStyle = 'rgba(45,212,191,.8)';
+  x.fillText('🕌 ইসলামিক AI — Deen Companion', W/2, H - 70);
+
+  c.toBlob(async blob => {
+    if(!blob){ showToast('ছবি তৈরি করা যায়নি'); return; }
+    const file = new File([blob], 'islamic-ai-card.png', {type: 'image/png'});
+    if(navigator.canShare && navigator.canShare({files: [file]})){
+      try{ await navigator.share({files: [file], title: label}); return; }
+      catch(e){ if(e && e.name === 'AbortError') return; }
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'islamic-ai-card.png'; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 8000);
+    showToast('📥 ছবি ডাউনলোড হয়েছে — এখন যেকোনো অ্যাপে শেয়ার করুন');
+  }, 'image/png');
 }
 
 async function renderDailyWidget(){
