@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v106-inner-screens-premium -->
+<!-- VERSION: v107-hijri-calendar -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -1179,7 +1179,10 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
 
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:12px 16px">
       <button type="button" onclick="navigateCalendarMonth(-1)" aria-label="আগের মাস" style="width:34px;height:34px;border-radius:11px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:15px;cursor:pointer">‹</button>
-      <div id="calendar-month-label" style="font-size:15px;font-weight:700;color:var(--text);text-align:center"></div>
+      <div style="text-align:center">
+        <div id="calendar-month-label" style="font-size:15px;font-weight:700;color:var(--text)"></div>
+        <div id="calendar-hijri-label" style="font-size:11.5px;font-weight:700;margin-top:3px;background:linear-gradient(180deg,#f0d795,#c9a45c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--gold2)"></div>
+      </div>
       <button type="button" onclick="navigateCalendarMonth(1)" aria-label="পরের মাস" style="width:34px;height:34px;border-radius:11px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:15px;cursor:pointer">›</button>
     </div>
 
@@ -2941,6 +2944,22 @@ function renderCalendar(){
 
   setTextIfExists('calendar-month-label', `${monthNames[month]} ${localizeNum(year)}`);
 
+  // Hijri months spanned by this Gregorian month — computed from the app's
+  // moon-based (astronomical) Hijri conversion, so it tracks automatically
+  const hijriMo = HIJRI_MONTHS[currentLang] || HIJRI_MONTHS.bn;
+  const hijriLabelWord = {bn:'হিজরি', en:'AH', ar:'هـ', zh:'伊斯兰历', ur:'ھ', fr:'H'}[currentLang] || 'AH';
+  const hFirst = gregorianToHijri(new Date(year, month, 1));
+  const hLast = gregorianToHijri(new Date(year, month + 1, 0));
+  let hijriLabel;
+  if(hFirst.month === hLast.month && hFirst.year === hLast.year){
+    hijriLabel = `${hijriMo[hFirst.month-1]} ${localizeNum(hFirst.year)} ${hijriLabelWord}`;
+  } else if(hFirst.year === hLast.year){
+    hijriLabel = `${hijriMo[hFirst.month-1]} – ${hijriMo[hLast.month-1]} ${localizeNum(hFirst.year)} ${hijriLabelWord}`;
+  } else {
+    hijriLabel = `${hijriMo[hFirst.month-1]} ${localizeNum(hFirst.year)} – ${hijriMo[hLast.month-1]} ${localizeNum(hLast.year)} ${hijriLabelWord}`;
+  }
+  setTextIfExists('calendar-hijri-label', `🌙 ${hijriLabel}`);
+
   const headerEl = document.getElementById('calendar-weekday-header');
   headerEl.innerHTML = weekdayShort.map(w => `<div style="text-align:center;font-size:10px;color:var(--text3);font-weight:600">${w}</div>`).join('');
 
@@ -2985,8 +3004,9 @@ function renderCalendar(){
 
     return `
     <div onclick="${clickable ? `showCalendarDayEvent(${day})` : ''}" style="aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:9px;background:${bg};border:${border};cursor:${clickable?'pointer':'default'};position:relative">
-      <div style="font-size:12px;font-weight:${isToday||event||isFast?'700':'500'};color:${textColor}">${localizeNum(day)}</div>
-      ${dots ? `<div style="display:flex;gap:2px;margin-top:2px">${dots}</div>` : ''}
+      <div style="font-size:12px;font-weight:${isToday||event||isFast?'700':'500'};color:${textColor};line-height:1.15">${localizeNum(day)}</div>
+      <div style="font-size:7.5px;font-weight:600;color:${isToday?'rgba(0,0,0,.6)':'rgba(212,175,106,.75)'};line-height:1.1">${localizeNum(hijri.day)}</div>
+      ${dots ? `<div style="display:flex;gap:2px;margin-top:1px">${dots}</div>` : ''}
     </div>`;
   }).join('');
 
