@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v108-calendar-clarity -->
+<!-- VERSION: v109-date-opens-calendar -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -514,7 +514,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
         <circle cx="50" cy="50" r="1.2" fill="#0a0d12"/>
       </svg>
     </div>
-    <div class="cp-date" role="region" aria-label="তারিখ">
+    <div class="cp-date" role="button" tabindex="0" aria-label="তারিখ — ইসলামিক ক্যালেন্ডার খুলতে ট্যাপ করুন" onclick="openCalendarFromHome()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openCalendarFromHome()}" style="cursor:pointer">
       <div class="cp-date-w" id="date-weekday-bn">--</div>
       <div class="cp-date-g" id="date-gregorian">--</div>
       <div class="cp-date-h" id="date-hijri">--</div>
@@ -4745,6 +4745,14 @@ function renderMosqueResults(elements, myLat, myLon){
 function openHajjFromHome(){
   showTab('tools', document.getElementById('tabbtn-tools'));
   openTool('hajj');
+  const main = document.getElementById('main-content');
+  if(main) main.scrollIntoView({behavior:'smooth'});
+}
+
+// Clock-panel date block: tap anywhere on it to land on the Islamic calendar
+function openCalendarFromHome(){
+  showTab('tools', document.getElementById('tabbtn-tools'));
+  openTool('calendar');
   const main = document.getElementById('main-content');
   if(main) main.scrollIntoView({behavior:'smooth'});
 }
