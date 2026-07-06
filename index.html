@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v118-inapp-routing -->
+<!-- VERSION: v119-sehri-phase-fix -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -4076,15 +4076,33 @@ function updateFastingCard(now, pt, curHour){
   const sehriEnd = pt.fajr - 10/60;
   setTextIfExists('fc-window-text', localizeNum(fmtHM(sehriEnd) + ' – ' + fmtHM(pt.maghrib)));
 
-  // Two live countdowns — Sehri (to next dawn) and Iftar (to Maghrib)
+  // Two live countdowns — phase-aware so we never count to "tomorrow's sehri"
+  // in broad daylight: pre-dawn = countdown, daytime = "sehri over" with the
+  // time it ended, after iftar = countdown to tomorrow's sehri resumes.
   const p=n=>String(n).padStart(2,'0');
   const fmtCd = hrs => { let s=Math.round(hrs*3600); s=((s%86400)+86400)%86400; return p(Math.floor(s/3600))+':'+p(Math.floor((s%3600)/60))+':'+p(s%60); };
-  let sehriDiff = sehriEnd - curHour; if(sehriDiff<=0) sehriDiff+=24;
-  let iftarDiff = pt.maghrib - curHour; if(iftarDiff<=0) iftarDiff+=24;
-  setTextIfExists('fc-sehri-cd', localizeNum(fmtCd(sehriDiff)));
-  setTextIfExists('fc-iftar-cd', localizeNum(fmtCd(iftarDiff)));
-  setTextIfExists('fc-sehri-cap', t('sehriEndsIn'));
-  setTextIfExists('fc-iftar-cap', t('iftarIn'));
+  const isBn = currentLang === 'bn';
+  const sehriPassed = curHour >= sehriEnd;
+  const iftarPassed = curHour >= pt.maghrib;
+
+  if(!sehriPassed){
+    setTextIfExists('fc-sehri-cap', t('sehriEndsIn'));
+    setTextIfExists('fc-sehri-cd', localizeNum(fmtCd(sehriEnd - curHour)));
+  } else if(!iftarPassed){
+    setTextIfExists('fc-sehri-cap', isBn ? '✅ সেহরির সময় শেষ' : '✅ Sehri time is over');
+    setTextIfExists('fc-sehri-cd', fmtHM(sehriEnd));
+  } else {
+    setTextIfExists('fc-sehri-cap', (isBn ? 'আগামীকাল ' : 'Tomorrow: ') + t('sehriEndsIn'));
+    setTextIfExists('fc-sehri-cd', localizeNum(fmtCd(sehriEnd + 24 - curHour)));
+  }
+
+  if(!iftarPassed){
+    setTextIfExists('fc-iftar-cap', t('iftarIn'));
+    setTextIfExists('fc-iftar-cd', localizeNum(fmtCd(pt.maghrib - curHour)));
+  } else {
+    setTextIfExists('fc-iftar-cap', isBn ? '✅ ইফতারের সময় হয়েছে' : '✅ Iftar time reached');
+    setTextIfExists('fc-iftar-cd', fmtHM(pt.maghrib));
+  }
   const total = fastCount();
   setTextIfExists('fc-hint', (total ? '🗓️ ' + t('fastTotal').replace('{n}', localizeNum(total)) + ' · ' : '') + t('iftarDuaHint'));
 }
