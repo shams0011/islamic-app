@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v126-hajj-title-teal -->
+<!-- VERSION: v127-zakat-premium-form -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -997,7 +997,21 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
 
     <div id="zakat-form" style="display:flex;flex-direction:column;gap:12px"></div>
 
-    <div style="margin-top:18px;padding:20px 18px;border:1px solid transparent;background:linear-gradient(165deg,#101a16,#0c1210) padding-box,linear-gradient(140deg,rgba(16,185,129,.4),rgba(255,255,255,.06) 50%,rgba(212,175,106,.4)) border-box;border-radius:18px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.25),0 0 30px rgba(16,185,129,.05)">
+    <div style="margin-top:16px;padding:13px 16px;background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,.14)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px">
+        <span style="font-size:12px;font-weight:700;color:var(--text2)">💼 মোট যাকাতযোগ্য সম্পদ</span>
+        <span id="zakat-total-amount" style="font-size:15px;font-weight:800;color:#e3c98a;font-family:monospace">৳ ০</span>
+      </div>
+      <div style="position:relative;height:7px;background:rgba(255,255,255,.06);border-radius:8px">
+        <div id="zakat-nisab-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#c9a45c,var(--emerald2));border-radius:8px;transition:width .4s ease"></div>
+        <span style="position:absolute;right:0;top:-3px;bottom:-3px;width:2.5px;background:rgba(240,215,149,.85);border-radius:2px;box-shadow:0 0 6px rgba(240,215,149,.7)" title="নিসাব" aria-hidden="true"></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:9.5px;color:var(--text3);font-weight:600">
+        <span>০</span><span id="zakat-nisab-mark" style="color:#eed9a6">নিসাব: ৳ --</span>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;padding:20px 18px;border:1px solid transparent;background:linear-gradient(165deg,#101a16,#0c1210) padding-box,linear-gradient(140deg,rgba(16,185,129,.4),rgba(255,255,255,.06) 50%,rgba(212,175,106,.4)) border-box;border-radius:18px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.25),0 0 30px rgba(16,185,129,.05)">
       <div id="zakat-result-label" style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px;text-transform:uppercase">মোট প্রদেয় যাকাত</div>
       <div id="zakat-result-amount" style="font-size:38px;font-weight:800;background:linear-gradient(180deg,#c8fff8 10%,#2dd4bf 62%,#0fb5a0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--emerald2);font-family:monospace;filter:drop-shadow(0 0 14px rgba(45,212,191,.35))">০</div>
       <div id="zakat-nisab-status" style="font-size:12.5px;color:var(--text2);margin-top:10px"></div>
@@ -4921,11 +4935,22 @@ const ZAKAT_FIELDS = [
 function renderZakatForm(){
   const el = document.getElementById('zakat-form');
   if(!el) return;
-  el.innerHTML = ZAKAT_FIELDS.map(f => `
-    <div>
-      <label for="zakat-${f.id}" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);margin-bottom:6px"><span aria-hidden="true">${f.icon}</span><span id="zakat-label-${f.id}">${t(f.labelKey)}</span></label>
-      <input type="number" inputmode="decimal" id="zakat-${f.id}" oninput="calculateZakat()" placeholder="0" style="width:100%;background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:11px 14px;color:var(--text);font-size:15px;outline:none;font-family:ui-monospace,monospace">
-    </div>`).join('');
+  // each field is a premium "window": tinted icon medallion + label + taka-prefixed borderless input
+  el.innerHTML = ZAKAT_FIELDS.map((f, i) => {
+    const debt = f.id === 'debt';
+    const tint = debt ? '224,112,112' : (i % 2 === 0 ? '16,185,129' : '212,175,106');
+    return `
+    <div style="display:flex;align-items:center;gap:13px;border:1px solid transparent;background:linear-gradient(160deg,var(--card2),var(--card)) padding-box,linear-gradient(140deg,rgba(${tint},.3),rgba(255,255,255,.04) 55%,rgba(${tint},.18)) border-box;border-radius:16px;padding:11px 14px;box-shadow:0 3px 10px rgba(0,0,0,.14)">
+      <span style="width:40px;height:40px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(${tint},.12);box-shadow:0 0 0 1px rgba(${tint},.25) inset" aria-hidden="true">${f.icon}</span>
+      <div style="flex:1;min-width:0">
+        <label for="zakat-${f.id}" style="display:block;font-size:11.5px;font-weight:700;color:${debt ? '#ff9d9d' : 'var(--text2)'};margin-bottom:2px"><span id="zakat-label-${f.id}">${t(f.labelKey)}</span></label>
+        <div style="display:flex;align-items:center;gap:7px">
+          <span style="font-size:15px;font-weight:800;color:${debt ? '#ff9d9d' : '#e3c98a'}" aria-hidden="true">${debt ? '−৳' : '৳'}</span>
+          <input type="number" inputmode="decimal" id="zakat-${f.id}" oninput="calculateZakat()" placeholder="0" style="flex:1;width:100%;background:transparent;border:none;border-radius:0;padding:2px 0;color:var(--text);font-size:18px;font-weight:700;outline:none;box-shadow:none;font-family:ui-monospace,monospace">
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 
   const nisabValue = SILVER_NISAB_GRAMS * silverPricePerGram;
   const nisabEl = document.getElementById('zakat-nisab-info');
@@ -4948,10 +4973,21 @@ function calculateZakat(){
   const resultEl = document.getElementById('zakat-result-amount');
   const statusEl = document.getElementById('zakat-nisab-status');
 
+  // live wealth summary + nisab comparison bar (gold marker = nisab threshold)
+  setTextIfExists('zakat-total-amount', '৳ ' + localizeNum(Math.round(total).toLocaleString()));
+  setTextIfExists('zakat-nisab-mark', 'নিসাব: ৳ ' + localizeNum(Math.round(nisabValue).toLocaleString()));
+  const nisabBar = document.getElementById('zakat-nisab-bar');
+  if(nisabBar){
+    nisabBar.style.width = Math.min(100, (total / nisabValue) * 100) + '%';
+    nisabBar.style.background = total >= nisabValue
+      ? 'linear-gradient(90deg,#c9a45c,var(--emerald2))'
+      : 'linear-gradient(90deg,rgba(201,164,92,.7),rgba(201,164,92,.9))';
+  }
+
   if(total >= nisabValue){
     const zakatDue = total * ZAKAT_RATE;
     resultEl.textContent = '৳ ' + localizeNum(Math.round(zakatDue).toLocaleString());
-    statusEl.textContent = t('zakatAboveNisab');
+    statusEl.textContent = t('zakatAboveNisab') + ' · হার ২.৫%';
     statusEl.style.color = 'var(--emerald2)';
   } else {
     resultEl.textContent = localizeNum('0');
