@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v122-progress-layout -->
+<!-- VERSION: v123-home-hajj-map -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -672,6 +672,15 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
   </span>
   <span class="hajj-banner-arrow" aria-hidden="true">›</span>
 </button>
+
+<div id="home-hajj-map-card" role="button" tabindex="0" onclick="openHajjFromHome()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openHajjFromHome()}" aria-label="হজ্জ যাত্রাপথের মানচিত্র — পূর্ণ গাইড খুলতে ট্যাপ করুন" style="margin:10px 16px 0;cursor:pointer;border:1px solid transparent;background:linear-gradient(165deg,#101a16,#0c1210) padding-box,linear-gradient(140deg,rgba(16,185,129,.3),rgba(255,255,255,.05) 50%,rgba(212,175,106,.32)) border-box;border-radius:18px;padding:13px 12px 8px;box-shadow:0 6px 18px rgba(0,0,0,.22);transition:transform .18s,box-shadow .25s">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+    <span style="font-size:13px" aria-hidden="true">🗺️</span>
+    <span style="font-size:12px;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;background:linear-gradient(180deg,#c8fff8 10%,#2dd4bf 62%,#0fb5a0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:#2dd4bf">হজ্জ যাত্রাপথ এক নজরে</span>
+  </div>
+  <div id="home-hajj-map" style="pointer-events:none" aria-hidden="true"></div>
+  <div style="text-align:center;padding:7px 0 4px;font-size:10.5px;color:#eed9a6;font-weight:600">👆 বিস্তারিত গাইড, চেকলিস্ট ও দোয়া দেখতে ট্যাপ করুন</div>
+</div>
 
 <div id="live-stream-widget" role="region" aria-label="মক্কা ও মদিনা লাইভ সম্প্রচার" style="margin:14px 16px 0">
   <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;padding-left:2px">
@@ -2762,6 +2771,7 @@ function renderHajjChecklist(){
   }).join('');
 
   renderHajjRouteMap();
+  renderHajjRouteMap('home-hajj-map', 'hajj'); // keep the home glance map in sync with progress
   renderHajjItinerary();
 
   const doneCount = steps.filter(s => { const e = progress[s.id]; return e === true || (e && typeof e === 'object' && !!e.completedAt); }).length;
@@ -3678,10 +3688,13 @@ function renderHajjItinerary(){
     </div>`;
 }
 
-function renderHajjRouteMap(){
-  const wrap = document.getElementById('hajj-route-map');
+function renderHajjRouteMap(targetId, mode){
+  targetId = targetId || 'hajj-route-map';
+  mode = mode || currentHajjMode;
+  const wrap = document.getElementById(targetId);
   if(!wrap) return;
-  closeHajjMapLocationInfo();
+  if(targetId === 'hajj-route-map') closeHajjMapLocationInfo();
+  const isHajjMode = mode === 'hajj';
 
   const progress = loadHajjProgress();
   const stepDone = id => { const e = progress[id]; return e === true || (e && typeof e === 'object' && !!e.completedAt); };
@@ -3723,7 +3736,7 @@ function renderHajjRouteMap(){
     </g>`;
   };
 
-  if(currentHajjMode === 'hajj'){
+  if(isHajjMode){
     // Geographic layout: one node per REAL place on a west-east baseline;
     // the numbered curved legs (above = outbound, below = return) show when
     // the pilgrim passes through — Mina appears once even though it is
@@ -4239,6 +4252,7 @@ async function refreshLiveStreams(){
   } catch { /* offline — keep the fallback IDs */ }
 }
 setTimeout(refreshLiveStreams, 0); // deferred: AI_PROXY_URL is declared further down this script
+setTimeout(() => renderHajjRouteMap('home-hajj-map', 'hajj'), 0); // home-screen glance map
 
 /* ══ BOOKS ══ */
 function renderBooks(){
