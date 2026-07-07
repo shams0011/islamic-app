@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v127-zakat-premium-form -->
+<!-- VERSION: v128-night-iftar-fix -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -4168,7 +4168,13 @@ function updateFastingCard(now, pt, curHour){
     if(sehriBlock) sehriBlock.classList.remove('done');
   }
 
-  if(!iftarPassed){
+  if(!sehriPassed){
+    // deep night before sehri: the fast hasn't begun — an 18-hour iftar
+    // countdown reads as nonsense, so just show today's iftar time calmly
+    setTextIfExists('fc-iftar-cap', isBn ? '🍽️ আজ ইফতার' : "🍽️ Today's iftar");
+    setTextIfExists('fc-iftar-cd', fmtHM(pt.maghrib));
+    if(iftarBlock) iftarBlock.classList.add('done');
+  } else if(!iftarPassed){
     setTextIfExists('fc-iftar-cap', t('iftarIn'));
     setTextIfExists('fc-iftar-cd', localizeNum(fmtCd(pt.maghrib - curHour)));
     if(iftarBlock) iftarBlock.classList.remove('done');
