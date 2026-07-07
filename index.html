@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v132-zakat-ledger -->
+<!-- VERSION: v133-bn-digit-inputs -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -4959,7 +4959,7 @@ function renderZakatForm(){
       <span style="width:28px;height:28px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;background:rgba(${debt ? '224,112,112' : '16,185,129'},.1)" aria-hidden="true">${f.icon}</span>
       <label for="zakat-${f.id}" style="flex:1;min-width:0;font-size:13px;font-weight:600;color:${debt ? '#ff9d9d' : 'var(--text2)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span id="zakat-label-${f.id}">${t(f.labelKey)}</span></label>
       <span style="font-size:14px;font-weight:800;color:${debt ? '#ff9d9d' : '#e3c98a'};flex-shrink:0" aria-hidden="true">${debt ? '−৳' : '৳'}</span>
-      <input type="number" inputmode="decimal" id="zakat-${f.id}" oninput="calculateZakat()" placeholder="0" style="width:112px;flex-shrink:0;text-align:right;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:7px 10px;color:var(--text);font-size:16px;font-weight:700;outline:none;font-family:ui-monospace,monospace">
+      <input type="text" inputmode="numeric" id="zakat-${f.id}" oninput="zakatFormatInput(this)" placeholder="০" style="width:112px;flex-shrink:0;text-align:right;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:7px 10px;color:var(--text);font-size:16px;font-weight:700;outline:none;font-family:'Hind Siliguri',ui-monospace,monospace">
     </div>`;
   }).join('');
 
@@ -4973,10 +4973,23 @@ function renderZakatForm(){
   calculateZakat(); // fill the nisab mark and totals immediately on open
 }
 
+// inputs display localized digits with separators; parse them back to numbers
+const _DIGIT_MAP = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9','٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'};
+function zakatParse(el){
+  if(!el) return 0;
+  const raw = String(el.value || '').replace(/[০-৯٠-٩]/g, d => _DIGIT_MAP[d]).replace(/[^0-9]/g, '');
+  return parseInt(raw, 10) || 0;
+}
+function zakatFormatInput(el){
+  const n = zakatParse(el);
+  el.value = n ? localizeNum(n.toLocaleString('en-US')) : '';
+  calculateZakat();
+}
+
 function calculateZakat(){
   let total = 0;
   ZAKAT_FIELDS.forEach(f => {
-    const val = parseFloat(document.getElementById('zakat-'+f.id)?.value) || 0;
+    const val = zakatParse(document.getElementById('zakat-'+f.id));
     total += (f.id === 'debt') ? -val : val; // debt is deducted from zakatable wealth
   });
   total = Math.max(0, total);
