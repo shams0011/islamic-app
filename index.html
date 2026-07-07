@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v124-merged-hajj-card -->
+<!-- VERSION: v125-hajj-above-daily -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -646,6 +646,21 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
   📡 <span id="offline-banner-text">অফলাইন মোড — আগে দেখা কন্টেন্ট পাওয়া যাচ্ছে</span>
 </div>
 
+<div id="home-hajj-map-card" role="button" tabindex="0" onclick="openHajjFromHome()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openHajjFromHome()}" aria-label="হজ্জ ও উমরাহ গাইড — যাত্রাপথের মানচিত্রসহ, পূর্ণ গাইড খুলতে ট্যাপ করুন" style="margin:14px 16px 0;cursor:pointer;border:1px solid transparent;background:linear-gradient(160deg,#101a16,#0c1210) padding-box,linear-gradient(120deg,rgba(212,175,106,.45),rgba(16,185,129,.25) 55%,rgba(212,175,106,.4)) border-box;border-radius:19px;padding:14px 12px 8px;box-shadow:0 6px 20px rgba(0,0,0,.25),0 0 24px rgba(212,175,106,.06);transition:transform .18s,box-shadow .25s;position:relative;overflow:hidden">
+  <div style="position:absolute;top:-60%;right:-10%;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,106,.14),transparent 70%);pointer-events:none" aria-hidden="true"></div>
+  <div style="display:flex;align-items:center;gap:13px;padding:0 5px;margin-bottom:11px;position:relative">
+    <span class="hajj-banner-icon" aria-hidden="true">🕋</span>
+    <span class="hajj-banner-info">
+      <span class="hajj-banner-title" id="hajj-banner-title">হজ্জ ও উমরাহ গাইড</span>
+      <span class="hajj-banner-sub" id="hajj-banner-sub">ধাপে ধাপে চেকলিস্ট, দোয়া ও নির্দেশনা</span>
+    </span>
+    <span class="hajj-banner-arrow" aria-hidden="true" style="margin-left:auto">›</span>
+  </div>
+  <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,106,.35),transparent);margin:0 4px 8px" aria-hidden="true"></div>
+  <div id="home-hajj-map" style="pointer-events:none" aria-hidden="true"></div>
+  <div style="text-align:center;padding:7px 0 4px;font-size:10.5px;color:#eed9a6;font-weight:600">👆 বিস্তারিত গাইড, চেকলিস্ট ও দোয়া দেখতে ট্যাপ করুন</div>
+</div>
+
 <div id="daily-widget" class="daily-widget" role="region" aria-label="দৈনিক আয়াত বা হাদিস">
   <div class="dw-glow dw-glow-l" aria-hidden="true"></div>
   <div class="dw-glow dw-glow-r" aria-hidden="true"></div>
@@ -662,21 +677,6 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
   <div id="daily-widget-arabic" class="dw-arabic"></div>
   <div id="daily-widget-text" class="dw-text"></div>
   <div id="daily-widget-ref" class="dw-ref"></div>
-</div>
-
-<div id="home-hajj-map-card" role="button" tabindex="0" onclick="openHajjFromHome()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openHajjFromHome()}" aria-label="হজ্জ ও উমরাহ গাইড — যাত্রাপথের মানচিত্রসহ, পূর্ণ গাইড খুলতে ট্যাপ করুন" style="margin:14px 16px 0;cursor:pointer;border:1px solid transparent;background:linear-gradient(160deg,#101a16,#0c1210) padding-box,linear-gradient(120deg,rgba(212,175,106,.45),rgba(16,185,129,.25) 55%,rgba(212,175,106,.4)) border-box;border-radius:19px;padding:14px 12px 8px;box-shadow:0 6px 20px rgba(0,0,0,.25),0 0 24px rgba(212,175,106,.06);transition:transform .18s,box-shadow .25s;position:relative;overflow:hidden">
-  <div style="position:absolute;top:-60%;right:-10%;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,106,.14),transparent 70%);pointer-events:none" aria-hidden="true"></div>
-  <div style="display:flex;align-items:center;gap:13px;padding:0 5px;margin-bottom:11px;position:relative">
-    <span class="hajj-banner-icon" aria-hidden="true">🕋</span>
-    <span class="hajj-banner-info">
-      <span class="hajj-banner-title" id="hajj-banner-title">হজ্জ ও উমরাহ গাইড</span>
-      <span class="hajj-banner-sub" id="hajj-banner-sub">ধাপে ধাপে চেকলিস্ট, দোয়া ও নির্দেশনা</span>
-    </span>
-    <span class="hajj-banner-arrow" aria-hidden="true" style="margin-left:auto">›</span>
-  </div>
-  <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,106,.35),transparent);margin:0 4px 8px" aria-hidden="true"></div>
-  <div id="home-hajj-map" style="pointer-events:none" aria-hidden="true"></div>
-  <div style="text-align:center;padding:7px 0 4px;font-size:10.5px;color:#eed9a6;font-weight:600">👆 বিস্তারিত গাইড, চেকলিস্ট ও দোয়া দেখতে ট্যাপ করুন</div>
 </div>
 
 <div id="live-stream-widget" role="region" aria-label="মক্কা ও মদিনা লাইভ সম্প্রচার" style="margin:14px 16px 0">
