@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v128-night-iftar-fix -->
+<!-- VERSION: v129-zakat-2col -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -995,7 +995,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
       <div id="zakat-nisab-info" style="font-size:12.5px;color:#eed9a6;line-height:1.7"></div>
     </div>
 
-    <div id="zakat-form" style="display:flex;flex-direction:column;gap:12px"></div>
+    <div id="zakat-form" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div>
 
     <div style="margin-top:16px;padding:13px 16px;background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,.14)">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px">
@@ -4941,19 +4941,16 @@ const ZAKAT_FIELDS = [
 function renderZakatForm(){
   const el = document.getElementById('zakat-form');
   if(!el) return;
-  // each field is a premium "window": tinted icon medallion + label + taka-prefixed borderless input
+  // 2-column grid of compact field "windows"; the debt row spans full width
   el.innerHTML = ZAKAT_FIELDS.map((f, i) => {
     const debt = f.id === 'debt';
     const tint = debt ? '224,112,112' : (i % 2 === 0 ? '16,185,129' : '212,175,106');
     return `
-    <div style="display:flex;align-items:center;gap:13px;border:1px solid transparent;background:linear-gradient(160deg,var(--card2),var(--card)) padding-box,linear-gradient(140deg,rgba(${tint},.3),rgba(255,255,255,.04) 55%,rgba(${tint},.18)) border-box;border-radius:16px;padding:11px 14px;box-shadow:0 3px 10px rgba(0,0,0,.14)">
-      <span style="width:40px;height:40px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(${tint},.12);box-shadow:0 0 0 1px rgba(${tint},.25) inset" aria-hidden="true">${f.icon}</span>
-      <div style="flex:1;min-width:0">
-        <label for="zakat-${f.id}" style="display:block;font-size:11.5px;font-weight:700;color:${debt ? '#ff9d9d' : 'var(--text2)'};margin-bottom:2px"><span id="zakat-label-${f.id}">${t(f.labelKey)}</span></label>
-        <div style="display:flex;align-items:center;gap:7px">
-          <span style="font-size:15px;font-weight:800;color:${debt ? '#ff9d9d' : '#e3c98a'}" aria-hidden="true">${debt ? '−৳' : '৳'}</span>
-          <input type="number" inputmode="decimal" id="zakat-${f.id}" oninput="calculateZakat()" placeholder="0" style="flex:1;width:100%;background:transparent;border:none;border-radius:0;padding:2px 0;color:var(--text);font-size:18px;font-weight:700;outline:none;box-shadow:none;font-family:ui-monospace,monospace">
-        </div>
+    <div style="${debt ? 'grid-column:1/-1;' : ''}border:1px solid transparent;background:linear-gradient(160deg,var(--card2),var(--card)) padding-box,linear-gradient(140deg,rgba(${tint},.3),rgba(255,255,255,.04) 55%,rgba(${tint},.18)) border-box;border-radius:15px;padding:10px 12px;box-shadow:0 3px 10px rgba(0,0,0,.14)">
+      <label for="zakat-${f.id}" style="display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;color:${debt ? '#ff9d9d' : 'var(--text2)'};margin-bottom:5px"><span style="font-size:14px" aria-hidden="true">${f.icon}</span><span id="zakat-label-${f.id}" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t(f.labelKey)}</span></label>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:14px;font-weight:800;color:${debt ? '#ff9d9d' : '#e3c98a'}" aria-hidden="true">${debt ? '−৳' : '৳'}</span>
+        <input type="number" inputmode="decimal" id="zakat-${f.id}" oninput="calculateZakat()" placeholder="0" style="flex:1;width:100%;min-width:0;background:transparent;border:none;border-radius:0;padding:1px 0;color:var(--text);font-size:17px;font-weight:700;outline:none;box-shadow:none;font-family:ui-monospace,monospace">
       </div>
     </div>`;
   }).join('');
@@ -4965,6 +4962,7 @@ function renderZakatForm(){
   setTextIfExists('zakat-sec-title', t('zakatCalculator'));
   setTextIfExists('zakat-result-label', t('zakatTotalDue'));
   ZAKAT_FIELDS.forEach(f => setTextIfExists('zakat-label-'+f.id, t(f.labelKey)));
+  calculateZakat(); // fill the nisab mark and totals immediately on open
 }
 
 function calculateZakat(){
