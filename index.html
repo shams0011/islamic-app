@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v137-zakat-clarity -->
+<!-- VERSION: v138-zakat-overflow-fix -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -1009,14 +1009,14 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
 
       <div style="padding:2px 0 12px;border-bottom:1px solid rgba(212,175,106,.18);margin-bottom:10px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px">
-          <div style="background:rgba(212,175,106,.07);border:1px solid rgba(212,175,106,.25);border-radius:13px;padding:10px 12px;box-shadow:0 0 14px rgba(212,175,106,.05)">
+          <div style="min-width:0;background:rgba(212,175,106,.07);border:1px solid rgba(212,175,106,.25);border-radius:13px;padding:10px 12px;box-shadow:0 0 14px rgba(212,175,106,.05)">
             <div style="font-size:12px;font-weight:700;color:#dcd2b4;margin-bottom:4px">⚖️ নিসাব (রৌপ্যভিত্তিক)</div>
-            <div id="zakat-nisab-mark" style="font-size:18px;font-weight:800;color:#f0d795;font-family:ui-monospace,monospace;text-shadow:0 0 12px rgba(212,175,106,.3)">৳ --</div>
+            <div id="zakat-nisab-mark" style="font-size:18px;font-weight:800;color:#f0d795;font-family:ui-monospace,monospace;text-shadow:0 0 12px rgba(212,175,106,.3);overflow-wrap:anywhere">৳ --</div>
             <div style="font-size:10.5px;color:#b8a878;font-weight:600;margin-top:3px">এর বেশি হলে যাকাত ফরজ</div>
           </div>
-          <div style="background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.25);border-radius:13px;padding:10px 12px;box-shadow:0 0 14px rgba(16,185,129,.05)">
+          <div style="min-width:0;background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.25);border-radius:13px;padding:10px 12px;box-shadow:0 0 14px rgba(16,185,129,.05)">
             <div style="font-size:12px;font-weight:700;color:#c4ddd2;margin-bottom:4px">💼 মোট সম্পদ</div>
-            <div id="zakat-total-amount" style="font-size:18px;font-weight:800;color:#6ff2dd;font-family:ui-monospace,monospace;text-shadow:0 0 12px rgba(16,185,129,.3)">৳ ০</div>
+            <div id="zakat-total-amount" style="font-size:18px;font-weight:800;color:#6ff2dd;font-family:ui-monospace,monospace;text-shadow:0 0 12px rgba(16,185,129,.3);overflow-wrap:anywhere">৳ ০</div>
           </div>
         </div>
         <div style="position:relative;height:6px;background:rgba(255,255,255,.06);border-radius:8px">
@@ -4980,8 +4980,10 @@ function renderZakatForm(){
 const _DIGIT_MAP = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9','٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'};
 function zakatParse(el){
   if(!el) return 0;
-  const raw = String(el.value || '').replace(/[০-৯٠-٩]/g, d => _DIGIT_MAP[d]).replace(/[^0-9]/g, '');
-  return parseInt(raw, 10) || 0;
+  const raw = String(el.value || '').replace(/[০-৯٠-٩]/g, d => _DIGIT_MAP[d]).replace(/[^0-9]/g, '').slice(0, 12);
+  // 12-digit cap (~1 lakh crore per field) keeps the math inside the
+  // safe-integer range and the numbers inside the card
+  return Math.min(999999999999, parseInt(raw, 10) || 0);
 }
 function zakatFormatInput(el){
   const n = zakatParse(el);
@@ -5008,7 +5010,10 @@ function calculateZakat(){
   const statusEl = document.getElementById('zakat-nisab-status');
 
   // live wealth summary + nisab comparison bar (gold marker = nisab threshold)
-  setTextIfExists('zakat-total-amount', '৳ ' + localizeNum(Math.round(total).toLocaleString()));
+  const totalStr = '৳ ' + localizeNum(Math.round(total).toLocaleString());
+  setTextIfExists('zakat-total-amount', totalStr);
+  const totalEl = document.getElementById('zakat-total-amount');
+  if(totalEl) totalEl.style.fontSize = totalStr.length > 18 ? '13px' : totalStr.length > 13 ? '15px' : '18px';
   setTextIfExists('zakat-nisab-mark', '৳ ' + localizeNum(Math.round(nisabValue).toLocaleString()));
   const nisabBar = document.getElementById('zakat-nisab-bar');
   if(nisabBar){
@@ -5019,6 +5024,10 @@ function calculateZakat(){
   }
 
   const zakatDue = total >= nisabValue ? Math.round(total * ZAKAT_RATE) : 0;
+
+  // fit the LCD: shrink the digits instead of letting them wrap off-screen
+  const dueLen = ('৳ ' + zakatDue.toLocaleString()).length;
+  resultEl.style.fontSize = dueLen > 17 ? '26px' : dueLen > 12 ? '33px' : '42px';
 
   // count-up animation: the display rolls from the previous amount to the new
   // one like a real calculator/odometer
