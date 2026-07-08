@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v157-qari-audio -->
+<!-- VERSION: v158-no-tts -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -5032,6 +5032,9 @@ function selectTasbihZikir(i){
   arEl.style.fontSize = z.ar.length > 120 ? '15px' : z.ar.length > 40 ? '18px' : z.ar.length > 24 ? '21px' : '25px';
   setTextIfExists('tasbih-meaning', z.meaning);
   setTextIfExists('tasbih-source', '📖 ' + z.src);
+  // listen button only where real qari recitation exists — no device TTS ever
+  const audioBtn = document.getElementById('tasbih-audio-btn');
+  if(audioBtn) audioBtn.style.display = (typeof TASBIH_AYAT !== 'undefined' && TASBIH_AYAT[z.bn]) ? '' : 'none';
   updateTasbihPron();
   updateTasbihRing();
   const sel = document.getElementById('tasbih-zikir-select');
@@ -5071,7 +5074,6 @@ const TASBIH_AYAT = {
 
 function stopTasbihAudio(){
   const btn = document.getElementById('tasbih-audio-btn');
-  if('speechSynthesis' in window) speechSynthesis.cancel();
   const player = document.getElementById('surah-audio-player');
   if(player && window._tasbihAyatPlaying){ player.pause(); player.onended = null; player.onerror = null; }
   window._tasbihAyatPlaying = false;
@@ -5079,6 +5081,8 @@ function stopTasbihAudio(){
   if(btn) btn.textContent = '🔊 শুনুন';
 }
 
+// device text-to-speech is deliberately NOT used anywhere — only the real qari
+// recitation plays; zikirs without qari audio simply don't show the button
 function tasbihSpeak(){
   const btn = document.getElementById('tasbih-audio-btn');
   // tapping while playing = stop
@@ -5087,44 +5091,23 @@ function tasbihSpeak(){
   const z = TASBIH_ZIKIR[tasbihZikirIdx];
   const ayat = TASBIH_AYAT[z.bn];
   const player = document.getElementById('surah-audio-player');
+  if(!ayat || !ayat.length || !player) return;
 
-  if(ayat && ayat.length && player){
-    // real recitation: chain the ayah mp3s one after another (Alafasy, everyayah.com)
-    let i = 0;
-    const done = () => stopTasbihAudio();
-    const next = () => {
-      if(i >= ayat.length){ done(); return; }
-      const [s, a] = ayat[i++];
-      player.src = `https://everyayah.com/data/Alafasy_128kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`;
-      player.play().catch(done);
-    };
-    player.onended = next;
-    player.onerror = done;
-    window._tasbihSpeaking = true;
-    window._tasbihAyatPlaying = true;
-    if(btn) btn.textContent = '⏹ থামুন';
-    next();
-    return;
-  }
-
-  // hadith duas have no qari audio — fall back to TTS, preferring a MALE Arabic voice
-  if(!('speechSynthesis' in window)){
-    showToast('এই ডিভাইসে অডিও উচ্চারণ সমর্থিত নয়');
-    return;
-  }
-  const u = new SpeechSynthesisUtterance(z.ar.replace(/۞/g, '،'));
-  u.lang = 'ar-SA';
-  u.rate = 0.8;
-  u.pitch = 0.85; // slightly lower pitch — closer to a male register on generic voices
-  const voices = speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith('ar'));
-  const male = voices.find(v => /majed|maged|tarik|hamed|male/i.test(v.name) && !/female/i.test(v.name));
-  const arVoice = male || voices.find(v => !/female/i.test(v.name)) || voices[0];
-  if(arVoice) u.voice = arVoice;
-  u.onend = u.onerror = () => stopTasbihAudio();
-  speechSynthesis.cancel();
-  speechSynthesis.speak(u);
+  // real recitation: chain the ayah mp3s one after another (Alafasy, everyayah.com)
+  let i = 0;
+  const done = () => stopTasbihAudio();
+  const next = () => {
+    if(i >= ayat.length){ done(); return; }
+    const [s, a] = ayat[i++];
+    player.src = `https://everyayah.com/data/Alafasy_128kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`;
+    player.play().catch(done);
+  };
+  player.onended = next;
+  player.onerror = done;
   window._tasbihSpeaking = true;
+  window._tasbihAyatPlaying = true;
   if(btn) btn.textContent = '⏹ থামুন';
+  next();
 }
 
 // completion chime: two soft rising tones via Web Audio (no asset needed)
@@ -6375,6 +6358,7 @@ dailyWidgetType = loadDailyWidgetType();
 renderDailyWidget();
 renderZakatForm(); // the calculator sits on the home screen, so fill it at startup
 renderTasbihPresets();
+selectTasbihZikir(0); // sync arabic/meaning/audio-button state for the default zikir
 placeTasbihBody('home'); // the tasbih starts on the home screen below the zakat card
 initNotificationBanner();
 renderBooks();
