@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v142-zakat-no-subtitle -->
+<!-- VERSION: v143-tasbih-full-zikir -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -948,13 +948,10 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
 <div id="tab-tasbih" class="section" role="tabpanel" aria-labelledby="tabbtn-tasbih">
   <div class="sec-title"><div class="sec-gem"></div>ডিজিটাল তাসবিহ<div class="sec-gem"></div></div>
   <div style="display:flex;flex-direction:column;align-items:center;padding:10px">
-    <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;justify-content:center">
-      <button class="tasbih-preset active" id="preset-33a" onclick="setTasbihTarget(33,'سُبْحَانَ اللهِ','preset-33a')" style="padding:8px 16px;border-radius:50px;border:1px solid rgba(16,185,129,.4);background:rgba(16,185,129,.14);color:var(--emerald2);font-size:13px;font-weight:600;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s">সুবহানাল্লাহ ৩৩</button>
-      <button class="tasbih-preset" id="preset-33b" onclick="setTasbihTarget(33,'الْحَمْدُ لِلَّهِ','preset-33b')" style="padding:8px 16px;border-radius:50px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s">আলহামদুলিল্লাহ ৩৩</button>
-      <button class="tasbih-preset" id="preset-34" onclick="setTasbihTarget(34,'اللهُ أَكْبَرُ','preset-34')" style="padding:8px 16px;border-radius:50px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s">আল্লাহু আকবার ৩৪</button>
-    </div>
-    <div id="tasbih-label-ar" style="font-family:serif;font-size:27px;background:linear-gradient(180deg,#f0d795,#c9a45c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--gold2);direction:rtl;margin-bottom:6px;filter:drop-shadow(0 0 10px rgba(212,175,106,.3))">سُبْحَانَ اللهِ</div>
-    <div id="tasbih-target-label" style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:24px;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:50px;padding:3px 13px">লক্ষ্য: ৩৩</div>
+    <div id="tasbih-presets" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;width:100%;max-width:430px"></div>
+    <div id="tasbih-label-ar" style="font-family:serif;font-size:25px;text-align:center;line-height:1.7;background:linear-gradient(180deg,#f0d795,#c9a45c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--gold2);direction:rtl;margin-bottom:4px;filter:drop-shadow(0 0 10px rgba(212,175,106,.3));padding:0 8px">سُبْحَانَ اللهِ</div>
+    <div id="tasbih-meaning" style="font-size:12px;color:var(--text2);text-align:center;margin-bottom:8px;padding:0 14px;line-height:1.6">আল্লাহ পবিত্র ও মহান</div>
+    <div id="tasbih-target-label" style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:20px;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:50px;padding:3px 13px">লক্ষ্য: ৩৩</div>
     <button type="button" id="tasbih-counter-circle" onclick="tasbihTap()" aria-label="তাসবিহ গণনা করুন, বর্তমান গণনা শূন্য থেকে শুরু" style="position:relative;width:210px;height:210px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(16,185,129,.16),rgba(16,185,129,.04) 70%);border:2px solid rgba(16,185,129,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none;transition:transform .12s,box-shadow .3s;margin-bottom:24px;font-family:'Hind Siliguri',sans-serif;box-shadow:0 0 0 1px rgba(16,185,129,.1),0 8px 28px rgba(16,185,129,.15),inset 0 2px 12px rgba(255,255,255,.04)">
       <svg width="210" height="210" viewBox="0 0 210 210" style="position:absolute;inset:-2px;transform:rotate(-90deg);pointer-events:none" aria-hidden="true">
         <defs>
@@ -4803,7 +4800,49 @@ function initCompass(){
 
 /* ══ TASBIH COUNTER ══ */
 let tasbihCount = 0, tasbihTarget = 33;
-const tasbihArabicLabels = {33:'سُبْحَانَ اللهِ', 34:'اللهُ أَكْبَرُ'};
+
+// all zikir types with their sunnah counts — rendered as the preset grid
+const TASBIH_ZIKIR = [
+  {bn:'সুবহানাল্লাহ', ar:'سُبْحَانَ اللهِ', meaning:'আল্লাহ পবিত্র ও মহান', target:33},
+  {bn:'আলহামদুলিল্লাহ', ar:'الْحَمْدُ لِلَّهِ', meaning:'সমস্ত প্রশংসা আল্লাহর', target:33},
+  {bn:'আল্লাহু আকবার', ar:'اللهُ أَكْبَرُ', meaning:'আল্লাহ সর্বশ্রেষ্ঠ', target:34},
+  {bn:'লা ইলাহা ইল্লাল্লাহ', ar:'لَا إِلَهَ إِلَّا اللهُ', meaning:'আল্লাহ ছাড়া কোনো ইলাহ নেই', target:100},
+  {bn:'আস্তাগফিরুল্লাহ', ar:'أَسْتَغْفِرُ اللهَ', meaning:'আমি আল্লাহর কাছে ক্ষমা চাই', target:100},
+  {bn:'দরুদ শরীফ', ar:'اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ', meaning:'হে আল্লাহ! মুহাম্মদ ﷺ ও তাঁর পরিবারের ওপর রহমত বর্ষণ করুন', target:100},
+  {bn:'সুবহানাল্লাহি ওয়া বিহামদিহি', ar:'سُبْحَانَ اللهِ وَبِحَمْدِهِ', meaning:'আল্লাহ পবিত্র, সকল প্রশংসাসহ তাঁরই তাসবিহ করছি — দিনে ১০০ বার পড়লে গুনাহ মাফ হয় (বুখারী)', target:100},
+  {bn:'লা হাওলা ওয়ালা কুওয়্যাতা', ar:'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللهِ', meaning:'আল্লাহর সাহায্য ছাড়া কোনো উপায় নেই, কোনো শক্তি নেই — জান্নাতের রত্নভাণ্ডার (বুখারী)', target:100},
+  {bn:'তাওহিদের পূর্ণ জিকির', ar:'لَا إِلَهَ إِلَّا اللهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ', meaning:'আল্লাহ ছাড়া কোনো ইলাহ নেই, তিনি একক, তাঁর কোনো শরিক নেই; রাজত্ব ও প্রশংসা তাঁরই, তিনি সবকিছুর ওপর ক্ষমতাবান — দিনে ১০০ বার (বুখারী)', target:100},
+  {bn:'হাসবিয়াল্লাহ', ar:'حَسْبِيَ اللهُ لَا إِلَهَ إِلَّا هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ', meaning:'আল্লাহই আমার জন্য যথেষ্ট, তিনি ছাড়া কোনো ইলাহ নেই; তাঁর ওপরই ভরসা করলাম — সকাল-সন্ধ্যা ৭ বার (আবু দাউদ)', target:7},
+];
+let tasbihZikirIdx = 0;
+
+function renderTasbihPresets(){
+  const wrap = document.getElementById('tasbih-presets');
+  if(!wrap) return;
+  wrap.innerHTML = TASBIH_ZIKIR.map((z, i) => {
+    const active = i === tasbihZikirIdx;
+    return `
+    <button type="button" class="tasbih-preset${active ? ' active' : ''}" id="preset-z${i}" onclick="selectTasbihZikir(${i})" style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:9px 11px;border-radius:13px;border:1px solid ${active ? 'rgba(16,185,129,.4)' : 'var(--border2)'};background:${active ? 'rgba(16,185,129,.14)' : 'rgba(255,255,255,.03)'};color:${active ? 'var(--emerald2)' : 'var(--text2)'};font-size:12.5px;font-weight:${active ? '700' : '500'};cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;text-align:left;min-width:0">
+      <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${z.bn}</span>
+      <span style="flex-shrink:0;font-size:10.5px;font-weight:800;color:${active ? '#0c1210' : 'var(--gold2)'};background:${active ? 'linear-gradient(135deg,#f0d795,#c9a45c)' : 'rgba(212,175,106,.1)'};border:1px solid ${active ? 'transparent' : 'rgba(212,175,106,.25)'};border-radius:50px;padding:2px 8px">${localizeNum(z.target)}</span>
+    </button>`;
+  }).join('');
+}
+
+function selectTasbihZikir(i){
+  tasbihZikirIdx = i;
+  const z = TASBIH_ZIKIR[i];
+  tasbihTarget = z.target;
+  tasbihCount = 0;
+  document.getElementById('tasbih-count').textContent = '০';
+  document.getElementById('tasbih-target-label').textContent = t('target') + ': ' + toBn(z.target);
+  const arEl = document.getElementById('tasbih-label-ar');
+  arEl.textContent = z.ar;
+  arEl.style.fontSize = z.ar.length > 40 ? '18px' : z.ar.length > 24 ? '21px' : '25px';
+  setTextIfExists('tasbih-meaning', z.meaning);
+  updateTasbihRing();
+  renderTasbihPresets();
+}
 
 function loadTasbihState(){
   try{
@@ -4832,24 +4871,6 @@ function updateTasbihRing(){
   if(circle) circle.style.boxShadow = tasbihCount >= tasbihTarget
     ? '0 0 0 1px rgba(16,185,129,.3), 0 8px 40px rgba(16,185,129,.45), inset 0 2px 12px rgba(255,255,255,.06)'
     : '0 0 0 1px rgba(16,185,129,.1), 0 8px 28px rgba(16,185,129,.15), inset 0 2px 12px rgba(255,255,255,.04)';
-}
-
-function setTasbihTarget(target, arabicLabel, btnId){
-  tasbihTarget = target;
-  tasbihCount = 0;
-  document.getElementById('tasbih-count').textContent = '০';
-  document.getElementById('tasbih-target-label').textContent = t('target')+': '+toBn(target);
-  document.getElementById('tasbih-label-ar').textContent = arabicLabel;
-  updateTasbihRing();
-
-  document.querySelectorAll('.tasbih-preset').forEach(btn => {
-    const isActive = btn.id === btnId;
-    btn.classList.toggle('active', isActive);
-    btn.style.border = isActive ? '1px solid rgba(16,185,129,.4)' : '1px solid var(--border2)';
-    btn.style.background = isActive ? 'rgba(16,185,129,.14)' : 'rgba(255,255,255,.03)';
-    btn.style.color = isActive ? 'var(--emerald2)' : 'var(--text2)';
-    btn.style.fontWeight = isActive ? '600' : '500';
-  });
 }
 
 function tasbihTap(){
@@ -6040,6 +6061,7 @@ refreshPrayerCheckButtons();
 dailyWidgetType = loadDailyWidgetType();
 renderDailyWidget();
 renderZakatForm(); // the calculator sits on the home screen, so fill it at startup
+renderTasbihPresets();
 initNotificationBanner();
 renderBooks();
 show('view-books');
