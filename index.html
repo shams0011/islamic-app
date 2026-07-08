@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v148-quran-duas-zikir -->
+<!-- VERSION: v149-tasbih-audio -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -965,6 +965,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
     <div style="display:flex;gap:7px;align-items:center;margin-bottom:20px;flex-wrap:wrap;justify-content:center">
       <span id="tasbih-source" style="font-size:10.5px;font-weight:700;color:var(--gold2);background:rgba(212,175,106,.1);border:1px solid rgba(212,175,106,.25);border-radius:50px;padding:3px 11px">📖 মুসলিম ৫৯৬</span>
       <span id="tasbih-target-label" style="font-size:12px;font-weight:600;color:var(--text3);background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:50px;padding:3px 13px">লক্ষ্য: ৩৩</span>
+      <button type="button" id="tasbih-audio-btn" onclick="tasbihSpeak()" aria-label="জিকিরের আরবি উচ্চারণ শুনুন" style="font-size:12px;font-weight:700;color:var(--emerald2);background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);border-radius:50px;padding:3px 14px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;box-shadow:0 0 10px rgba(16,185,129,.1);transition:all .2s">🔊 শুনুন</button>
     </div>
     <button type="button" id="tasbih-counter-circle" onclick="tasbihTap()" aria-label="তাসবিহ গণনা করুন, বর্তমান গণনা শূন্য থেকে শুরু" style="position:relative;width:210px;height:210px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(16,185,129,.16),rgba(16,185,129,.04) 70%);border:2px solid rgba(16,185,129,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none;transition:transform .12s,box-shadow .3s;margin-bottom:24px;font-family:'Hind Siliguri',sans-serif;box-shadow:0 0 0 1px rgba(16,185,129,.1),0 8px 28px rgba(16,185,129,.15),inset 0 2px 12px rgba(255,255,255,.04)">
       <svg width="210" height="210" viewBox="0 0 210 210" style="position:absolute;inset:-2px;transform:rotate(-90deg);pointer-events:none" aria-hidden="true">
@@ -4903,6 +4904,43 @@ function selectTasbihZikir(i){
   updateTasbihRing();
   const sel = document.getElementById('tasbih-zikir-select');
   if(sel && sel.value !== String(i)) sel.value = String(i);
+  // changing zikir stops any playing recitation
+  if(window._tasbihSpeaking && 'speechSynthesis' in window){
+    speechSynthesis.cancel();
+    window._tasbihSpeaking = false;
+    const btn = document.getElementById('tasbih-audio-btn');
+    if(btn) btn.textContent = '🔊 শুনুন';
+  }
+}
+
+// speak the current zikir's Arabic via the device's text-to-speech
+function tasbihSpeak(){
+  const btn = document.getElementById('tasbih-audio-btn');
+  if(!('speechSynthesis' in window)){
+    showToast('এই ডিভাইসে অডিও উচ্চারণ সমর্থিত নয়');
+    return;
+  }
+  // tapping while playing = stop
+  if(window._tasbihSpeaking){
+    speechSynthesis.cancel();
+    window._tasbihSpeaking = false;
+    if(btn) btn.textContent = '🔊 শুনুন';
+    return;
+  }
+  const z = TASBIH_ZIKIR[tasbihZikirIdx];
+  const u = new SpeechSynthesisUtterance(z.ar.replace(/۞/g, '،'));
+  u.lang = 'ar-SA';
+  u.rate = 0.8;
+  const arVoice = speechSynthesis.getVoices().find(v => v.lang && v.lang.toLowerCase().startsWith('ar'));
+  if(arVoice) u.voice = arVoice;
+  u.onend = u.onerror = () => {
+    window._tasbihSpeaking = false;
+    if(btn) btn.textContent = '🔊 শুনুন';
+  };
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+  window._tasbihSpeaking = true;
+  if(btn) btn.textContent = '⏹ থামুন';
 }
 
 // completion chime: two soft rising tones via Web Audio (no asset needed)
