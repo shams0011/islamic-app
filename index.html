@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v158-no-tts -->
+<!-- VERSION: v159-hisn-audio -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -5032,9 +5032,9 @@ function selectTasbihZikir(i){
   arEl.style.fontSize = z.ar.length > 120 ? '15px' : z.ar.length > 40 ? '18px' : z.ar.length > 24 ? '21px' : '25px';
   setTextIfExists('tasbih-meaning', z.meaning);
   setTextIfExists('tasbih-source', '📖 ' + z.src);
-  // listen button only where real qari recitation exists — no device TTS ever
+  // listen button only where real recorded recitation exists — no device TTS ever
   const audioBtn = document.getElementById('tasbih-audio-btn');
-  if(audioBtn) audioBtn.style.display = (typeof TASBIH_AYAT !== 'undefined' && TASBIH_AYAT[z.bn]) ? '' : 'none';
+  if(audioBtn) audioBtn.style.display = (typeof TASBIH_AYAT !== 'undefined' && (TASBIH_AYAT[z.bn] || TASBIH_HISN[z.bn])) ? '' : 'none';
   updateTasbihPron();
   updateTasbihRing();
   const sel = document.getElementById('tasbih-zikir-select');
@@ -5072,6 +5072,36 @@ const TASBIH_AYAT = {
   'হাসবিয়াল্লাহ': [[9,129]],
 };
 
+// hadith duas play recorded recitation from Hisnul Muslim (hisnmuslim.com,
+// male reciter) — item IDs map to https://www.hisnmuslim.com/audio/ar/{id}.mp3
+const TASBIH_HISN = {
+  'সুবহানাল্লাহ': 69, 'আলহামদুলিল্লাহ': 69, 'আল্লাহু আকবার': 69, // after-salam tasbih 33/33/34 — one combined recording
+  'লা ইলাহা ইল্লাল্লাহ': 264,
+  'আস্তাগফিরুল্লাহ': 96,
+  'দরুদ শরীফ': 98,
+  'সুবহানাল্লাহি ওয়া বিহামদিহি': 91,
+  'সুবহানাল্লাহিল আযীম': 256,
+  'লা হাওলা ওয়ালা কুওয়্যাতা': 260,
+  'তাওহিদের পূর্ণ জিকির': 93,
+  'রাদিতু বিল্লাহ': 87,
+  'বিসমিল্লাহি লা ইয়াদুররু': 86,
+  'আউযু বিকালিমাতিল্লাহ': 97,
+  'সাইয়্যিদুল ইস্তিগফার': 79,
+  'সুবহানাল্লাহি আদাদা খালকিহি': 94,
+  'বিসমিল্লাহি তাওয়াক্কালতু': 16,
+  'আফিয়াতের দোয়া (দেহ-কান-চোখ)': 82,
+  'আফু-আফিয়ার দোয়া': 84,
+  'চার ফিতনা থেকে আশ্রয়': 55,
+  'আল্লাহুম্মা বিকা আসবাহনা': 78,
+  'আসবাহনা ওয়া আসবাহাল মুলক': 77,
+  'আমসাইনা ওয়া আমসাল মুলক': 77, // same recording covers the evening wording
+  'মজলিসের কাফফারা': 196,
+  'জিকর-শোকরের দোয়া': 59,
+  'পূর্ণ ইস্তিগফার': 250,
+  'দুশ্চিন্তা থেকে আশ্রয়': 121,
+  'ইয়া হাইয়ু ইয়া কাইয়ুম': 88,
+};
+
 function stopTasbihAudio(){
   const btn = document.getElementById('tasbih-audio-btn');
   const player = document.getElementById('surah-audio-player');
@@ -5081,8 +5111,8 @@ function stopTasbihAudio(){
   if(btn) btn.textContent = '🔊 শুনুন';
 }
 
-// device text-to-speech is deliberately NOT used anywhere — only the real qari
-// recitation plays; zikirs without qari audio simply don't show the button
+// device text-to-speech is deliberately NOT used anywhere — only real recorded
+// recitation plays: Alafasy for Quran-verse zikirs, Hisnul Muslim for hadith duas
 function tasbihSpeak(){
   const btn = document.getElementById('tasbih-audio-btn');
   // tapping while playing = stop
@@ -5090,24 +5120,39 @@ function tasbihSpeak(){
 
   const z = TASBIH_ZIKIR[tasbihZikirIdx];
   const ayat = TASBIH_AYAT[z.bn];
+  const hisn = TASBIH_HISN[z.bn];
   const player = document.getElementById('surah-audio-player');
-  if(!ayat || !ayat.length || !player) return;
+  if(!player || (!ayat && !hisn)) return;
 
-  // real recitation: chain the ayah mp3s one after another (Alafasy, everyayah.com)
-  let i = 0;
   const done = () => stopTasbihAudio();
-  const next = () => {
-    if(i >= ayat.length){ done(); return; }
-    const [s, a] = ayat[i++];
-    player.src = `https://everyayah.com/data/Alafasy_128kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`;
-    player.play().catch(done);
+  const start = () => {
+    window._tasbihSpeaking = true;
+    window._tasbihAyatPlaying = true;
+    if(btn) btn.textContent = '⏹ থামুন';
   };
-  player.onended = next;
+
+  if(ayat && ayat.length){
+    // Quran verse: chain the ayah mp3s one after another (Alafasy, everyayah.com)
+    let i = 0;
+    const next = () => {
+      if(i >= ayat.length){ done(); return; }
+      const [s, a] = ayat[i++];
+      player.src = `https://everyayah.com/data/Alafasy_128kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`;
+      player.play().catch(done);
+    };
+    player.onended = next;
+    player.onerror = done;
+    start();
+    next();
+    return;
+  }
+
+  // hadith dua: single Hisnul Muslim recording
+  player.onended = done;
   player.onerror = done;
-  window._tasbihSpeaking = true;
-  window._tasbihAyatPlaying = true;
-  if(btn) btn.textContent = '⏹ থামুন';
-  next();
+  player.src = `https://www.hisnmuslim.com/audio/ar/${hisn}.mp3`;
+  start();
+  player.play().catch(done);
 }
 
 // completion chime: two soft rising tones via Web Audio (no asset needed)
