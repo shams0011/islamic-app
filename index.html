@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v155-no-target-chip -->
+<!-- VERSION: v156-tasbih-on-home -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -714,6 +714,20 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
   </div>
 </div>
 
+<!-- Digital tasbih on the home screen — same borrowed-node pattern as the zakat
+     card above: the ONE live tasbih body starts here, the tasbih tab borrows it -->
+<div id="home-tasbih-section" style="margin:14px 16px 0;border:1px solid transparent;background:linear-gradient(160deg,#101a16,#0c1210) padding-box,linear-gradient(120deg,rgba(16,185,129,.4),rgba(212,175,106,.25) 55%,rgba(16,185,129,.35)) border-box;border-radius:19px;padding:13px 6px 8px;box-shadow:0 6px 20px rgba(0,0,0,.25),0 0 24px rgba(16,185,129,.06);position:relative;overflow:hidden">
+  <div style="position:absolute;top:-60%;right:-10%;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(16,185,129,.12),transparent 70%);pointer-events:none" aria-hidden="true"></div>
+  <div style="display:flex;align-items:center;gap:13px;padding:0 9px;margin-bottom:9px;position:relative">
+    <span class="hajj-banner-icon" aria-hidden="true">📿</span>
+    <span class="hajj-banner-info">
+      <span class="hajj-banner-title" id="home-tasbih-title">ডিজিটাল তাসবিহ</span>
+    </span>
+  </div>
+  <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(16,185,129,.35),transparent);margin:0 8px 4px" aria-hidden="true"></div>
+  <div id="home-tasbih-slot"></div>
+</div>
+
 <div id="daily-widget" class="daily-widget" role="region" aria-label="দৈনিক আয়াত বা হাদিস">
   <div class="dw-glow dw-glow-l" aria-hidden="true"></div>
   <div class="dw-glow dw-glow-r" aria-hidden="true"></div>
@@ -947,7 +961,9 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
 <!-- Tasbih -->
 <div id="tab-tasbih" class="section" role="tabpanel" aria-labelledby="tabbtn-tasbih">
   <div class="sec-title"><div class="sec-gem"></div>ডিজিটাল তাসবিহ<div class="sec-gem"></div></div>
-  <div style="display:flex;flex-direction:column;align-items:center;padding:10px">
+  <!-- the tasbih body normally lives on the home screen (#home-tasbih-slot);
+       opening this tab moves the same node here so counts carry over -->
+  <div id="tasbih-body" style="display:flex;flex-direction:column;align-items:center;padding:10px">
     <div style="width:100%;max-width:430px;margin-bottom:16px;border:1px solid transparent;background:linear-gradient(160deg,#101a16,#0c1210) padding-box,linear-gradient(120deg,rgba(212,175,106,.35),rgba(16,185,129,.3) 55%,rgba(212,175,106,.3)) border-box;border-radius:17px;padding:11px 10px 12px;box-shadow:0 6px 20px rgba(0,0,0,.25)">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
         <div style="position:relative;min-width:0">
@@ -4085,6 +4101,8 @@ function showTab(id,btn){
     const zv = document.getElementById('tool-zakat-view');
     placeZakatCalc(id === 'tools' && zv && zv.style.display !== 'none' ? 'tool' : 'home');
   }
+  // likewise the tasbih body: home area owns it unless the tasbih tab is active
+  if(typeof placeTasbihBody === 'function') placeTasbihBody(id === 'tasbih' ? 'tab' : 'home');
 }
 
 /* ══ TOAST FEEDBACK ══ */
@@ -5601,6 +5619,13 @@ function placeZakatCalc(where){
   if(body && slot && body.parentElement !== slot) slot.appendChild(body);
 }
 
+// same pattern for the digital tasbih: home screen owns it, the tasbih tab borrows it
+function placeTasbihBody(where){
+  const body = document.getElementById('tasbih-body');
+  const slot = where === 'tab' ? document.getElementById('tab-tasbih') : document.getElementById('home-tasbih-slot');
+  if(body && slot && body.parentElement !== slot) slot.appendChild(body);
+}
+
 const TOOL_VIEW_IDS = ['zakat','mosque','hafz','streak','hajj','asma','calendar','media','khatm'];
 function openTool(toolId){
   document.getElementById('tools-grid-view').style.display = 'none';
@@ -6298,6 +6323,7 @@ dailyWidgetType = loadDailyWidgetType();
 renderDailyWidget();
 renderZakatForm(); // the calculator sits on the home screen, so fill it at startup
 renderTasbihPresets();
+placeTasbihBody('home'); // the tasbih starts on the home screen below the zakat card
 initNotificationBanner();
 renderBooks();
 show('view-books');
