@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v145-tasbih-dropdown-stop -->
+<!-- VERSION: v146-tasbih-when-filter -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -948,10 +948,17 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
 <div id="tab-tasbih" class="section" role="tabpanel" aria-labelledby="tabbtn-tasbih">
   <div class="sec-title"><div class="sec-gem"></div>ডিজিটাল তাসবিহ<div class="sec-gem"></div></div>
   <div style="display:flex;flex-direction:column;align-items:center;padding:10px">
-    <div style="width:100%;max-width:430px;margin-bottom:18px;position:relative">
-      <label for="tasbih-zikir-select" style="display:block;font-size:11.5px;font-weight:700;color:var(--gold2);margin-bottom:6px;letter-spacing:.4px">📿 জিকির বাছাই করুন</label>
-      <select id="tasbih-zikir-select" onchange="selectTasbihZikir(this.selectedIndex)" style="width:100%;appearance:none;-webkit-appearance:none;background:linear-gradient(160deg,#101a16,#0c1210);border:1px solid rgba(16,185,129,.35);border-radius:13px;padding:11px 38px 11px 14px;color:var(--emerald2);font-size:14px;font-weight:700;font-family:'Hind Siliguri',sans-serif;cursor:pointer;outline:none;box-shadow:0 4px 14px rgba(0,0,0,.25),0 0 14px rgba(16,185,129,.06)"></select>
-      <span style="position:absolute;right:14px;bottom:13px;pointer-events:none;color:var(--emerald2);font-size:11px" aria-hidden="true">▼</span>
+    <div style="width:100%;max-width:430px;margin-bottom:18px;border:1px solid transparent;background:linear-gradient(160deg,#101a16,#0c1210) padding-box,linear-gradient(120deg,rgba(212,175,106,.35),rgba(16,185,129,.3) 55%,rgba(212,175,106,.3)) border-box;border-radius:17px;padding:12px 12px 13px;box-shadow:0 6px 20px rgba(0,0,0,.25)">
+      <div style="position:relative;margin-bottom:10px">
+        <label for="tasbih-when-select" style="display:block;font-size:11.5px;font-weight:700;color:var(--gold2);margin-bottom:6px;letter-spacing:.4px">🕰️ কখন জিকির করবেন</label>
+        <select id="tasbih-when-select" onchange="setTasbihWhen(this.value)" style="width:100%;appearance:none;-webkit-appearance:none;background:rgba(212,175,106,.06);border:1px solid rgba(212,175,106,.3);border-radius:12px;padding:10px 38px 10px 13px;color:var(--gold2);font-size:13.5px;font-weight:700;font-family:'Hind Siliguri',sans-serif;cursor:pointer;outline:none"></select>
+        <span style="position:absolute;right:14px;bottom:12px;pointer-events:none;color:var(--gold2);font-size:11px" aria-hidden="true">▼</span>
+      </div>
+      <div style="position:relative">
+        <label for="tasbih-zikir-select" style="display:block;font-size:11.5px;font-weight:700;color:var(--emerald2);margin-bottom:6px;letter-spacing:.4px">📿 জিকির বাছাই করুন</label>
+        <select id="tasbih-zikir-select" onchange="selectTasbihZikir(parseInt(this.value))" style="width:100%;appearance:none;-webkit-appearance:none;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.35);border-radius:12px;padding:10px 38px 10px 13px;color:var(--emerald2);font-size:13.5px;font-weight:700;font-family:'Hind Siliguri',sans-serif;cursor:pointer;outline:none"></select>
+        <span style="position:absolute;right:14px;bottom:12px;pointer-events:none;color:var(--emerald2);font-size:11px" aria-hidden="true">▼</span>
+      </div>
     </div>
     <div id="tasbih-label-ar" style="font-family:serif;font-size:25px;text-align:center;line-height:1.7;background:linear-gradient(180deg,#f0d795,#c9a45c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--gold2);direction:rtl;margin-bottom:4px;filter:drop-shadow(0 0 10px rgba(212,175,106,.3));padding:0 8px">سُبْحَانَ اللهِ</div>
     <div id="tasbih-meaning" style="font-size:12px;color:var(--text2);text-align:center;margin-bottom:7px;padding:0 14px;line-height:1.6;max-width:430px">আল্লাহ পবিত্র ও মহান — প্রতি নামাজের পর ৩৩ বার</div>
@@ -974,9 +981,9 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
       <div id="tasbih-of-target" style="font-size:12px;color:var(--text3);font-weight:600;margin-top:-4px">/ ৩৩</div>
     </button>
     <div style="display:flex;gap:12px">
-      <button onclick="tasbihReset()" style="padding:10px 22px;border-radius:12px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:14px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">রিসেট</button>
+      <button onclick="tasbihReset()" style="display:flex;align-items:center;gap:8px;padding:11px 28px;border-radius:50px;border:1px solid rgba(16,185,129,.35);background:linear-gradient(160deg,rgba(16,185,129,.14),rgba(16,185,129,.05));color:var(--emerald2);font-size:14px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.2),0 0 14px rgba(16,185,129,.08);transition:transform .15s"><span aria-hidden="true">🔄</span>রিসেট</button>
     </div>
-    <div style="margin-top:20px;font-size:12px;color:var(--text3)">মোট আজকের জিকির: <span id="tasbih-daily-total">০</span></div>
+    <div style="margin-top:18px;display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:#dcd2b4;background:rgba(212,175,106,.08);border:1px solid rgba(212,175,106,.25);border-radius:50px;padding:7px 18px;box-shadow:0 0 14px rgba(212,175,106,.06)"><span aria-hidden="true">📿</span>মোট আজকের জিকির: <span id="tasbih-daily-total" style="color:var(--gold2);font-weight:800">০</span></div>
   </div>
 </div>
 
@@ -4810,32 +4817,62 @@ let tasbihCount = 0, tasbihTarget = 33;
 
 // all zikir types with their sunnah counts — rendered as the preset grid
 const TASBIH_ZIKIR = [
-  {bn:'সুবহানাল্লাহ', ar:'سُبْحَانَ اللهِ', meaning:'আল্লাহ পবিত্র ও মহান — প্রতি নামাজের পর ৩৩ বার', src:'মুসলিম ৫৯৬', target:33},
-  {bn:'আলহামদুলিল্লাহ', ar:'الْحَمْدُ لِلَّهِ', meaning:'সমস্ত প্রশংসা আল্লাহর — মিজান (পাল্লা) পূর্ণ করে দেয়', src:'মুসলিম ২২৩', target:33},
-  {bn:'আল্লাহু আকবার', ar:'اللهُ أَكْبَرُ', meaning:'আল্লাহ সর্বশ্রেষ্ঠ — প্রতি নামাজের পর ৩৪ বার; তিনটি মিলে ৯৯', src:'মুসলিম ৫৯৬', target:34},
-  {bn:'লা ইলাহা ইল্লাল্লাহ', ar:'لَا إِلَهَ إِلَّا اللهُ', meaning:'আল্লাহ ছাড়া কোনো ইলাহ নেই — রাসূল ﷺ বলেছেন: এটিই শ্রেষ্ঠ জিকির', src:'তিরমিযী ৩৩৮৩', target:100},
-  {bn:'আস্তাগফিরুল্লাহ', ar:'أَسْتَغْفِرُ اللهَ وَأَتُوبُ إِلَيْهِ', meaning:'আমি আল্লাহর কাছে ক্ষমা চাই ও তাঁর দিকে ফিরে আসি — রাসূল ﷺ নিজে দিনে ১০০ বার পড়তেন', src:'মুসলিম ২৭০২', target:100},
-  {bn:'দরুদ শরীফ', ar:'اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ', meaning:'হে আল্লাহ! মুহাম্মদ ﷺ ও তাঁর পরিবারের ওপর রহমত বর্ষণ করুন — একবার দরুদে আল্লাহ দশবার রহমত করেন', src:'মুসলিম ৪০৮ • সূরা আহযাব ৫৬', target:100},
-  {bn:'সুবহানাল্লাহি ওয়া বিহামদিহি', ar:'سُبْحَانَ اللهِ وَبِحَمْدِهِ', meaning:'আল্লাহ পবিত্র, সকল প্রশংসাসহ তাঁরই তাসবিহ — দিনে ১০০ বার পড়লে সমুদ্রফেনা পরিমাণ গুনাহও মাফ হয়', src:'বুখারী ৬৪০৫', target:100},
-  {bn:'সুবহানাল্লাহিল আযীম', ar:'سُبْحَانَ اللهِ وَبِحَمْدِهِ، سُبْحَانَ اللهِ الْعَظِيمِ', meaning:'দুটি কালেমা — জিহ্বায় হালকা, মিজানে ভারী, রহমানের কাছে অতি প্রিয়', src:'বুখারী ৬৪০৬', target:100},
-  {bn:'লা হাওলা ওয়ালা কুওয়্যাতা', ar:'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللهِ', meaning:'আল্লাহর সাহায্য ছাড়া কোনো উপায় নেই, কোনো শক্তি নেই — জান্নাতের রত্নভাণ্ডারগুলোর একটি', src:'বুখারী ৬৩৮৪', target:100},
-  {bn:'তাওহিদের পূর্ণ জিকির', ar:'لَا إِلَهَ إِلَّا اللهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ', meaning:'আল্লাহ একক, তাঁর কোনো শরিক নেই; রাজত্ব ও প্রশংসা তাঁরই — দিনে ১০০ বারে ১০ দাস মুক্তির সওয়াব, ১০০ নেকি, ১০০ গুনাহ মাফ ও সারাদিন শয়তান থেকে সুরক্ষা', src:'বুখারী ৩২৯৩', target:100},
-  {bn:'হাসবিয়াল্লাহ', ar:'حَسْبِيَ اللهُ لَا إِلَهَ إِلَّا هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ', meaning:'আল্লাহই আমার জন্য যথেষ্ট, তাঁর ওপরই ভরসা করলাম; তিনি মহা আরশের অধিপতি — সকাল-সন্ধ্যা ৭ বার পড়লে দুনিয়া-আখিরাতের চিন্তায় আল্লাহই যথেষ্ট হয়ে যান', src:'আবু দাউদ ৫০৮১ • সূরা তাওবা ১২৯', target:7},
-  {bn:'রাদিতু বিল্লাহ', ar:'رَضِيتُ بِاللهِ رَبًّا وَبِالْإِسْلَامِ دِينًا وَبِمُحَمَّدٍ ﷺ نَبِيًّا', meaning:'আল্লাহকে রব, ইসলামকে দ্বীন ও মুহাম্মদ ﷺ-কে নবী মেনে আমি সন্তুষ্ট — সকাল-সন্ধ্যা ৩ বার; জান্নাত তার প্রাপ্য হয়ে যায়', src:'আবু দাউদ ৫০৭২', target:3},
-  {bn:'বিসমিল্লাহি লা ইয়াদুররু', ar:'بِسْمِ اللهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ', meaning:'আল্লাহর নামে — যাঁর নামের সাথে জমিন-আসমানের কিছুই ক্ষতি করতে পারে না — সকাল-সন্ধ্যা ৩ বার পড়লে কোনো কিছু ক্ষতি করবে না', src:'আবু দাউদ ৫০৮৮ • তিরমিযী ৩৩৮৮', target:3},
-  {bn:'আউযু বিকালিমাতিল্লাহ', ar:'أَعُوذُ بِكَلِمَاتِ اللهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ', meaning:'আল্লাহর পরিপূর্ণ কালেমাসমূহের মাধ্যমে তাঁর সৃষ্টির অনিষ্ট থেকে আশ্রয় চাই — সন্ধ্যায় ৩ বার', src:'মুসলিম ২৭০৮', target:3},
-  {bn:'আল্লাহুম্মা আজিরনি', ar:'اللَّهُمَّ أَجِرْنِي مِنَ النَّارِ', meaning:'হে আল্লাহ! আমাকে জাহান্নাম থেকে রক্ষা করুন — ফজর ও মাগরিবের পর ৭ বার', src:'আবু দাউদ ৫০৭৯', target:7},
-  {bn:'সাইয়্যিদুল ইস্তিগফার', ar:'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ وَأَبُوءُ بِذَنْبِي، فَاغْفِرْ لِي فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ', meaning:'ইস্তিগফারের সর্দার (শ্রেষ্ঠ দোয়া) — বিশ্বাসের সাথে সকালে পড়ে সন্ধ্যার আগে বা রাতে পড়ে ভোরের আগে মৃত্যু হলে সে জান্নাতি', src:'বুখারী ৬৩০৬', target:1},
+  {bn:'সুবহানাল্লাহ', ar:'سُبْحَانَ اللهِ', meaning:'আল্লাহ পবিত্র ও মহান — প্রতি নামাজের পর ৩৩ বার', src:'মুসলিম ৫৯৬', target:33, when:['prayer']},
+  {bn:'আলহামদুলিল্লাহ', ar:'الْحَمْدُ لِلَّهِ', meaning:'সমস্ত প্রশংসা আল্লাহর — মিজান (পাল্লা) পূর্ণ করে দেয়', src:'মুসলিম ২২৩', target:33, when:['prayer']},
+  {bn:'আল্লাহু আকবার', ar:'اللهُ أَكْبَرُ', meaning:'আল্লাহ সর্বশ্রেষ্ঠ — প্রতি নামাজের পর ৩৪ বার; তিনটি মিলে ৯৯', src:'মুসলিম ৫৯৬', target:34, when:['prayer']},
+  {bn:'লা ইলাহা ইল্লাল্লাহ', ar:'لَا إِلَهَ إِلَّا اللهُ', meaning:'আল্লাহ ছাড়া কোনো ইলাহ নেই — রাসূল ﷺ বলেছেন: এটিই শ্রেষ্ঠ জিকির', src:'তিরমিযী ৩৩৮৩', target:100, when:['any']},
+  {bn:'আস্তাগফিরুল্লাহ', ar:'أَسْتَغْفِرُ اللهَ وَأَتُوبُ إِلَيْهِ', meaning:'আমি আল্লাহর কাছে ক্ষমা চাই ও তাঁর দিকে ফিরে আসি — রাসূল ﷺ নিজে দিনে ১০০ বার পড়তেন', src:'মুসলিম ২৭০২', target:100, when:['any']},
+  {bn:'দরুদ শরীফ', ar:'اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ', meaning:'হে আল্লাহ! মুহাম্মদ ﷺ ও তাঁর পরিবারের ওপর রহমত বর্ষণ করুন — একবার দরুদে আল্লাহ দশবার রহমত করেন; জুমার দিনে বেশি বেশি', src:'মুসলিম ৪০৮ • সূরা আহযাব ৫৬', target:100, when:['any']},
+  {bn:'সুবহানাল্লাহি ওয়া বিহামদিহি', ar:'سُبْحَانَ اللهِ وَبِحَمْدِهِ', meaning:'আল্লাহ পবিত্র, সকল প্রশংসাসহ তাঁরই তাসবিহ — দিনে ১০০ বার পড়লে সমুদ্রফেনা পরিমাণ গুনাহও মাফ হয়', src:'বুখারী ৬৪০৫', target:100, when:['morning','evening','any']},
+  {bn:'সুবহানাল্লাহিল আযীম', ar:'سُبْحَانَ اللهِ وَبِحَمْدِهِ، سُبْحَانَ اللهِ الْعَظِيمِ', meaning:'দুটি কালেমা — জিহ্বায় হালকা, মিজানে ভারী, রহমানের কাছে অতি প্রিয়', src:'বুখারী ৬৪০৬', target:100, when:['any']},
+  {bn:'লা হাওলা ওয়ালা কুওয়্যাতা', ar:'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللهِ', meaning:'আল্লাহর সাহায্য ছাড়া কোনো উপায় নেই, কোনো শক্তি নেই — জান্নাতের রত্নভাণ্ডারগুলোর একটি', src:'বুখারী ৬৩৮৪', target:100, when:['any']},
+  {bn:'তাওহিদের পূর্ণ জিকির', ar:'لَا إِلَهَ إِلَّا اللهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ', meaning:'আল্লাহ একক, তাঁর কোনো শরিক নেই; রাজত্ব ও প্রশংসা তাঁরই — দিনে ১০০ বারে ১০ দাস মুক্তির সওয়াব, ১০০ নেকি, ১০০ গুনাহ মাফ ও সারাদিন শয়তান থেকে সুরক্ষা', src:'বুখারী ৩২৯৩', target:100, when:['morning','any']},
+  {bn:'হাসবিয়াল্লাহ', ar:'حَسْبِيَ اللهُ لَا إِلَهَ إِلَّا هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ', meaning:'আল্লাহই আমার জন্য যথেষ্ট, তাঁর ওপরই ভরসা করলাম; তিনি মহা আরশের অধিপতি — সকাল-সন্ধ্যা ৭ বার পড়লে দুনিয়া-আখিরাতের চিন্তায় আল্লাহই যথেষ্ট হয়ে যান', src:'আবু দাউদ ৫০৮১ • সূরা তাওবা ১২৯', target:7, when:['morning','evening']},
+  {bn:'রাদিতু বিল্লাহ', ar:'رَضِيتُ بِاللهِ رَبًّا وَبِالْإِسْلَامِ دِينًا وَبِمُحَمَّدٍ ﷺ نَبِيًّا', meaning:'আল্লাহকে রব, ইসলামকে দ্বীন ও মুহাম্মদ ﷺ-কে নবী মেনে আমি সন্তুষ্ট — সকাল-সন্ধ্যা ৩ বার; জান্নাত তার প্রাপ্য হয়ে যায়', src:'আবু দাউদ ৫০৭২', target:3, when:['morning','evening']},
+  {bn:'বিসমিল্লাহি লা ইয়াদুররু', ar:'بِسْمِ اللهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ', meaning:'আল্লাহর নামে — যাঁর নামের সাথে জমিন-আসমানের কিছুই ক্ষতি করতে পারে না — সকাল-সন্ধ্যা ৩ বার পড়লে কোনো কিছু ক্ষতি করবে না', src:'আবু দাউদ ৫০৮৮ • তিরমিযী ৩৩৮৮', target:3, when:['morning','evening']},
+  {bn:'আউযু বিকালিমাতিল্লাহ', ar:'أَعُوذُ بِكَلِمَاتِ اللهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ', meaning:'আল্লাহর পরিপূর্ণ কালেমাসমূহের মাধ্যমে তাঁর সৃষ্টির অনিষ্ট থেকে আশ্রয় চাই — সন্ধ্যায় ৩ বার', src:'মুসলিম ২৭০৮', target:3, when:['evening']},
+  {bn:'আল্লাহুম্মা আজিরনি', ar:'اللَّهُمَّ أَجِرْنِي مِنَ النَّارِ', meaning:'হে আল্লাহ! আমাকে জাহান্নাম থেকে রক্ষা করুন — ফজর ও মাগরিবের পর ৭ বার', src:'আবু দাউদ ৫০৭৯', target:7, when:['prayer','morning','evening']},
+  {bn:'সাইয়্যিদুল ইস্তিগফার', ar:'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ وَأَبُوءُ بِذَنْبِي، فَاغْفِرْ لِي فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ', meaning:'ইস্তিগফারের সর্দার (শ্রেষ্ঠ দোয়া) — বিশ্বাসের সাথে সকালে পড়ে সন্ধ্যার আগে বা রাতে পড়ে ভোরের আগে মৃত্যু হলে সে জান্নাতি', src:'বুখারী ৬৩০৬', target:1, when:['morning','evening']},
 ];
 let tasbihZikirIdx = 0;
 
+// occasion filter for "when should I do which zikir"
+const TASBIH_WHEN = [
+  {key:'all', label:'🕰️ সব সময়ের জিকির'},
+  {key:'prayer', label:'🕌 নামাজের পর'},
+  {key:'morning', label:'🌅 সকালের জিকির'},
+  {key:'evening', label:'🌆 সন্ধ্যার জিকির'},
+  {key:'any', label:'♾️ যেকোনো সময়'},
+];
+let tasbihWhen = 'all';
+
+function setTasbihWhen(key){
+  tasbihWhen = key;
+  renderTasbihPresets();
+  // jump to the first zikir of the chosen occasion
+  const first = TASBIH_ZIKIR.findIndex(z => key === 'all' || z.when.includes(key));
+  if(first >= 0) selectTasbihZikir(first);
+}
+
 function renderTasbihPresets(){
+  const whenSel = document.getElementById('tasbih-when-select');
+  if(whenSel && whenSel.options.length !== TASBIH_WHEN.length){
+    whenSel.innerHTML = TASBIH_WHEN.map(w =>
+      `<option value="${w.key}" style="background:#0c1210;color:#e8dcc0">${w.label}</option>`
+    ).join('');
+  }
+  if(whenSel) whenSel.value = tasbihWhen;
+
   const sel = document.getElementById('tasbih-zikir-select');
   if(!sel) return;
-  sel.innerHTML = TASBIH_ZIKIR.map((z, i) =>
-    `<option value="${i}" style="background:#0c1210;color:#e8f5f0">${z.bn} — ${localizeNum(z.target)} বার</option>`
-  ).join('');
-  sel.selectedIndex = tasbihZikirIdx;
+  // option value = index in TASBIH_ZIKIR, so filtering never breaks selection
+  sel.innerHTML = TASBIH_ZIKIR.map((z, i) => ({z, i}))
+    .filter(({z}) => tasbihWhen === 'all' || z.when.includes(tasbihWhen))
+    .map(({z, i}) =>
+      `<option value="${i}" style="background:#0c1210;color:#e8f5f0">${z.bn} — ${localizeNum(z.target)} বার</option>`
+    ).join('');
+  sel.value = String(tasbihZikirIdx);
+  if(sel.selectedIndex < 0) sel.selectedIndex = 0;
 }
 
 function selectTasbihZikir(i){
@@ -4852,7 +4889,7 @@ function selectTasbihZikir(i){
   setTextIfExists('tasbih-source', '📖 ' + z.src);
   updateTasbihRing();
   const sel = document.getElementById('tasbih-zikir-select');
-  if(sel && sel.selectedIndex !== i) sel.selectedIndex = i;
+  if(sel && sel.value !== String(i)) sel.value = String(i);
 }
 
 // completion chime: two soft rising tones via Web Audio (no asset needed)
