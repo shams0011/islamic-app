@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v151-55-zikir -->
+<!-- VERSION: v152-pron-toggle -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -961,11 +961,13 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
       </div>
     </div>
     <div id="tasbih-label-ar" style="font-family:serif;font-size:25px;text-align:center;line-height:1.7;background:linear-gradient(180deg,#f0d795,#c9a45c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--gold2);direction:rtl;margin-bottom:4px;filter:drop-shadow(0 0 10px rgba(212,175,106,.3));padding:0 8px">سُبْحَانَ اللهِ</div>
+    <div id="tasbih-pron" style="display:none;font-size:12.5px;color:#8fd9c6;font-style:italic;text-align:center;margin-bottom:5px;padding:6px 14px;line-height:1.7;max-width:430px;background:rgba(16,185,129,.06);border:1px dashed rgba(16,185,129,.25);border-radius:12px"></div>
     <div id="tasbih-meaning" style="font-size:12px;color:var(--text2);text-align:center;margin-bottom:7px;padding:0 14px;line-height:1.6;max-width:430px">আল্লাহ পবিত্র ও মহান — প্রতি নামাজের পর ৩৩ বার</div>
     <div style="display:flex;gap:7px;align-items:center;margin-bottom:20px;flex-wrap:wrap;justify-content:center">
       <span id="tasbih-source" style="font-size:10.5px;font-weight:700;color:var(--gold2);background:rgba(212,175,106,.1);border:1px solid rgba(212,175,106,.25);border-radius:50px;padding:3px 11px">📖 মুসলিম ৫৯৬</span>
       <span id="tasbih-target-label" style="font-size:12px;font-weight:600;color:var(--text3);background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:50px;padding:3px 13px">লক্ষ্য: ৩৩</span>
       <button type="button" id="tasbih-audio-btn" onclick="tasbihSpeak()" aria-label="জিকিরের আরবি উচ্চারণ শুনুন" style="font-size:12px;font-weight:700;color:var(--emerald2);background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);border-radius:50px;padding:3px 14px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;box-shadow:0 0 10px rgba(16,185,129,.1);transition:all .2s">🔊 শুনুন</button>
+      <button type="button" id="tasbih-pron-btn" onclick="toggleTasbihPron()" aria-label="জিকিরের উচ্চারণ দেখুন বা লুকান" style="font-size:12px;font-weight:700;color:#8fd9c6;background:rgba(16,185,129,.06);border:1px dashed rgba(16,185,129,.3);border-radius:50px;padding:3px 14px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s">🗣️ উচ্চারণ</button>
     </div>
     <button type="button" id="tasbih-counter-circle" onclick="tasbihTap()" aria-label="তাসবিহ গণনা করুন, বর্তমান গণনা শূন্য থেকে শুরু" style="position:relative;width:210px;height:210px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(16,185,129,.16),rgba(16,185,129,.04) 70%);border:2px solid rgba(16,185,129,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none;transition:transform .12s,box-shadow .3s;margin-bottom:24px;font-family:'Hind Siliguri',sans-serif;box-shadow:0 0 0 1px rgba(16,185,129,.1),0 8px 28px rgba(16,185,129,.15),inset 0 2px 12px rgba(255,255,255,.04)">
       <svg width="210" height="210" viewBox="0 0 210 210" style="position:absolute;inset:-2px;transform:rotate(-90deg);pointer-events:none" aria-hidden="true">
@@ -4876,6 +4878,89 @@ const TASBIH_ZIKIR = [
 ];
 let tasbihZikirIdx = 0;
 
+// transliteration (উচ্চারণ) per zikir, keyed by its Bengali name so reordering
+// the list never misaligns; bn shown for Bengali UI, en for every other language.
+// Hidden by default — the 🗣️ button toggles it.
+const TASBIH_PRON = {
+  'সুবহানাল্লাহ': {bn:'সুবহা-নাল্লা-হ', en:'Subhanallah'},
+  'আলহামদুলিল্লাহ': {bn:'আলহামদু লিল্লা-হ', en:'Alhamdulillah'},
+  'আল্লাহু আকবার': {bn:'আল্লা-হু আকবার', en:'Allahu Akbar'},
+  'লা ইলাহা ইল্লাল্লাহ': {bn:'লা- ইলা-হা ইল্লাল্লা-হ', en:'La ilaha illallah'},
+  'আস্তাগফিরুল্লাহ': {bn:'আস্তাগফিরুল্লা-হা ওয়া আতূবু ইলাইহি', en:'Astaghfirullaha wa atubu ilayh'},
+  'দরুদ শরীফ': {bn:'আল্লা-হুম্মা সাল্লি আলা- মুহাম্মাদিওঁ ওয়া আলা- আ-লি মুহাম্মাদ', en:'Allahumma salli ala Muhammadin wa ala ali Muhammad'},
+  'সুবহানাল্লাহি ওয়া বিহামদিহি': {bn:'সুবহা-নাল্লা-হি ওয়া বিহামদিহি', en:'Subhanallahi wa bihamdihi'},
+  'সুবহানাল্লাহিল আযীম': {bn:'সুবহা-নাল্লা-হি ওয়া বিহামদিহি, সুবহা-নাল্লা-হিল আযীম', en:'Subhanallahi wa bihamdihi, subhanallahil azim'},
+  'লা হাওলা ওয়ালা কুওয়্যাতা': {bn:'লা- হাওলা ওয়ালা- কুওয়্যাতা ইল্লা- বিল্লা-হ', en:'La hawla wa la quwwata illa billah'},
+  'তাওহিদের পূর্ণ জিকির': {bn:'লা- ইলা-হা ইল্লাল্লা-হু ওয়াহদাহূ লা- শারীকা লাহু, লাহুল মুলকু ওয়া লাহুল হামদু, ওয়া হুয়া আলা- কুল্লি শাইয়িন কাদীর', en:'La ilaha illallahu wahdahu la sharika lahu, lahul-mulku wa lahul-hamdu wa huwa ala kulli shay-in qadir'},
+  'হাসবিয়াল্লাহ': {bn:'হাসবিয়াল্লা-হু লা- ইলা-হা ইল্লা- হুয়া, আলাইহি তাওয়াক্কালতু, ওয়া হুয়া রব্বুল আরশিল আযীম', en:'Hasbiyallahu la ilaha illa huwa, alayhi tawakkaltu, wa huwa rabbul-arshil-azim'},
+  'রাদিতু বিল্লাহ': {bn:'রাদীতু বিল্লা-হি রব্বাওঁ, ওয়া বিল ইসলা-মি দীনাওঁ, ওয়া বিমুহাম্মাদিন নাবিয়্যা-', en:'Raditu billahi rabban, wa bil-islami dinan, wa bi-Muhammadin nabiyya'},
+  'বিসমিল্লাহি লা ইয়াদুররু': {bn:'বিসমিল্লা-হিল্লাযী লা- ইয়াদুররু মাআসমিহি শাইউন ফিল আরদি ওয়ালা- ফিস সামা-ই, ওয়া হুয়াস সামীউল আলীম', en:'Bismillahil-lazi la yadurru ma-asmihi shay-un fil-ardi wa la fis-sama-i, wa huwas-samiul-alim'},
+  'আউযু বিকালিমাতিল্লাহ': {bn:'আউযু বিকালিমা-তিল্লা-হিত তা-ম্মা-তি মিন শাররি মা- খালাক', en:'A’uzu bikalimatillahit-tammati min sharri ma khalaq'},
+  'আল্লাহুম্মা আজিরনি': {bn:'আল্লা-হুম্মা আজিরনী মিনান না-র', en:'Allahumma ajirni minan-nar'},
+  'সাইয়্যিদুল ইস্তিগফার': {bn:'আল্লা-হুম্মা আনতা রব্বী, লা- ইলা-হা ইল্লা- আনতা, খালাকতানী ওয়া আনা- আবদুকা, ওয়া আনা- আলা- আহদিকা ওয়া ওয়াদিকা মাসতাতাতু, আউযু বিকা মিন শাররি মা- সানাতু, আবূউ লাকা বিনিমাতিকা আলাইয়্যা, ওয়া আবূউ বিযামবী, ফাগফিরলী, ফাইন্নাহূ লা- ইয়াগফিরুয যুনূবা ইল্লা- আনতা', en:'Allahumma anta rabbi, la ilaha illa anta, khalaqtani wa ana abduka, wa ana ala ahdika wa wa’dika mastata’tu, a’uzu bika min sharri ma sana’tu, abu-u laka bini’matika alayya, wa abu-u bizambi, faghfir li, fa-innahu la yaghfiruz-zunuba illa anta'},
+  '৭ সালাম (সাত সালাম)': {bn:'সালা-মুন কাওলাম মির রব্বির রাহীম ۞ সালা-মুন আলা- নূহিন ফিল আ-লামীন ۞ সালা-মুন আলা- ইবরা-হীম ۞ সালা-মুন আলা- মূসা- ওয়া হা-রূন ۞ সালা-মুন আলা- ইলইয়া-সীন ۞ সালা-মুন আলাইকুম তিবতুম ফাদখুলূহা- খা-লিদীন ۞ সালা-মুন হিয়া হাত্তা- মাতলাইল ফাজর', en:'Salamun qawlam mir rabbir rahim • Salamun ala Nuhin fil-alamin • Salamun ala Ibrahim • Salamun ala Musa wa Harun • Salamun ala Ilyasin • Salamun alaykum tibtum fadkhuluha khalidin • Salamun hiya hatta matla’il-fajr'},
+  'দোয়া ইউনুস': {bn:'লা- ইলা-হা ইল্লা- আনতা সুবহা-নাকা, ইন্নী কুনতু মিনায যা-লিমীন', en:'La ilaha illa anta subhanaka, inni kuntu minaz-zalimin'},
+  'রব্বানা আতিনা': {bn:'রব্বানা- আ-তিনা- ফিদ দুনইয়া- হাসানাতাওঁ ওয়া ফিল আ-খিরাতি হাসানাতাওঁ ওয়া কিনা- আযা-বান না-র', en:'Rabbana atina fid-dunya hasanataw wa fil-akhirati hasanataw wa qina azaban-nar'},
+  'রব্বি জিদনি ইলমা': {bn:'রব্বি যিদনী ইলমা-', en:'Rabbi zidni ilma'},
+  'রব্বিশরাহ লি সদরি': {bn:'রব্বিশ রাহলী সদরী, ওয়া ইয়াসসিরলী আমরী, ওয়াহলুল উকদাতাম মিল লিসা-নী, ইয়াফকাহূ কাওলী', en:'Rabbishrah li sadri, wa yassir li amri, wahlul uqdatam mil-lisani, yafqahu qawli'},
+  'হাসবুনাল্লাহ': {bn:'হাসবুনাল্লা-হু ওয়া নিমাল ওয়াকীল', en:'Hasbunallahu wa ni’mal-wakil'},
+  'রব্বানা লা তুযিগ': {bn:'রব্বানা- লা- তুযিগ কুলূবানা- বাদা ইয হাদাইতানা-, ওয়াহাব লানা- মিল লাদুনকা রাহমাহ, ইন্নাকা আনতাল ওয়াহহা-ব', en:'Rabbana la tuzigh qulubana ba’da iz hadaytana, wa hab lana mil-ladunka rahmah, innaka antal-wahhab'},
+  'রব্বানা জলামনা (আদমের দোয়া)': {bn:'রব্বানা- যালামনা- আনফুসানা-, ওয়া ইল লাম তাগফিরলানা- ওয়া তারহামনা-, লানাকূনান্না মিনাল খা-সিরীন', en:'Rabbana zalamna anfusana, wa il-lam taghfir lana wa tarhamna, lanakunanna minal-khasirin'},
+  'রব্বানা হাবলানা': {bn:'রব্বানা- হাবলানা- মিন আযওয়া-জিনা- ওয়া যুররিয়্যা-তিনা- কুররাতা আইউনিওঁ, ওয়াজআলনা- লিল মুত্তাকীনা ইমা-মা-', en:'Rabbana hab lana min azwajina wa zurriyyatina qurrata a’yuniw, waj’alna lil-muttaqina imama'},
+  'রব্বি আউযু বিকা': {bn:'রব্বি আউযু বিকা মিন হামাযা-তিশ শায়া-তীন, ওয়া আউযু বিকা রব্বি আই ইয়াহদুরূন', en:'Rabbi a’uzu bika min hamazatish-shayatin, wa a’uzu bika rabbi ay-yahdurun'},
+  'রব্বিজ আলনি মুকিমাস সালাহ': {bn:'রব্বিজ আলনী মুকীমাস সালা-তি ওয়া মিন যুররিয়্যাতী, রব্বানা- ওয়া তাকাব্বাল দুআ-', en:'Rabbij’alni muqimas-salati wa min zurriyyati, rabbana wa taqabbal du’a'},
+  'রব্বি ইন্নি লিমা আনযালতা': {bn:'রব্বি ইন্নী লিমা- আনযালতা ইলাইয়া মিন খাইরিন ফাকীর', en:'Rabbi inni lima anzalta ilayya min khayrin faqir'},
+  'আয়াতুল কুরসি': {bn:'আল্লা-হু লা- ইলা-হা ইল্লা- হুয়াল হাইয়্যুল কাইয়্যূম, লা- তাখুযুহূ সিনাতুওঁ ওয়ালা- নাওম, লাহূ মা- ফিস সামা-ওয়া-তি ওয়ামা- ফিল আরদ, মান যাল্লাযী ইয়াশফাউ ইনদাহূ ইল্লা- বিইযনিহি, ইয়ালামু মা- বাইনা আইদীহিম ওয়ামা- খালফাহুম, ওয়ালা- ইউহীতূনা বিশাইয়িম মিন ইলমিহী ইল্লা- বিমা- শা-আ, ওয়াসিআ কুরসিয়্যুহুস সামা-ওয়া-তি ওয়াল আরদ, ওয়ালা- ইয়াঊদুহূ হিফযুহুমা-, ওয়া হুয়াল আলিয়্যুল আযীম', en:'Allahu la ilaha illa huwal-hayyul-qayyum, la ta’khuzuhu sinatuw wa la nawm, lahu ma fis-samawati wa ma fil-ard, man zal-lazi yashfa’u indahu illa bi-iznihi, ya’lamu ma bayna aydihim wa ma khalfahum, wa la yuhituna bishay-im min ilmihi illa bima sha-a, wasi’a kursiyyuhus-samawati wal-ard, wa la ya-uduhu hifzuhuma, wa huwal-aliyyul-azim'},
+  'ইয়া হাইয়ু ইয়া কাইয়ুম': {bn:'ইয়া- হাইয়্যু ইয়া- কাইয়্যূমু বিরাহমাতিকা আসতাগীস', en:'Ya hayyu ya qayyumu birahmatika astaghith'},
+  'আফু-আফিয়ার দোয়া': {bn:'আল্লা-হুম্মা ইন্নী আসআলুকাল আফওয়া ওয়াল আ-ফিয়াতা ফিদ দুনইয়া- ওয়াল আ-খিরাহ', en:'Allahumma inni as-alukal-afwa wal-afiyata fid-dunya wal-akhirah'},
+  'জিকর-শোকরের দোয়া': {bn:'আল্লা-হুম্মা আইননী আলা- যিকরিকা ওয়া শুকরিকা ওয়া হুসনি ইবা-দাতিক', en:'Allahumma a’inni ala zikrika wa shukrika wa husni ibadatik'},
+  'পূর্ণ ইস্তিগফার': {bn:'আসতাগফিরুল্লা-হাল্লাযী লা- ইলা-হা ইল্লা- হুয়াল হাইয়্যুল কাইয়্যূমু ওয়া আতূবু ইলাইহি', en:'Astaghfirullahal-lazi la ilaha illa huwal-hayyul-qayyumu wa atubu ilayh'},
+  'দুশ্চিন্তা থেকে আশ্রয়': {bn:'আল্লা-হুম্মা ইন্নী আউযু বিকা মিনাল হাম্মি ওয়াল হাযান, ওয়াল আজযি ওয়াল কাসাল, ওয়াল বুখলি ওয়াল জুবন, ওয়া দালাইদ দাইনি ওয়া গালাবাতির রিজা-ল', en:'Allahumma inni a’uzu bika minal-hammi wal-hazan, wal-ajzi wal-kasal, wal-bukhli wal-jubn, wa dala’id-dayni wa ghalabatir-rijal'},
+  'ইয়া মুকাল্লিবাল কুলুব': {bn:'ইয়া- মুকাল্লিবাল কুলূব, সাব্বিত কালবী আলা- দীনিক', en:'Ya muqallibal-qulub, thabbit qalbi ala dinik'},
+  'আল্লাহুম্মা ইন্নাকা আফুউন': {bn:'আল্লা-হুম্মা ইন্নাকা আফুউউন তুহিব্বুল আফওয়া ফাফু আন্নী', en:'Allahumma innaka afuwwun tuhibbul-afwa fa’fu anni'},
+  'মজলিসের কাফফারা': {bn:'সুবহা-নাকাল্লা-হুম্মা ওয়া বিহামদিকা, আশহাদু আল লা- ইলা-হা ইল্লা- আনতা, আসতাগফিরুকা ওয়া আতূবু ইলাইক', en:'Subhanakallahumma wa bihamdika, ashhadu al-la ilaha illa anta, astaghfiruka wa atubu ilayk'},
+  'রব্বানা তাকাব্বাল মিন্না': {bn:'রব্বানা- তাকাব্বাল মিন্না-, ইন্নাকা আনতাস সামীউল আলীম', en:'Rabbana taqabbal minna, innaka antas-sami’ul-alim'},
+  'রব্বি হাবলি মিনাস সালিহীন': {bn:'রব্বি হাবলী মিনাস সা-লিহীন', en:'Rabbi hab li minas-salihin'},
+  'সুবহানাল্লাহি আদাদা খালকিহি': {bn:'সুবহা-নাল্লা-হি ওয়া বিহামদিহি, আদাদা খালকিহি, ওয়া রিদা- নাফসিহি, ওয়া যিনাতা আরশিহি, ওয়া মিদা-দা কালিমা-তিহি', en:'Subhanallahi wa bihamdihi, adada khalqihi, wa rida nafsihi, wa zinata arshihi, wa midada kalimatihi'},
+  'তিন কুল (ইখলাস-ফালাক-নাস)': {bn:'কুল হুয়াল্লা-হু আহাদ, আল্লা-হুস সামাদ, লাম ইয়ালিদ ওয়া লাম ইঊলাদ, ওয়া লাম ইয়াকুল লাহূ কুফুওয়ান আহাদ ۞ কুল আউযু বিরব্বিল ফালাক, মিন শাররি মা- খালাক, ওয়া মিন শাররি গা-সিকিন ইযা- ওয়াকাব, ওয়া মিন শাররিন নাফফা-সা-তি ফিল উকাদ, ওয়া মিন শাররি হা-সিদিন ইযা- হাসাদ ۞ কুল আউযু বিরব্বিন না-স, মালিকিন না-স, ইলা-হিন না-স, মিন শাররিল ওয়াসওয়া-সিল খান্না-স, আল্লাযী ইউওয়াসবিসু ফী সুদূরিন না-স, মিনাল জিন্নাতি ওয়ান না-স', en:'Qul huwallahu ahad, allahus-samad, lam yalid wa lam yulad, wa lam yakul-lahu kufuwan ahad • Qul a’uzu birabbil-falaq... • Qul a’uzu birabbin-nas...'},
+  'বিসমিল্লাহি তাওয়াক্কালতু': {bn:'বিসমিল্লা-হি তাওয়াক্কালতু আলাল্লা-হ, ওয়ালা- হাওলা ওয়ালা- কুওয়্যাতা ইল্লা- বিল্লা-হ', en:'Bismillahi tawakkaltu alallah, wa la hawla wa la quwwata illa billah'},
+  'আফিয়াতের দোয়া (দেহ-কান-চোখ)': {bn:'আল্লা-হুম্মা আ-ফিনী ফী বাদানী, আল্লা-হুম্মা আ-ফিনী ফী সামঈ, আল্লা-হুম্মা আ-ফিনী ফী বাসারী, লা- ইলা-হা ইল্লা- আনতা', en:'Allahumma afini fi badani, allahumma afini fi sam’i, allahumma afini fi basari, la ilaha illa anta'},
+  'হুদা-তাকওয়ার দোয়া': {bn:'আল্লা-হুম্মা ইন্নী আসআলুকাল হুদা-, ওয়াত তুকা-, ওয়াল আফা-ফা, ওয়াল গিনা-', en:'Allahumma inni as-alukal-huda, wat-tuqa, wal-afafa, wal-ghina'},
+  'চার ফিতনা থেকে আশ্রয়': {bn:'আল্লা-হুম্মা ইন্নী আউযু বিকা মিন আযা-বি জাহান্নাম, ওয়া মিন আযা-বিল কাবর, ওয়া মিন ফিতনাতিল মাহইয়া- ওয়াল মামা-ত, ওয়া মিন শাররি ফিতনাতিল মাসীহিদ দাজ্জা-ল', en:'Allahumma inni a’uzu bika min azabi jahannam, wa min azabil-qabr, wa min fitnatil-mahya wal-mamat, wa min sharri fitnatil-masihid-dajjal'},
+  'কঠিন রোগ থেকে আশ্রয়': {bn:'আল্লা-হুম্মা ইন্নী আউযু বিকা মিনাল বারাস, ওয়াল জুনূন, ওয়াল জুযা-ম, ওয়া মিন সাইয়িইল আসকা-ম', en:'Allahumma inni a’uzu bika minal-baras, wal-junun, wal-juzam, wa min sayyi’il-asqam'},
+  'আল্লাহুম্মা বিকা আসবাহনা': {bn:'আল্লা-হুম্মা বিকা আসবাহনা-, ওয়া বিকা আমসাইনা-, ওয়া বিকা নাহইয়া-, ওয়া বিকা নামূত, ওয়া ইলাইকান নুশূর', en:'Allahumma bika asbahna, wa bika amsayna, wa bika nahya, wa bika namut, wa ilaykan-nushur'},
+  'আসবাহনা ওয়া আসবাহাল মুলক': {bn:'আসবাহনা- ওয়া আসবাহাল মুলকু লিল্লা-হ, ওয়াল হামদু লিল্লা-হ, লা- ইলা-হা ইল্লাল্লা-হু ওয়াহদাহূ লা- শারীকা লাহ', en:'Asbahna wa asbahal-mulku lillah, wal-hamdu lillah, la ilaha illallahu wahdahu la sharika lah'},
+  'আমসাইনা ওয়া আমসাল মুলক': {bn:'আমসাইনা- ওয়া আমসাল মুলকু লিল্লা-হ, ওয়াল হামদু লিল্লা-হ, লা- ইলা-হা ইল্লাল্লা-হু ওয়াহদাহূ লা- শারীকা লাহ', en:'Amsayna wa amsal-mulku lillah, wal-hamdu lillah, la ilaha illallahu wahdahu la sharika lah'},
+  'ইন্না লিল্লাহ (বিপদে)': {bn:'ইন্না- লিল্লা-হি ওয়া ইন্না- ইলাইহি রা-জিঊন, আল্লা-হুম্মা জুরনী ফী মুসীবাতী, ওয়া আখলিফ লী খাইরাম মিনহা-', en:'Inna lillahi wa inna ilayhi raji’un, allahumma-jurni fi musibati, wa akhlif li khayram minha'},
+  'মাশাআল্লাহ লা কুওয়াতা': {bn:'মা- শা-আল্লা-হু লা- কুওয়্যাতা ইল্লা- বিল্লা-হ', en:'Masha-allahu la quwwata illa billah'},
+  'রব্বানা আফরিগ (ধৈর্যের দোয়া)': {bn:'রব্বানা- আফরিগ আলাইনা- সবরাওঁ ওয়া তাওয়াফফানা- মুসলিমীন', en:'Rabbana afrigh alayna sabraw wa tawaffana muslimin'},
+  'রব্বানাগফির লানা জুনুবানা': {bn:'রব্বানাগ ফিরলানা- যুনূবানা- ওয়া ইসরা-ফানা- ফী আমরিনা-, ওয়া সাব্বিত আকদা-মানা-, ওয়ানসুরনা- আলাল কাওমিল কা-ফিরীন', en:'Rabbanaghfir lana zunubana wa israfana fi amrina, wa thabbit aqdamana, wansurna alal-qawmil-kafirin'},
+  'রব্বি নাজ্জিনি': {bn:'রব্বি নাজ্জিনী মিনাল কাওমিয যা-লিমীন', en:'Rabbi najjini minal-qawmiz-zalimin'},
+  'রব্বানা আলাইকা তাওয়াক্কালনা': {bn:'রব্বানা- আলাইকা তাওয়াক্কালনা-, ওয়া ইলাইকা আনাবনা-, ওয়া ইলাইকাল মাসীর', en:'Rabbana alayka tawakkalna, wa ilayka anabna, wa ilaykal-masir'},
+};
+
+// pron panel visibility — hidden by default, remembered across sessions
+function tasbihPronVisible(){ try{ return localStorage.getItem('tasbih_show_pron') === '1'; }catch(e){ return false; } }
+function updateTasbihPron(){
+  const el = document.getElementById('tasbih-pron');
+  const btn = document.getElementById('tasbih-pron-btn');
+  if(!el) return;
+  const z = TASBIH_ZIKIR[tasbihZikirIdx];
+  const p = TASBIH_PRON[z.bn];
+  const show = tasbihPronVisible() && !!p;
+  el.style.display = show ? 'block' : 'none';
+  if(show) el.textContent = currentLang === 'bn' ? p.bn : p.en;
+  if(btn){
+    btn.textContent = tasbihPronVisible() ? '🗣️ উচ্চারণ লুকান' : '🗣️ উচ্চারণ';
+    btn.style.background = tasbihPronVisible() ? 'rgba(16,185,129,.16)' : 'rgba(16,185,129,.06)';
+    btn.style.borderStyle = tasbihPronVisible() ? 'solid' : 'dashed';
+  }
+}
+function toggleTasbihPron(){
+  try{ localStorage.setItem('tasbih_show_pron', tasbihPronVisible() ? '0' : '1'); }catch(e){}
+  updateTasbihPron();
+}
+
 // occasion filter for "when should I do which zikir"
 const TASBIH_WHEN = [
   {key:'all', label:'🕰️ সব সময়ের জিকির'},
@@ -4928,6 +5013,7 @@ function selectTasbihZikir(i){
   arEl.style.fontSize = z.ar.length > 120 ? '15px' : z.ar.length > 40 ? '18px' : z.ar.length > 24 ? '21px' : '25px';
   setTextIfExists('tasbih-meaning', z.meaning);
   setTextIfExists('tasbih-source', '📖 ' + z.src);
+  updateTasbihPron();
   updateTasbihRing();
   const sel = document.getElementById('tasbih-zikir-select');
   if(sel && sel.value !== String(i)) sel.value = String(i);
