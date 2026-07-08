@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v156-tasbih-on-home -->
+<!-- VERSION: v157-qari-audio -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -5036,39 +5036,91 @@ function selectTasbihZikir(i){
   updateTasbihRing();
   const sel = document.getElementById('tasbih-zikir-select');
   if(sel && sel.value !== String(i)) sel.value = String(i);
-  // changing zikir stops any playing recitation
-  if(window._tasbihSpeaking && 'speechSynthesis' in window){
-    speechSynthesis.cancel();
-    window._tasbihSpeaking = false;
-    const btn = document.getElementById('tasbih-audio-btn');
-    if(btn) btn.textContent = '🔊 শুনুন';
-  }
+  // changing zikir stops any playing recitation (qari audio or TTS)
+  if(window._tasbihSpeaking && typeof stopTasbihAudio === 'function') stopTasbihAudio();
 }
 
-// speak the current zikir's Arabic via the device's text-to-speech
+// Quran-verse zikirs play the REAL qari recitation (Mishary Alafasy — the same
+// reciter as the Quran tab) instead of device text-to-speech.
+// Keys match TASBIH_ZIKIR bn names; values are [surah, ayah] sequences.
+const TASBIH_AYAT = {
+  'দোয়া ইউনুস': [[21,87]],
+  'রব্বানা আতিনা': [[2,201]],
+  'রব্বি জিদনি ইলমা': [[20,114]],
+  'রব্বিশরাহ লি সদরি': [[20,25],[20,26],[20,27],[20,28]],
+  'হাসবুনাল্লাহ': [[3,173]],
+  'রব্বানা লা তুযিগ': [[3,8]],
+  'রব্বানা জলামনা (আদমের দোয়া)': [[7,23]],
+  'রব্বানা হাবলানা': [[25,74]],
+  'রব্বি আউযু বিকা': [[23,97],[23,98]],
+  'রব্বিজ আলনি মুকিমাস সালাহ': [[14,40]],
+  'রব্বি ইন্নি লিমা আনযালতা': [[28,24]],
+  'আয়াতুল কুরসি': [[2,255]],
+  '৭ সালাম (সাত সালাম)': [[36,58],[37,79],[37,109],[37,120],[37,130],[39,73],[97,5]],
+  'তিন কুল (ইখলাস-ফালাক-নাস)': [[112,1],[112,2],[112,3],[112,4],[113,1],[113,2],[113,3],[113,4],[113,5],[114,1],[114,2],[114,3],[114,4],[114,5],[114,6]],
+  'ইন্না লিল্লাহ (বিপদে)': [[2,156]],
+  'মাশাআল্লাহ লা কুওয়াতা': [[18,39]],
+  'রব্বানা আফরিগ (ধৈর্যের দোয়া)': [[7,126]],
+  'রব্বানাগফির লানা জুনুবানা': [[3,147]],
+  'রব্বি নাজ্জিনি': [[28,21]],
+  'রব্বানা তাকাব্বাল মিন্না': [[2,127]],
+  'রব্বি হাবলি মিনাস সালিহীন': [[37,100]],
+  'রব্বানা আলাইকা তাওয়াক্কালনা': [[60,4]],
+  'হাসবিয়াল্লাহ': [[9,129]],
+};
+
+function stopTasbihAudio(){
+  const btn = document.getElementById('tasbih-audio-btn');
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  const player = document.getElementById('surah-audio-player');
+  if(player && window._tasbihAyatPlaying){ player.pause(); player.onended = null; player.onerror = null; }
+  window._tasbihAyatPlaying = false;
+  window._tasbihSpeaking = false;
+  if(btn) btn.textContent = '🔊 শুনুন';
+}
+
 function tasbihSpeak(){
   const btn = document.getElementById('tasbih-audio-btn');
+  // tapping while playing = stop
+  if(window._tasbihSpeaking){ stopTasbihAudio(); return; }
+
+  const z = TASBIH_ZIKIR[tasbihZikirIdx];
+  const ayat = TASBIH_AYAT[z.bn];
+  const player = document.getElementById('surah-audio-player');
+
+  if(ayat && ayat.length && player){
+    // real recitation: chain the ayah mp3s one after another (Alafasy, everyayah.com)
+    let i = 0;
+    const done = () => stopTasbihAudio();
+    const next = () => {
+      if(i >= ayat.length){ done(); return; }
+      const [s, a] = ayat[i++];
+      player.src = `https://everyayah.com/data/Alafasy_128kbps/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`;
+      player.play().catch(done);
+    };
+    player.onended = next;
+    player.onerror = done;
+    window._tasbihSpeaking = true;
+    window._tasbihAyatPlaying = true;
+    if(btn) btn.textContent = '⏹ থামুন';
+    next();
+    return;
+  }
+
+  // hadith duas have no qari audio — fall back to TTS, preferring a MALE Arabic voice
   if(!('speechSynthesis' in window)){
     showToast('এই ডিভাইসে অডিও উচ্চারণ সমর্থিত নয়');
     return;
   }
-  // tapping while playing = stop
-  if(window._tasbihSpeaking){
-    speechSynthesis.cancel();
-    window._tasbihSpeaking = false;
-    if(btn) btn.textContent = '🔊 শুনুন';
-    return;
-  }
-  const z = TASBIH_ZIKIR[tasbihZikirIdx];
   const u = new SpeechSynthesisUtterance(z.ar.replace(/۞/g, '،'));
   u.lang = 'ar-SA';
   u.rate = 0.8;
-  const arVoice = speechSynthesis.getVoices().find(v => v.lang && v.lang.toLowerCase().startsWith('ar'));
+  u.pitch = 0.85; // slightly lower pitch — closer to a male register on generic voices
+  const voices = speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith('ar'));
+  const male = voices.find(v => /majed|maged|tarik|hamed|male/i.test(v.name) && !/female/i.test(v.name));
+  const arVoice = male || voices.find(v => !/female/i.test(v.name)) || voices[0];
   if(arVoice) u.voice = arVoice;
-  u.onend = u.onerror = () => {
-    window._tasbihSpeaking = false;
-    if(btn) btn.textContent = '🔊 শুনুন';
-  };
+  u.onend = u.onerror = () => stopTasbihAudio();
   speechSynthesis.cancel();
   speechSynthesis.speak(u);
   window._tasbihSpeaking = true;
