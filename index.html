@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v160-tajweed-mushaf -->
+<!-- VERSION: v161-render-engine -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -20,6 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/scheherazade-new-700-arabic.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :focus-visible{outline:2px solid var(--emerald2);outline-offset:2px;border-radius:4px}
@@ -4168,6 +4169,8 @@ function showTab(id,btn){
   }
   // likewise the tasbih body: home area owns it unless the tasbih tab is active
   if(typeof placeTasbihBody === 'function') placeTasbihBody(id === 'tasbih' ? 'tab' : 'home');
+  // first visit to the Quran tab after a reload resumes the last reading position
+  if(id === 'quran' && typeof resumeReadingPos === 'function') resumeReadingPos();
 }
 
 /* ══ TOAST FEEDBACK ══ */
@@ -6278,17 +6281,22 @@ let wbwCache = {}; // cache: "surahNo:verseNo" -> array of {ar, translation}
 let currentOpenSurahNo = null;
 let surahAudioPlaying = false;
 
-function renderVerses(verses){
+/* ══ VERSE RENDERING ENGINE — virtualized lazy renderer ══
+   Never renders the whole surah: every verse gets a cheap fixed-height slot,
+   an IntersectionObserver materializes slots near the viewport (±900px buffer)
+   and dematerializes those that scroll far away (DOM nodes released, the
+   measured height is kept on the empty slot so scroll never jumps). */
+const VR = {io: null, verses: [], live: new Set()};
+
+function buildVerseCardHTML(v){
+  // colour-coded tajweed markup is pre-sanitized at build time (only <i class=tj-*> tags);
+  // plain text is escaped as a defense-in-depth fallback
   const taj = tajweedCache[currentOpenSurahNo];
-  document.getElementById('verse-list').innerHTML = verses.map(v => {
-    // colour-coded tajweed markup is pre-sanitized at build time (only <i class=tj-*> tags);
-    // plain text is escaped as a defense-in-depth fallback
-    const tj = taj && taj.verses && taj.verses[String(v.n)];
-    const arabicHtml = tj
-      ? `${tj}<span class="ayah-medallion" aria-label="আয়াত ${localizeNum(v.n)}">${localizeNum(v.n)}</span>`
-      : escapeHtml(v.ar);
-    return `
-    <div class="hadith-card" style="cursor:default" id="verse-card-${v.n}">
+  const tj = taj && taj.verses && taj.verses[String(v.n)];
+  const arabicHtml = tj
+    ? `${tj}<span class="ayah-medallion" aria-label="আয়াত ${localizeNum(v.n)}">${localizeNum(v.n)}</span>`
+    : escapeHtml(v.ar);
+  return `
       <div class="h-arabic mushaf-ar" id="verse-arabic-${v.n}" lang="ar" dir="rtl">${arabicHtml}</div>
       <div id="wbw-container-${v.n}" style="display:${wordByWordEnabled?'block':'none'};margin-bottom:13px"></div>
       <div class="h-text">${escapeHtml(getVerseText(v))}</div>
@@ -6296,11 +6304,127 @@ function renderVerses(verses){
         <span class="badge bg">${localizeNum(v.n)}</span>
         ${v.sajda ? '<span class="badge bt">🕌 সিজদা</span>' : ''}
         <button onclick="playVerseAudio(${currentOpenSurahNo}, ${v.n})" aria-label="আয়াত শুনুন" style="margin-left:auto;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);border-radius:50px;padding:4px 10px;color:var(--emerald2);font-size:12px;cursor:pointer">🔊</button>
-      </div>
-    </div>`;
-  }).join('');
+      </div>`;
+}
 
-  if(wordByWordEnabled) loadWordByWordForVisible(verses);
+function materializeVerse(n){
+  if(VR.live.has(n)) return;
+  const slot = document.getElementById('verse-card-' + n);
+  const v = VR.verses[n - 1];
+  if(!slot || !v) return;
+  slot.innerHTML = buildVerseCardHTML(v);
+  slot.style.minHeight = '';
+  VR.live.add(n);
+  if(wordByWordEnabled) wbwEnsure(n);
+}
+
+function dematerializeVerse(n, slot){
+  if(!VR.live.has(n)) return;
+  // freeze the measured height on the empty slot — layout stays identical,
+  // scrollbar doesn't move, memory is released
+  slot.style.minHeight = slot.offsetHeight + 'px';
+  slot.innerHTML = '';
+  VR.live.delete(n);
+}
+
+function renderVerses(verses){
+  const list = document.getElementById('verse-list');
+  if(VR.io) VR.io.disconnect();
+  VR.verses = verses;
+  VR.live = new Set();
+
+  // slots via DocumentFragment — one layout pass, no per-verse reflow
+  const frag = document.createDocumentFragment();
+  for(const v of verses){
+    const slot = document.createElement('div');
+    slot.className = 'hadith-card verse-slot';
+    slot.id = 'verse-card-' + v.n;
+    slot.dataset.n = v.n;
+    slot.style.cursor = 'default';
+    slot.style.minHeight = '150px'; // estimate until measured
+    frag.appendChild(slot);
+  }
+  list.innerHTML = '';
+  list.appendChild(frag);
+
+  VR.io = new IntersectionObserver(entries => {
+    for(const e of entries){
+      const n = parseInt(e.target.dataset.n);
+      // materialize directly — a batch is only a handful of cards, and rAF
+      // deferral would stall in a backgrounded tab
+      if(e.isIntersecting) materializeVerse(n);
+      else dematerializeVerse(n, e.target);
+    }
+  }, {rootMargin: '900px 0px 900px 0px'});
+  list.querySelectorAll('.verse-slot').forEach(el => VR.io.observe(el));
+
+  // above-the-fold instantly, a few more during idle time
+  const first = Math.min(verses.length, 6);
+  for(let i = 1; i <= first; i++) materializeVerse(i);
+  const idle = window.requestIdleCallback || (fn => setTimeout(fn, 200));
+  idle(() => { for(let i = first + 1; i <= Math.min(verses.length, first + 6); i++) materializeVerse(i); });
+}
+
+// jump to a specific ayah (used by reading-position restore and search)
+function scrollToAyah(n, smooth){
+  const slot = document.getElementById('verse-card-' + n);
+  if(!slot) return;
+  materializeVerse(n);
+  // direct (rAF is suspended in background tabs); heights settle → correct once more
+  slot.scrollIntoView({block: 'start', behavior: smooth ? 'smooth' : 'auto'});
+  window.scrollBy(0, -66);
+  setTimeout(() => {
+    const r = slot.getBoundingClientRect();
+    if(Math.abs(r.top - 66) > 40){ slot.scrollIntoView({block: 'start'}); window.scrollBy(0, -66); }
+  }, 400);
+}
+
+// geometry fallback for environments where IntersectionObserver is throttled
+// (hidden tabs, some webviews): on scroll, materialize everything inside the
+// viewport ±900px window and release slots further than ~2.5 screens away
+function ensureWindowMaterialized(){
+  if(!VR.verses.length) return;
+  const vv = document.getElementById('quran-verses-view');
+  if(!vv || vv.style.display === 'none') return;
+  const top = window.scrollY - 900, bottom = window.scrollY + window.innerHeight + 900, far = 2600;
+  for(const slot of document.querySelectorAll('#verse-list .verse-slot')){
+    const y = slot.offsetTop, h = slot.offsetHeight, n = parseInt(slot.dataset.n);
+    if(y + h >= top && y <= bottom) materializeVerse(n);
+    else if(y > bottom + far || y + h < top - far) dematerializeVerse(n, slot);
+  }
+}
+let _vrScrollTimer = null;
+window.addEventListener('scroll', () => {
+  if(_vrScrollTimer) return;
+  _vrScrollTimer = setTimeout(() => { _vrScrollTimer = null; ensureWindowMaterialized(); }, 120);
+}, {passive: true});
+
+/* reading position: remember surah + top-visible ayah, restore automatically */
+let _qposTimer = null, _qResumed = false;
+function saveReadingPos(){
+  if(!currentOpenSurahNo) return;
+  const vv = document.getElementById('quran-verses-view');
+  if(!vv || vv.style.display === 'none') return;
+  let top = null;
+  for(const s of document.querySelectorAll('#verse-list .verse-slot')){
+    if(s.getBoundingClientRect().bottom > 90){ top = parseInt(s.dataset.n); break; }
+  }
+  if(top) try{ localStorage.setItem('quran_pos', JSON.stringify({s: currentOpenSurahNo, a: top})); }catch(e){}
+}
+window.addEventListener('scroll', () => {
+  clearTimeout(_qposTimer);
+  _qposTimer = setTimeout(saveReadingPos, 400);
+}, {passive: true});
+
+function resumeReadingPos(){
+  if(_qResumed) return;
+  _qResumed = true;
+  let pos = null;
+  try{ pos = JSON.parse(localStorage.getItem('quran_pos') || 'null'); }catch(e){}
+  const listView = document.getElementById('quran-surah-list-view');
+  if(pos && pos.s && listView && listView.style.display !== 'none'){
+    openSurah(pos.s).then(() => { if(pos.a > 1) scrollToAyah(pos.a); });
+  }
 }
 
 /* ══ WORD-BY-WORD TRANSLATION (live fetch — uses the public Quran.com API) ══
@@ -6320,37 +6444,50 @@ function toggleWordByWord(){
   document.querySelectorAll('[id^="wbw-container-"]').forEach(el => {
     el.style.display = wordByWordEnabled ? 'block' : 'none';
   });
-  if(wordByWordEnabled) loadWordByWordForVisible(currentSurahVerses);
+  // lazy: only fetch for verses that are actually materialized right now;
+  // the render engine calls wbwEnsure() as new verses come into view
+  if(wordByWordEnabled) VR.live.forEach(n => wbwEnsure(n, false));
 }
 
-async function loadWordByWordForVisible(verses){
-  for(const v of verses){
-    const cacheKey = `${currentOpenSurahNo}:${v.n}`;
-    const container = document.getElementById(`wbw-container-${v.n}`);
-    if(!container) continue;
-
-    if(wbwCache[cacheKey]){
-      renderWbwWords(container, wbwCache[cacheKey]);
-      continue;
-    }
-
-    container.innerHTML = `<div style="font-size:11px;color:var(--text3)">${t('wbwLoading')}</div>`;
-    try{
-      // Quran.com API v4 — word-by-word data with per-word translation, language-aware
-      const langMap = {bn:'bengali', en:'english', ar:'arabic', ur:'urdu', fr:'french', zh:'english'}; // zh falls back to english (no zh word-by-word coverage)
-      const apiLang = langMap[currentLang] || 'english';
-      const url = `https://api.quran.com/api/v4/verses/by_key/${currentOpenSurahNo}:${v.n}?words=true&word_fields=text_uthmani&translation_fields=text&language=${apiLang}`;
-      const r = await fetch(url);
-      if(!r.ok) throw new Error('fetch failed');
-      const data = await r.json();
-      const words = (data.verse && data.verse.words || [])
-        .filter(w => w.char_type_name === 'word')
-        .map(w => ({ar: w.text_uthmani || w.text, translation: (w.translation && w.translation.text) || ''}));
-      wbwCache[cacheKey] = words;
-      renderWbwWords(container, words);
-    }catch(e){
-      container.innerHTML = `<div style="font-size:11px;color:var(--text3)">${t('wbwUnavailable')}</div>`;
-    }
+// load one verse's word-by-word data (permanent cache, in-flight dedupe),
+// then prefetch the next 5 verses so scrolling feels instant
+const wbwInFlight = new Set();
+function wbwEnsure(n, prefetch = true){
+  wbwLoad(n);
+  if(prefetch){
+    for(let k = n + 1; k <= Math.min(n + 5, VR.verses.length); k++) wbwLoad(k);
+  }
+}
+async function wbwLoad(n){
+  const surah = currentOpenSurahNo;
+  const cacheKey = `${surah}:${n}`;
+  const container = document.getElementById(`wbw-container-${n}`);
+  if(wbwCache[cacheKey]){
+    if(container && !container.childElementCount) renderWbwWords(container, wbwCache[cacheKey]);
+    return;
+  }
+  if(wbwInFlight.has(cacheKey)) return; // never request the same verse twice
+  wbwInFlight.add(cacheKey);
+  if(container) container.innerHTML = `<div style="font-size:11px;color:var(--text3)">${t('wbwLoading')}</div>`;
+  try{
+    // Quran.com API v4 — word-by-word data with per-word translation, language-aware
+    const langMap = {bn:'bengali', en:'english', ar:'arabic', ur:'urdu', fr:'french', zh:'english'}; // zh falls back to english (no zh word-by-word coverage)
+    const apiLang = langMap[currentLang] || 'english';
+    const url = `https://api.quran.com/api/v4/verses/by_key/${surah}:${n}?words=true&word_fields=text_uthmani&translation_fields=text&language=${apiLang}`;
+    const r = await fetch(url);
+    if(!r.ok) throw new Error('fetch failed');
+    const data = await r.json();
+    const words = (data.verse && data.verse.words || [])
+      .filter(w => w.char_type_name === 'word')
+      .map(w => ({ar: w.text_uthmani || w.text, translation: (w.translation && w.translation.text) || ''}));
+    wbwCache[cacheKey] = words;
+    const c2 = document.getElementById(`wbw-container-${n}`);
+    if(c2 && surah === currentOpenSurahNo) renderWbwWords(c2, words);
+  }catch(e){
+    const c2 = document.getElementById(`wbw-container-${n}`);
+    if(c2) c2.innerHTML = `<div style="font-size:11px;color:var(--text3)">${t('wbwUnavailable')}</div>`;
+  }finally{
+    wbwInFlight.delete(cacheKey);
   }
 }
 
