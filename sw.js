@@ -6,7 +6,7 @@
 //   - Everything else (Anthropic API calls, geolocation/time APIs): always network, never cached
 //     (these need live data and must not be served stale)
 
-const CACHE_VERSION = 'v129';
+const CACHE_VERSION = 'v130';
 const SHELL_CACHE = `islamic-ai-shell-${CACHE_VERSION}`;
 const DATA_CACHE = `islamic-ai-data-${CACHE_VERSION}`;
 
@@ -17,6 +17,9 @@ const SHELL_FILES = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/kalima.svg',
+  './fonts/scheherazade-new-700-arabic.woff2',
+  './fonts/kfgqpc-uthmanic-hafs.woff2',
+  './fonts/amiri-quran-arabic.woff2',
 ];
 
 self.addEventListener('install', event => {
