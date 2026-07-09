@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v163-audio-engine -->
+<!-- VERSION: v164-search-engine -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -356,6 +356,11 @@ input:focus,textarea:focus,select:focus{border-color:rgba(16,185,129,.45)!import
 .ae-btn{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:12px;padding:9px 0;color:var(--text2);font-size:16px;cursor:pointer;flex:1;font-family:'Hind Siliguri',sans-serif;transition:all .15s}
 .ae-btn.primary{background:rgba(16,185,129,.16);border-color:rgba(16,185,129,.5);color:var(--emerald2);font-size:20px}
 .ae-btn.on{background:rgba(212,175,106,.15);border-color:rgba(212,175,106,.5);color:var(--gold2)}
+/* search results */
+mark{background:rgba(212,175,106,.4);color:#fff3d6;border-radius:3px;padding:0 2px}
+.qse-item.kb-active{outline:2px solid rgba(16,185,129,.6);outline-offset:1px}
+.verse-slot.search-hit .mushaf-ar{outline:2.5px solid rgba(45,212,191,.9);outline-offset:2px;box-shadow:0 0 22px rgba(45,212,191,.35)}
+.qse-chip{font-size:10px;font-weight:700;padding:2px 8px;border-radius:50px;background:rgba(255,255,255,.05);border:1px solid var(--border2);color:var(--text3)}
 /* gold ayah-end medallion, like the printed circled numbers */
 .ayah-medallion{
   display:inline-flex;align-items:center;justify-content:center;
@@ -960,8 +965,9 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
     <div class="sec-title"><div class="sec-gem"></div><span id="quran-sec-title">পবিত্র কুরআন</span><div class="sec-gem"></div></div>
     <div class="search-wrap">
       <span class="search-icon">🔍</span>
-      <input class="search-input" id="surah-search" oninput="renderSurahList()" placeholder="সূরা খুঁজুন..." aria-label="সূরা সার্চ করুন">
+      <input class="search-input" id="surah-search" oninput="universalSearchInput()" onkeydown="qseKeyNav(event)" placeholder="সূরা, আয়াত, অনুবাদ, আরবি খুঁজুন..." aria-label="কুরআনে খুঁজুন" autocomplete="off">
     </div>
+    <div id="qse-status" aria-live="polite" style="position:absolute;left:-9999px"></div>
     <div id="surah-list"></div>
   </div>
 
@@ -4228,6 +4234,10 @@ function showTab(id,btn){
   if(typeof placeTasbihBody === 'function') placeTasbihBody(id === 'tasbih' ? 'tab' : 'home');
   // first visit to the Quran tab after a reload resumes the last reading position
   if(id === 'quran' && typeof resumeReadingPos === 'function') resumeReadingPos();
+  // lazy background indexing — the search index builds/loads during idle time
+  if(id === 'quran' && typeof QSE !== 'undefined' && !QSE.ready && !QSE.building){
+    setTimeout(() => QSE.ensure(), 700); // plain timeout — rIC stalls in hidden tabs
+  }
   // reader footer only lives on the quran tab with the reader open
   if(typeof setReaderFooterVisible === 'function'){
     const rv = document.getElementById('quran-verses-view');
@@ -6228,6 +6238,276 @@ async function loadQuranIndex(){
   if(!r.ok) throw new Error('error '+r.status);
   quranIndexCache = await r.json();
   return quranIndexCache;
+}
+
+/* ══ QURAN SEARCH ENGINE (QSE) — inverted-index, offline-first ══
+   Three field indexes (arabic / bangla / english): token -> posting list of
+   verse ids (0..6235). Built once in idle-time chunks, cached in the Cache API,
+   loaded thereafter in one parse. NO per-keystroke scan of 6236 verses —
+   lookups are token/prefix binary-searches over sorted vocabularies.
+   Future fields (transliteration, roots, topics, tafsir) are additional
+   {tokens, post} blocks in the same envelope — the query router just grows. */
+const QSE = {
+  ready: false, building: false, v: 'qse-v2',
+  idx: null,      // {ar:{tok:[ids]}, bn:{}, en:{}}
+  voc: null,      // sorted vocab arrays {ar:[], bn:[], en:[]}
+  meta: null,     // per verse: [s, a, juz, page, ruku, hizb]
+  tbn: null, tar: null, // texts for preview + phrase verify
+  f: {type: 'all', juz: 0, sort: 'rel'},
+
+  normAr(t){
+    return (t || '').replace(/[ً-ٰٟۖ-ۭـ]/g, '')
+      .replace(/[ٱأإآ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه');
+  },
+  tokensOf(text, field){
+    if(field === 'ar') return this.normAr(text).split(/[^ء-ي]+/).filter(w => w.length > 1);
+    if(field === 'bn') return (text || '').toLowerCase().split(/[^ঀ-৿]+/).filter(w => w.length > 1);
+    return (text || '').toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length > 2);
+  },
+
+  async ensure(){
+    if(this.ready) return;
+    if(this.building){ while(this.building) await new Promise(r => setTimeout(r, 120)); return; }
+    this.building = true;
+    try{
+      // cached index?
+      try{
+        const c = await caches.open('quran-search-v1');
+        const hit = await c.match('/' + this.v);
+        if(hit){ this._adopt(await hit.json()); return; }
+      }catch(e){}
+      // build in idle-friendly chunks
+      const t0 = performance.now();
+      // rIC never fires in hidden tabs — always race with a plain timeout
+      const idle = () => new Promise(r => {
+        if(window.requestIdleCallback) requestIdleCallback(r, {timeout: 250});
+        setTimeout(r, 300);
+      });
+      const env = {ar: {}, bn: {}, en: {}, meta: [], tbn: [], tar: []};
+      const add = (map, tok, id) => { const p = map[tok]; if(p){ if(p[p.length - 1] !== id) p.push(id); } else map[tok] = [id]; };
+      let id = 0;
+      for(let s = 1; s <= 114; s++){
+        const d = surahCache[s] || await fetch(`quran-data/surah${s}.json`).then(r => r.json());
+        surahCache[s] = d;
+        for(const v of d.verses){
+          env.meta.push([s, v.n, v.juz, v.page, v.ruku, v.hizb]);
+          env.tbn.push(v.bn || '');
+          env.tar.push(this.normAr(v.ar));
+          this.tokensOf(v.ar, 'ar').forEach(w => add(env.ar, w, id));
+          this.tokensOf(v.bn, 'bn').forEach(w => add(env.bn, w, id));
+          this.tokensOf(v.en, 'en').forEach(w => add(env.en, w, id));
+          id++;
+        }
+        if(s % 12 === 0) await idle();
+      }
+      this._adopt(env);
+      this.buildMs = Math.round(performance.now() - t0);
+      try{
+        const c = await caches.open('quran-search-v1');
+        await c.put('/' + this.v, new Response(JSON.stringify(env), {headers: {'Content-Type': 'application/json'}}));
+      }catch(e){}
+    }finally{ this.building = false; }
+  },
+  _adopt(env){
+    this.idx = {ar: env.ar, bn: env.bn, en: env.en};
+    this.meta = env.meta; this.tbn = env.tbn; this.tar = env.tar;
+    this.voc = {ar: Object.keys(env.ar).sort(), bn: Object.keys(env.bn).sort(), en: Object.keys(env.en).sort()};
+    this.ready = true;
+  },
+
+  _prefixTokens(field, q, cap){
+    // binary search the sorted vocabulary for the prefix range
+    const voc = this.voc[field];
+    let lo = 0, hi = voc.length;
+    while(lo < hi){ const m = (lo + hi) >> 1; if(voc[m] < q) lo = m + 1; else hi = m; }
+    const out = [];
+    for(let i = lo; i < voc.length && voc[i].startsWith(q) && out.length < (cap || 60); i++) out.push(voc[i]);
+    return out;
+  },
+  _fuzzyTokens(field, q){
+    // edit-distance-1 typo tolerance over the same-first-letter slice
+    if(q.length < 4) return [];
+    const out = [];
+    for(const tok of this.voc[field]){
+      if(Math.abs(tok.length - q.length) > 1 || tok[0] !== q[0]) continue;
+      if(this._ed1(tok, q)){ out.push(tok); if(out.length >= 12) break; }
+    }
+    return out;
+  },
+  _ed1(a, b){
+    if(a === b) return true;
+    const la = a.length, lb = b.length;
+    if(Math.abs(la - lb) > 1) return false;
+    let i = 0, j = 0, edits = 0;
+    while(i < la && j < lb){
+      if(a[i] === b[j]){ i++; j++; continue; }
+      if(++edits > 1) return false;
+      if(la > lb) i++; else if(lb > la) j++; else { i++; j++; }
+    }
+    return edits + (la - i) + (lb - j) <= 1;
+  },
+
+  // core query: returns [{id, score}] before filters/sort
+  _query(qRaw){
+    const field = /[؀-ۿ]/.test(qRaw) ? 'ar' : (/[ঀ-৿]/.test(qRaw) ? 'bn' : 'en');
+    const phrase = /^".+"$/.test(qRaw.trim());
+    const q = phrase ? qRaw.trim().slice(1, -1) : qRaw;
+    const norm = field === 'ar' ? this.normAr(q) : q.toLowerCase();
+    const words = this.tokensOf(norm, field);
+    if(!words.length) return {hits: [], field};
+    const scores = new Map();
+    for(const w of words){
+      let toks = this.idx[field][w] ? [w] : this._prefixTokens(field, w, 40);
+      if(!toks.length) toks = this._fuzzyTokens(field, w);   // typo tolerance
+      const seen = new Set();
+      for(const tok of toks){
+        const bonus = tok === w ? 2 : 1;
+        for(const id of this.idx[field][tok]){
+          if(seen.has(id)) continue;
+          seen.add(id);
+          scores.set(id, (scores.get(id) || 0) + bonus);
+        }
+      }
+    }
+    let hits = [...scores.entries()].map(([id, sc]) => ({id, sc}));
+    // multi-word: verses matching more words rank higher; phrase: exact substring verify
+    if(phrase){
+      const hay = field === 'ar' ? this.tar : this.tbn;
+      const needle = field === 'ar' ? this.normAr(q) : q.toLowerCase();
+      hits = hits.filter(h => field === 'en' ? true : (hay[h.id] || '').toLowerCase().includes(needle));
+    }
+    return {hits, field, words};
+  },
+
+  /* ── public developer API (window.searchEngine) ── */
+  async search(qRaw, opts){
+    await this.ensure();
+    const t0 = performance.now();
+    const o = Object.assign({}, this.f, opts || {});
+    // reference / structural queries
+    const qn = qRaw.trim().replace(/[০-৯]/g, d => _DIGIT_MAP[d]);
+    let structural = null;
+    let m;
+    if((m = qn.match(/^(\d{1,3})\s*[:.]\s*(\d{1,3})$/))) structural = this.meta.map((x, i) => ({x, i})).filter(({x}) => x[0] == m[1] && x[1] == m[2]).map(({i}) => ({id: i, sc: 99}));
+    else if((m = qn.match(/^(?:জুয|juz|পারা)\s*(\d{1,2})$/i))) structural = this.byField(2, parseInt(m[1]));
+    else if((m = qn.match(/^(?:পৃষ্ঠা|page|পৃ)\s*(\d{1,3})$/i))) structural = this.byField(3, parseInt(m[1]));
+    else if((m = qn.match(/^(?:রুকু|ruku)\s*(\d{1,3})$/i))) structural = this.byField(4, parseInt(m[1]));
+    const r = structural ? {hits: structural, field: 'ref'} : this._query(qRaw);
+    let hits = r.hits;
+    // filters
+    const rev = {};
+    if(quranIndexCache) quranIndexCache.surahs.forEach(s => rev[s.no] = s.revelation);
+    hits = hits.filter(h => {
+      const [s, a, juz] = this.meta[h.id];
+      if(o.juz && juz !== o.juz) return false;
+      if(o.type === 'makki' && rev[s] !== 'Mecca') return false;
+      if(o.type === 'madani' && rev[s] !== 'Medina') return false;
+      if(['b', 'f', 'hl', 'note'].includes(o.type)){ const st = RS.verse(s + ':' + a); if(!st || !st[o.type]) return false; }
+      return true;
+    });
+    // sorting
+    if(o.sort === 'order') hits.sort((x, y) => x.id - y.id);
+    else if(o.sort === 'recent') hits.sort((x, y) => this._lastRead(y.id) - this._lastRead(x.id) || x.id - y.id);
+    else if(o.sort === 'marked') hits.sort((x, y) => this._markScore(y.id) - this._markScore(x.id) || x.id - y.id);
+    else hits.sort((x, y) => y.sc - x.sc || x.id - y.id); // relevance
+    this.lastMs = Math.round((performance.now() - t0) * 10) / 10;
+    return {hits, field: r.field, words: r.words || [], ms: this.lastMs};
+  },
+  byField(mi, val){ const out = []; this.meta.forEach((x, i) => { if(x[mi] === val) out.push({id: i, sc: 1}); }); return out; },
+  _lastRead(id){ const [s, a] = this.meta[id]; return (RS.verse(s + ':' + a) || {}).lastRead || 0; },
+  _markScore(id){ const st = RS.verse(this.meta[id][0] + ':' + this.meta[id][1]) || {}; return (st.b ? 2 : 0) + (st.f ? 1 : 0); },
+  searchArabic(q){ return this.search(q, {}); },
+  searchTranslation(q){ return this.search(q, {}); },
+  searchByPage(p){ return this.search('পৃষ্ঠা ' + p); },
+  searchByJuz(j){ return this.search('জুয ' + j); },
+  searchBySurah(s, q){ return this.search(q || '', {surah: s}); },
+  searchByTopic(){ return Promise.resolve({hits: [], field: 'topic', note: 'future'}); },
+};
+window.searchEngine = QSE;
+
+/* ── search UI: universal input, filters, keyboard nav, recent/popular ── */
+let _qseT = null;
+function universalSearchInput(){
+  clearTimeout(_qseT);
+  _qseT = setTimeout(qseRender, 200); // debounce — instant feel without per-keystroke work
+}
+function qseHistory(q){
+  const d = RS.load();
+  d.search = d.search || {recent: [], pop: {}};
+  if(q){
+    d.search.recent = [q, ...d.search.recent.filter(x => x !== q)].slice(0, 8);
+    d.search.pop[q] = (d.search.pop[q] || 0) + 1;
+    RS.save();
+  }
+  return d.search;
+}
+async function qseRender(){
+  const q = (document.getElementById('surah-search') || {}).value || '';
+  if(!q.trim()){ renderSurahList(); return; }
+  const listEl = document.getElementById('surah-list');
+  if(!QSE.ready){
+    listEl.innerHTML = `<div style="text-align:center;color:var(--text3);padding:18px;font-size:13px">🔍 সার্চ-ইনডেক্স তৈরি হচ্ছে…</div>`;
+  }
+  // surah-name matches stay on top (existing behaviour preserved)
+  await renderSurahList();
+  const res = await QSE.search(q);
+  if(((document.getElementById('surah-search') || {}).value || '') !== q) return; // stale
+  const idx = quranIndexCache.surahs;
+  const name = s => surahDisplayName(idx.find(x => x.no === s));
+  const fbtn = (k, label) => `<button class="${QSE.f.type === k ? 'on' : ''}" style="font-size:10.5px" onclick="QSE.f.type='${k}';qseRender()">${label}</button>`;
+  const sbtn = (k, label) => `<button class="${QSE.f.sort === k ? 'on' : ''}" style="font-size:10.5px" onclick="QSE.f.sort='${k}';qseRender()">${label}</button>`;
+  const hl = (text, words) => {
+    let out = escapeHtml(text);
+    (words || []).forEach(w => { if(w.length > 1) out = out.replace(new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[^\\s<]*)', 'gi'), '<mark>$1</mark>'); });
+    return out;
+  };
+  const shown = res.hits.slice(0, 40);
+  const items = shown.map((h, i) => {
+    const [s, a, juz, page, ruku] = QSE.meta[h.id];
+    const st = RS.verse(s + ':' + a) || {};
+    const snippet = (QSE.tbn[h.id] || '').slice(0, 130);
+    return `
+    <div class="chapter-item qse-item" data-s="${s}" data-a="${a}" tabindex="0" role="button" onclick="qseOpen(${s},${a})" onkeydown="if(event.key==='Enter'){qseOpen(${s},${a})}">
+      <div style="min-width:0">
+        <div class="ch-name">${name(s)} — আয়াত ${localizeNum(a)} ${st.b ? '🔖' : ''}${st.f ? '❤️' : ''}${st.hl ? '🖍️' : ''}${st.note ? '📝' : ''}</div>
+        <div style="display:flex;gap:5px;margin:3px 0"><span class="qse-chip">জুয ${localizeNum(juz)}</span><span class="qse-chip">পৃ. ${localizeNum(page)}</span><span class="qse-chip">রুকু ${localizeNum(ruku)}</span></div>
+        <div class="ch-count" style="white-space:normal">${hl(snippet, res.words)}${(QSE.tbn[h.id] || '').length > 130 ? '…' : ''}</div>
+      </div>
+      <div style="color:var(--text3);font-size:18px" aria-hidden="true">›</div>
+    </div>`;
+  }).join('');
+  listEl.insertAdjacentHTML('beforeend', `
+    <div style="margin:14px 2px 8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
+      <span style="font-size:12.5px;font-weight:700;color:var(--gold2)">📖 আয়াতে ফলাফল: ${localizeNum(res.hits.length)}${res.hits.length > 40 ? ' (প্রথম ৪০)' : ''} <span style="color:var(--text3);font-weight:600">• ${localizeNum(QSE.lastMs)}ms</span></span>
+    </div>
+    <div class="seg" style="margin-bottom:8px">${fbtn('all','সব')}${fbtn('makki','মক্কী')}${fbtn('madani','মাদানী')}${fbtn('b','🔖')}${fbtn('f','❤️')}${fbtn('hl','🖍️')}${fbtn('note','📝')}</div>
+    <div class="seg" style="margin-bottom:10px">${sbtn('rel','প্রাসঙ্গিকতা')}${sbtn('order','কুরআন-ক্রম')}${sbtn('recent','সাম্প্রতিক-পঠিত')}${sbtn('marked','বুকমার্ক-আগে')}</div>
+    ${items || '<div style="text-align:center;color:var(--text3);padding:14px;font-size:13px">কোনো আয়াত মেলেনি</div>'}`);
+  const stEl = document.getElementById('qse-status');
+  if(stEl) stEl.textContent = `${res.hits.length}টি আয়াত পাওয়া গেছে`;
+}
+function qseOpen(s, a){
+  qseHistory((document.getElementById('surah-search') || {}).value || '');
+  openSurah(s).then(() => {
+    scrollToAyah(a);
+    const slot = document.getElementById('verse-card-' + a);
+    if(slot){ slot.classList.add('search-hit'); setTimeout(() => slot.classList.remove('search-hit'), 3000); }
+  });
+}
+function qseKeyNav(e){
+  const items = [...document.querySelectorAll('.qse-item')];
+  if(!items.length) return;
+  const cur = items.findIndex(x => x.classList.contains('kb-active'));
+  if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+    e.preventDefault();
+    const nx = e.key === 'ArrowDown' ? Math.min(cur + 1, items.length - 1) : Math.max(cur - 1, 0);
+    items.forEach(x => x.classList.remove('kb-active'));
+    items[nx].classList.add('kb-active');
+    items[nx].scrollIntoView({block: 'nearest'});
+  }else if(e.key === 'Enter'){
+    const t = cur >= 0 ? items[cur] : items[0];
+    if(t){ e.preventDefault(); qseOpen(parseInt(t.dataset.s), parseInt(t.dataset.a)); }
+  }
 }
 
 async function renderSurahList(){
