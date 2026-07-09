@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v161-render-engine -->
+<!-- VERSION: v162-reading-engine -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -317,6 +317,40 @@ input:focus,textarea:focus,select:focus{border-color:rgba(16,185,129,.45)!import
 .tj-qalqalah{color:var(--tajweed-qalqalah)}
 .tj-madd{color:var(--tajweed-madd)}
 .tj-silent{color:var(--tajweed-silent)}
+/* verse highlight tints — inset overlay keeps the cream gradient beneath */
+.mushaf-ar.hl-1{box-shadow:inset 0 0 0 999px rgba(255,214,74,.30)}
+.mushaf-ar.hl-2{box-shadow:inset 0 0 0 999px rgba(120,214,140,.30)}
+.mushaf-ar.hl-3{box-shadow:inset 0 0 0 999px rgba(130,175,255,.30)}
+.mushaf-ar.hl-4{box-shadow:inset 0 0 0 999px rgba(255,140,185,.28)}
+/* high-contrast reading mode */
+#verse-list.hc .mushaf-ar{background:#fff;color:#000;border-color:#777}
+#verse-list.hc .h-text{color:#fff}
+/* translation size + arabic line-height are user settings */
+#verse-list .h-text{font-size:var(--quran-tr-size,14px)}
+.h-arabic.mushaf-ar{line-height:var(--quran-lh,2.05)}
+/* per-verse action chips */
+.v-act{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.v-act button{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:50px;padding:4px 11px;color:var(--text2);font-size:12px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .15s}
+.v-act button.on{background:rgba(212,175,106,.14);border-color:rgba(212,175,106,.45);color:var(--gold2)}
+.v-note{margin-top:9px;font-size:12.5px;color:#e8dcc0;background:rgba(212,175,106,.07);border:1px dashed rgba(212,175,106,.3);border-radius:11px;padding:8px 12px;line-height:1.6}
+/* reader footer — floating progress + quick actions */
+#reader-footer{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;z-index:60;display:none;align-items:center;gap:9px;background:linear-gradient(160deg,#101a16f2,#0c1210f5);border:1px solid rgba(16,185,129,.35);border-radius:50px;padding:8px 14px;box-shadow:0 8px 24px rgba(0,0,0,.45);backdrop-filter:blur(6px);max-width:94vw}
+#reader-footer .rf-bar{width:74px;height:5px;background:rgba(255,255,255,.09);border-radius:6px;overflow:hidden;flex-shrink:0}
+#reader-footer .rf-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--emerald2),#f0d795);border-radius:6px;transition:width .3s}
+#reader-footer button{background:none;border:none;color:var(--text2);font-size:16px;cursor:pointer;padding:2px 4px}
+#reader-footer .rf-txt{font-size:10.5px;color:var(--text3);font-weight:700;white-space:nowrap}
+/* bottom sheets (settings / bookmarks) */
+.sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:70;display:none}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:71;display:none;max-height:78vh;overflow-y:auto;background:linear-gradient(170deg,#111a15,#0b100d);border:1px solid rgba(212,175,106,.25);border-bottom:none;border-radius:22px 22px 0 0;padding:16px 16px 24px;box-shadow:0 -10px 40px rgba(0,0,0,.5)}
+.sheet h4{font-size:14px;color:var(--gold2);margin:0 0 12px;display:flex;align-items:center;gap:8px}
+.sheet .row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px;color:var(--text2)}
+.sheet .seg{display:flex;gap:6px;flex-wrap:wrap}
+.sheet .seg button{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:10px;padding:6px 12px;color:var(--text2);font-size:12px;cursor:pointer;font-family:'Hind Siliguri',sans-serif}
+.sheet .seg button.on{background:rgba(16,185,129,.14);border-color:rgba(16,185,129,.45);color:var(--emerald2);font-weight:700}
+.sw{position:relative;width:42px;height:24px;border-radius:50px;background:rgba(255,255,255,.1);border:1px solid var(--border2);cursor:pointer;transition:all .2s;flex-shrink:0}
+.sw::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#8fa39a;transition:all .2s}
+.sw.on{background:rgba(16,185,129,.35);border-color:rgba(16,185,129,.5)}
+.sw.on::after{left:20px;background:var(--emerald2)}
 /* gold ayah-end medallion, like the printed circled numbers */
 .ayah-medallion{
   display:inline-flex;align-items:center;justify-content:center;
@@ -929,6 +963,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
   <div id="quran-verses-view" style="display:none">
     <button type="button" class="back-btn" onclick="goSurahList()">← সূরা তালিকায় ফিরুন</button>
     <div class="sec-title" id="surah-title"><div class="sec-gem"></div>সূরা<div class="sec-gem"></div></div>
+    <div id="reader-header"></div>
 
     <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
       <button type="button" id="wbw-toggle-btn" onclick="toggleWordByWord()" style="flex:1;min-width:120px;padding:9px 12px;border-radius:12px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:12.5px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s">🔤 <span id="wbw-toggle-label">শব্দে শব্দে অর্থ</span></button>
@@ -952,6 +987,21 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
 
     <div id="verse-list"></div>
   </div>
+
+  <!-- reader footer: progress + quick actions (visible only while reading) -->
+  <div id="reader-footer" role="toolbar" aria-label="পাঠ নিয়ন্ত্রণ">
+    <div class="rf-bar" aria-hidden="true"><div class="rf-fill" id="rf-fill"></div></div>
+    <span class="rf-txt" id="rf-txt">০%</span>
+    <button onclick="rfBookmark()" aria-label="এই আয়াত বুকমার্ক করুন" title="বুকমার্ক">🔖</button>
+    <button onclick="openBookmarksSheet()" aria-label="বুকমার্ক তালিকা" title="তালিকা">🗂️</button>
+    <button onclick="openReaderSettings()" aria-label="পাঠ সেটিংস" title="সেটিংস">⚙️</button>
+    <button onclick="window.scrollTo({top:0})" aria-label="উপরে যান" title="উপরে">⬆️</button>
+  </div>
+
+  <!-- bottom sheets -->
+  <div class="sheet-backdrop" id="sheet-backdrop" onclick="closeSheets()"></div>
+  <div class="sheet" id="settings-sheet" role="dialog" aria-label="পাঠ সেটিংস"></div>
+  <div class="sheet" id="bookmarks-sheet" role="dialog" aria-label="বুকমার্ক ও নোট"></div>
 </div>
 
 <!-- Hadith -->
@@ -4171,6 +4221,12 @@ function showTab(id,btn){
   if(typeof placeTasbihBody === 'function') placeTasbihBody(id === 'tasbih' ? 'tab' : 'home');
   // first visit to the Quran tab after a reload resumes the last reading position
   if(id === 'quran' && typeof resumeReadingPos === 'function') resumeReadingPos();
+  // reader footer only lives on the quran tab with the reader open
+  if(typeof setReaderFooterVisible === 'function'){
+    const rv = document.getElementById('quran-verses-view');
+    setReaderFooterVisible(id === 'quran' && rv && rv.style.display !== 'none');
+    if(id !== 'quran' && typeof closeSheets === 'function') closeSheets();
+  }
 }
 
 /* ══ TOAST FEEDBACK ══ */
@@ -6231,42 +6287,201 @@ async function openSurah(no){
       })(),
     ]);
     currentSurahVerses = chapterData.verses;
+    renderReaderHeader(surah, currentSurahVerses);
     renderVerses(currentSurahVerses);
+    setReaderFooterVisible(true);
+    updateReaderFooter();
   }catch(e){
     document.getElementById('verse-list').innerHTML = `<div style="color:#e07070;padding:16px;text-align:center;font-size:14px">লোড ব্যর্থ: ${e.message}</div>`;
   }
 }
 
-/* ══ QURAN FONT SYSTEM — user-switchable mushaf fonts + size (persisted) ══ */
+/* ══ READER SETTINGS — fonts, sizes, toggles (all in the RS schema) ══ */
 const QURAN_FONTS = [
   {css:'ScheherazadeNew', label:'শেহেরজাদ'},
   {css:'KFGQPCHafs', label:'উসমানি হাফস'},
   {css:'AmiriQuran', label:'আমিরি'},
 ];
 function applyQuranFont(){
-  let fi = 0, size = 26;
-  try{
-    fi = parseInt(localStorage.getItem('quran_font') || '0') || 0;
-    size = parseInt(localStorage.getItem('quran_size') || '26') || 26;
-  }catch(e){}
-  fi = Math.min(Math.max(fi, 0), QURAN_FONTS.length - 1);
-  size = Math.min(Math.max(size, 20), 38);
-  document.documentElement.style.setProperty('--quran-font', `'${QURAN_FONTS[fi].css}'`);
-  document.documentElement.style.setProperty('--quran-size', size + 'px');
-  setTextIfExists('qfont-label', QURAN_FONTS[fi].label);
+  const s = RS.load().settings;
+  s.font = Math.min(Math.max(s.font, 0), QURAN_FONTS.length - 1);
+  s.size = Math.min(Math.max(s.size, 20), 38);
+  s.trSize = Math.min(Math.max(s.trSize, 11), 22);
+  s.lh = Math.min(Math.max(s.lh, 1.6), 2.8);
+  const root = document.documentElement.style;
+  root.setProperty('--quran-font', `'${QURAN_FONTS[s.font].css}'`);
+  root.setProperty('--quran-size', s.size + 'px');
+  root.setProperty('--quran-tr-size', s.trSize + 'px');
+  root.setProperty('--quran-lh', String(s.lh));
+  setTextIfExists('qfont-label', QURAN_FONTS[s.font].label);
+  const vl = document.getElementById('verse-list');
+  if(vl) vl.classList.toggle('hc', !!s.hc);
+  RS.save();
 }
-function cycleQuranFont(){
-  let fi = 0;
-  try{ fi = parseInt(localStorage.getItem('quran_font') || '0') || 0; }catch(e){}
-  try{ localStorage.setItem('quran_font', String((fi + 1) % QURAN_FONTS.length)); }catch(e){}
-  applyQuranFont();
+function cycleQuranFont(){ const s = RS.load().settings; s.font = (s.font + 1) % QURAN_FONTS.length; applyQuranFont(); }
+function stepQuranSize(d){ const s = RS.load().settings; s.size += d; applyQuranFont(); }
+
+/* ══ READER HEADER — premium mushaf header with full surah metadata ══ */
+function renderReaderHeader(surah, verses){
+  const el = document.getElementById('reader-header');
+  if(!el || !verses.length) return;
+  const last = verses[verses.length - 1];
+  const hizb1 = Math.ceil(verses[0].hizb / 4), hizb2 = Math.ceil(last.hizb / 4);
+  const range = (a, b, label) => a === b ? `${label} ${localizeNum(a)}` : `${label} ${localizeNum(a)}-${localizeNum(b)}`;
+  const sajda = verses.some(v => v.sajda);
+  const chip = (txt, gold) => `<span style="font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:50px;${gold ? 'color:var(--gold2);background:rgba(212,175,106,.1);border:1px solid rgba(212,175,106,.28)' : 'color:var(--text2);background:rgba(255,255,255,.05);border:1px solid var(--border2)'}">${txt}</span>`;
+  el.innerHTML = `
+  <div style="border:1px solid transparent;background:linear-gradient(160deg,#101a16,#0c1210) padding-box,linear-gradient(120deg,rgba(212,175,106,.45),rgba(16,185,129,.3) 55%,rgba(212,175,106,.4)) border-box;border-radius:18px;padding:14px 14px 12px;margin-bottom:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:19px;font-weight:800;background:linear-gradient(180deg,#c8fff8 10%,#2dd4bf 62%,#0fb5a0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">${surahDisplayName(surah)}</div>
+        <div style="font-size:11.5px;color:var(--text3);margin-top:2px">${surahDisplayMeaning(surah)}</div>
+      </div>
+      <div lang="ar" dir="rtl" style="font-family:var(--quran-font),serif;font-size:24px;color:var(--gold2);filter:drop-shadow(0 0 8px rgba(212,175,106,.3))">${surah.ar}</div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:11px">
+      ${chip(surah.revelation === 'Mecca' ? '🕋 মক্কী' : '🕌 মাদানী', true)}
+      ${chip('আয়াত ' + localizeNum(surah.verseCount))}
+      ${chip(range(surah.juzFrom, surah.juzTo, 'জুয'))}
+      ${chip(range(hizb1, hizb2, 'হিযব'))}
+      ${chip('রুকু ' + localizeNum(surah.rukuCount))}
+      ${chip(range(verses[0].page, last.page, 'পৃষ্ঠা'))}
+      ${sajda ? chip('۩ সিজদা আছে', true) : ''}
+    </div>
+    ${surah.no !== 1 && surah.no !== 9 ? `
+    <div class="mushaf-ar" lang="ar" dir="rtl" style="text-align:center;margin-top:12px;padding:10px 14px;font-size:calc(var(--quran-size) - 2px)" aria-label="বিসমিল্লাহ">${BASMALA_PLAIN}</div>` : ''}
+  </div>`;
 }
-function stepQuranSize(d){
-  let size = 26;
-  try{ size = parseInt(localStorage.getItem('quran_size') || '26') || 26; }catch(e){}
-  size = Math.min(Math.max(size + d, 20), 38);
-  try{ localStorage.setItem('quran_size', String(size)); }catch(e){}
+
+/* ══ READING SESSION + FOOTER — position, context, stats, duration ══ */
+function updateReaderFooter(){
+  const d = RS.load();
+  const foot = document.getElementById('reader-footer');
+  if(!foot || !currentOpenSurahNo || !VR.verses.length) return;
+  const a = d.session.a || 1, total = VR.verses.length;
+  const pct = Math.min(100, Math.round(a / total * 100));
+  const fill = document.getElementById('rf-fill');
+  if(fill) fill.style.width = pct + '%';
+  // pace: today's seconds / verses read today, fallback 6s per ayah
+  const remMin = Math.max(1, Math.round((total - a) * 6 / 60));
+  setTextIfExists('rf-txt', `${localizeNum(pct)}% • ~${localizeNum(remMin)}মি`);
+}
+function setReaderFooterVisible(on){
+  const foot = document.getElementById('reader-footer');
+  if(foot) foot.style.display = on ? 'flex' : 'none';
+}
+function rfBookmark(){
+  const a = RS.load().session.a || 1;
+  vAct(a, 'b');
+  updateReaderFooter();
+}
+
+// active-reading duration: +15s ticks while the reader is open, the tab is
+// visible and there was scroll/tap activity in the last 2 minutes
+let _lastReadingActivity = 0;
+['scroll', 'pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, () => { _lastReadingActivity = Date.now(); }, {passive: true}));
+setInterval(() => {
+  const vv = document.getElementById('quran-verses-view');
+  if(!vv || vv.style.display === 'none') return;
+  if(document.visibilityState !== 'visible') return;
+  if(Date.now() - _lastReadingActivity > 120000) return;
+  const d = RS.load();
+  const day = new Date().toISOString().slice(0, 10);
+  d.stats.daily[day] = (d.stats.daily[day] || 0) + 15;
+  d.stats.lifetime = (d.stats.lifetime || 0) + 15;
+  RS.save();
+}, 15000);
+
+/* ══ BOTTOM SHEETS — reader settings + bookmarks/notes manager ══ */
+function closeSheets(){
+  document.getElementById('sheet-backdrop').style.display = 'none';
+  document.getElementById('settings-sheet').style.display = 'none';
+  document.getElementById('bookmarks-sheet').style.display = 'none';
+}
+function _openSheet(id){
+  closeSheets();
+  document.getElementById('sheet-backdrop').style.display = 'block';
+  document.getElementById(id).style.display = 'block';
+}
+
+function openReaderSettings(){
+  const s = RS.load().settings;
+  const sw = (key, label) => `<div class="row"><span>${label}</span><div class="sw ${s[key] ? 'on' : ''}" role="switch" aria-checked="${!!s[key]}" tabindex="0" onclick="rsToggle('${key}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();rsToggle('${key}')}"></div></div>`;
+  const step = (key, label, d1, d2, fmt) => `<div class="row"><span>${label}</span><div class="seg"><button onclick="rsStep('${key}',${d1})">−</button><span style="min-width:44px;text-align:center;color:var(--emerald2);font-weight:700">${fmt}</span><button onclick="rsStep('${key}',${d2})">+</button></div></div>`;
+  document.getElementById('settings-sheet').innerHTML = `
+    <h4>⚙️ পাঠ সেটিংস</h4>
+    <div class="row"><span>আরবি ফন্ট</span><div class="seg">${QURAN_FONTS.map((f, i) => `<button class="${s.font === i ? 'on' : ''}" onclick="rsFont(${i})">${f.label}</button>`).join('')}</div></div>
+    ${step('size', 'আরবি সাইজ', -2, 2, localizeNum(s.size) + 'px')}
+    ${step('trSize', 'অনুবাদ সাইজ', -1, 1, localizeNum(s.trSize) + 'px')}
+    ${step('lh', 'লাইন-স্পেসিং', -0.15, 0.15, localizeNum(Math.round(s.lh * 100) / 100))}
+    ${sw('tajweed', 'তাজবীদ রঙ')}
+    ${sw('showTr', 'অনুবাদ দেখান')}
+    ${sw('showNum', 'আয়াত-নম্বর মেডেলিয়ন')}
+    ${sw('hc', 'উচ্চ কনট্রাস্ট (সাদা পাতা)')}
+    ${sw('autoScroll', 'অডিওর সাথে অটো-স্ক্রল')}
+    <div class="row" style="border:none"><span>শব্দে-শব্দে অর্থ</span><div class="sw ${wordByWordEnabled ? 'on' : ''}" role="switch" aria-checked="${wordByWordEnabled}" tabindex="0" onclick="toggleWordByWord();openReaderSettings()"></div></div>
+    <button onclick="closeSheets()" style="width:100%;margin-top:14px;padding:11px;border-radius:12px;border:1px solid rgba(16,185,129,.35);background:rgba(16,185,129,.12);color:var(--emerald2);font-weight:700;font-size:13.5px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">বন্ধ করুন</button>`;
+  _openSheet('settings-sheet');
+}
+function rsFont(i){ RS.load().settings.font = i; applyQuranFont(); openReaderSettings(); }
+function rsStep(key, d){ const s = RS.load().settings; s[key] = Math.round((s[key] + d) * 100) / 100; applyQuranFont(); openReaderSettings(); }
+function rsToggle(key){
+  const s = RS.load().settings;
+  s[key] = s[key] ? 0 : 1;
   applyQuranFont();
+  // content-affecting toggles re-render the open surah (virtualized — still instant)
+  if(['tajweed', 'showTr', 'showNum'].includes(key) && currentOpenSurahNo && VR.verses.length) renderVerses(VR.verses);
+  openReaderSettings();
+}
+
+let bmFilter = 'all', bmQuery = '', bmSort = 'recent';
+function openBookmarksSheet(){
+  const d = RS.load();
+  const idx = quranIndexCache ? quranIndexCache.surahs : null;
+  const name = s => idx ? surahDisplayName(idx.find(x => x.no === s)) : ('সূরা ' + localizeNum(s));
+  let items = Object.entries(d.verses).map(([key, st]) => {
+    const [s, a] = key.split(':').map(Number);
+    return {key, s, a, st, ts: Math.max(st.b || 0, st.f || 0, st.noteTs || 0, st.lastRead || 0)};
+  }).filter(it => it.st.b || it.st.f || it.st.hl || it.st.note);
+  if(bmFilter !== 'all') items = items.filter(it => it.st[bmFilter]);
+  if(bmQuery) items = items.filter(it => (it.st.note || '').includes(bmQuery) || name(it.s).includes(bmQuery) || `${it.s}:${it.a}`.includes(bmQuery));
+  items.sort((x, y) => bmSort === 'recent' ? y.ts - x.ts : (x.s - y.s || x.a - y.a));
+  const fbtn = (k, label) => `<button class="${bmFilter === k ? 'on' : ''}" onclick="bmFilter='${k}';openBookmarksSheet()">${label}</button>`;
+  document.getElementById('bookmarks-sheet').innerHTML = `
+    <h4>🗂️ বুকমার্ক, প্রিয়, হাইলাইট ও নোট</h4>
+    <div class="seg" style="margin-bottom:10px">${fbtn('all','সব')}${fbtn('b','🔖')}${fbtn('f','❤️')}${fbtn('hl','🖍️')}${fbtn('note','📝')}
+      <button onclick="bmSort=bmSort==='recent'?'order':'recent';openBookmarksSheet()">${bmSort === 'recent' ? '🕐 সাম্প্রতিক' : '📖 মুসহাফ-ক্রম'}</button></div>
+    <input type="text" value="${escapeHtml(bmQuery)}" oninput="bmQuery=this.value;clearTimeout(window._bmT);window._bmT=setTimeout(openBookmarksSheet,350)" placeholder="নোট বা সূরা খুঁজুন..." style="width:100%;background:rgba(0,0,0,.3);border:1px solid var(--border2);border-radius:11px;padding:9px 12px;color:var(--text);font-size:13px;margin-bottom:10px;font-family:'Hind Siliguri',sans-serif">
+    ${items.length ? items.map(it => `
+      <div class="row" style="cursor:pointer" onclick="bmJump(${it.s},${it.a})">
+        <div style="min-width:0">
+          <div style="font-weight:700;color:var(--emerald2);font-size:13px">${name(it.s)} — আয়াত ${localizeNum(it.a)}
+            <span style="font-size:11px">${it.st.b ? ' 🔖' : ''}${it.st.f ? ' ❤️' : ''}${it.st.hl ? ' 🖍️' : ''}</span></div>
+          ${it.st.note ? `<div style="font-size:11.5px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📝 ${escapeHtml(it.st.note.slice(0, 60))}</div>` : ''}
+        </div>
+        <button onclick="event.stopPropagation();bmClear('${it.key}')" aria-label="মুছুন" style="background:none;border:none;color:#e07070;font-size:14px;cursor:pointer">✕</button>
+      </div>`).join('') : '<div style="text-align:center;color:var(--text3);font-size:13px;padding:22px 0">কিছু পাওয়া যায়নি — আয়াতের 🔖 ❤️ 🖍️ 📝 বাটন দিয়ে যুক্ত করুন</div>'}
+    <button onclick="bmExportNotes()" style="width:100%;margin-top:13px;padding:10px;border-radius:12px;border:1px solid rgba(212,175,106,.3);background:rgba(212,175,106,.08);color:var(--gold2);font-weight:700;font-size:12.5px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">📤 সব নোট এক্সপোর্ট (কপি)</button>`;
+  _openSheet('bookmarks-sheet');
+}
+function bmJump(s, a){
+  closeSheets();
+  if(s === currentOpenSurahNo && VR.verses.length){ scrollToAyah(a); return; }
+  showTab('quran', document.getElementById('tabbtn-quran'));
+  openSurah(s).then(() => scrollToAyah(a));
+}
+function bmClear(key){
+  RS.patchVerse(key, {b: 0, f: 0, hl: 0, note: '', noteTs: 0});
+  const [s, a] = key.split(':').map(Number);
+  if(s === currentOpenSurahNo) refreshVerse(a);
+  openBookmarksSheet();
+}
+function bmExportNotes(){
+  const d = RS.load();
+  const lines = Object.entries(d.verses).filter(([k, st]) => st.note)
+    .map(([k, st]) => `আল-কুরআন ${k} — ${st.note} (${new Date(st.noteTs || 0).toLocaleDateString('bn-BD')})`);
+  if(!lines.length){ showToast('কোনো নোট নেই'); return; }
+  if(navigator.clipboard) navigator.clipboard.writeText(lines.join('\n\n')).then(() => showToast('📤 ' + localizeNum(lines.length) + 'টি নোট কপি হয়েছে')).catch(()=>{});
 }
 
 function getVerseText(v){
@@ -6281,6 +6496,48 @@ let wbwCache = {}; // cache: "surahNo:verseNo" -> array of {ar, translation}
 let currentOpenSurahNo = null;
 let surahAudioPlaying = false;
 
+/* ══ READING STATE MANAGER — one unified, extensible schema ══
+   Single localStorage document (per profile). NOTHING reading-related may
+   invent its own key: session, per-verse state, stats and reader settings
+   all live here. Per-verse objects are open maps — future fields (AI tags,
+   memorization, cloud-sync metadata) merge in without migration. */
+const RS = {
+  data: null,
+  load(){
+    if(this.data) return this.data;
+    let d = null;
+    try{ d = JSON.parse(localStorage.getItem(profileKey('quran_state_v1')) || 'null'); }catch(e){}
+    this.data = Object.assign({session:{}, verses:{}, stats:{daily:{}, lifetime:0}, settings:{}}, d || {});
+    this.data.settings = Object.assign({font:0, size:26, trSize:14, lh:2.05, tajweed:1, showTr:1, showNum:1, hc:0, autoScroll:0}, this.data.settings);
+    // one-time migration of the old scattered keys
+    try{
+      const pos = JSON.parse(localStorage.getItem('quran_pos') || 'null');
+      if(pos && !this.data.session.s){ this.data.session = {s: pos.s, a: pos.a, ts: Date.now()}; }
+      const f = localStorage.getItem('quran_font'), z = localStorage.getItem('quran_size');
+      if(f !== null) this.data.settings.font = parseInt(f) || 0;
+      if(z !== null) this.data.settings.size = parseInt(z) || 26;
+      ['quran_pos','quran_font','quran_size'].forEach(k => localStorage.removeItem(k));
+    }catch(e){}
+    return this.data;
+  },
+  save(){
+    clearTimeout(this._t);
+    this._t = setTimeout(() => {
+      try{ localStorage.setItem(profileKey('quran_state_v1'), JSON.stringify(this.data)); }catch(e){}
+    }, 250);
+  },
+  verse(key){ return this.load().verses[key] || null; },
+  patchVerse(key, patch){
+    const d = this.load();
+    const cur = Object.assign({}, d.verses[key] || {}, patch);
+    Object.keys(cur).forEach(k => { if(cur[k] === 0 || cur[k] === null || cur[k] === '' || cur[k] === undefined) delete cur[k]; });
+    if(Object.keys(cur).length) d.verses[key] = cur; else delete d.verses[key];
+    this.save();
+    return cur;
+  },
+  readCount(){ let n = 0; const vs = this.load().verses; for(const k in vs) if(vs[k].count) n++; return n; },
+};
+
 /* ══ VERSE RENDERING ENGINE — virtualized lazy renderer ══
    Never renders the whole surah: every verse gets a cheap fixed-height slot,
    an IntersectionObserver materializes slots near the viewport (±900px buffer)
@@ -6288,23 +6545,74 @@ let surahAudioPlaying = false;
    measured height is kept on the empty slot so scroll never jumps). */
 const VR = {io: null, verses: [], live: new Set()};
 
+const BASMALA_PLAIN = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
+function stripBasmala(text, surahNo, n){
+  // the dataset embeds the basmala inside ayah 1 (verified in QURAN_VERIFICATION.md);
+  // the reader shows it as a dedicated header panel instead, so strip it here
+  if(n !== 1 || surahNo === 1 || surahNo === 9) return text;
+  return text.startsWith(BASMALA_PLAIN) ? text.slice(BASMALA_PLAIN.length).trim() : text;
+}
+
 function buildVerseCardHTML(v){
+  const st = RS.verse(currentOpenSurahNo + ':' + v.n) || {};
+  const cfg = RS.load().settings;
   // colour-coded tajweed markup is pre-sanitized at build time (only <i class=tj-*> tags);
   // plain text is escaped as a defense-in-depth fallback
-  const taj = tajweedCache[currentOpenSurahNo];
+  const taj = cfg.tajweed ? tajweedCache[currentOpenSurahNo] : null;
   const tj = taj && taj.verses && taj.verses[String(v.n)];
-  const arabicHtml = tj
-    ? `${tj}<span class="ayah-medallion" aria-label="আয়াত ${localizeNum(v.n)}">${localizeNum(v.n)}</span>`
-    : escapeHtml(v.ar);
+  const medallion = cfg.showNum ? `<span class="ayah-medallion" aria-label="আয়াত ${localizeNum(v.n)}">${localizeNum(v.n)}</span>` : '';
+  const arabicHtml = tj ? `${tj}${medallion}` : `${escapeHtml(stripBasmala(v.ar, currentOpenSurahNo, v.n))}${medallion}`;
+  const hl = st.hl ? ` hl-${st.hl}` : '';
   return `
-      <div class="h-arabic mushaf-ar" id="verse-arabic-${v.n}" lang="ar" dir="rtl">${arabicHtml}</div>
+      <div class="h-arabic mushaf-ar${hl}" id="verse-arabic-${v.n}" lang="ar" dir="rtl">${arabicHtml}</div>
       <div id="wbw-container-${v.n}" style="display:${wordByWordEnabled?'block':'none'};margin-bottom:13px"></div>
-      <div class="h-text">${escapeHtml(getVerseText(v))}</div>
+      ${cfg.showTr ? `<div class="h-text">${escapeHtml(getVerseText(v))}</div>` : ''}
+      ${st.note ? `<div class="v-note">📝 ${escapeHtml(st.note)}</div>` : ''}
       <div class="h-meta">
         <span class="badge bg">${localizeNum(v.n)}</span>
         ${v.sajda ? '<span class="badge bt">🕌 সিজদা</span>' : ''}
+        <span class="badge" style="background:rgba(255,255,255,.04);color:var(--text3)">জুয ${localizeNum(v.juz)} • পৃ. ${localizeNum(v.page)}</span>
         <button onclick="playVerseAudio(${currentOpenSurahNo}, ${v.n})" aria-label="আয়াত শুনুন" style="margin-left:auto;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);border-radius:50px;padding:4px 10px;color:var(--emerald2);font-size:12px;cursor:pointer">🔊</button>
+      </div>
+      <div class="v-act" role="group" aria-label="আয়াত ${localizeNum(v.n)} অ্যাকশন">
+        <button onclick="vAct(${v.n},'b')" class="${st.b?'on':''}" aria-pressed="${!!st.b}" aria-label="বুকমার্ক">🔖${st.b?' ✓':''}</button>
+        <button onclick="vAct(${v.n},'f')" class="${st.f?'on':''}" aria-pressed="${!!st.f}" aria-label="প্রিয়">${st.f?'❤️':'🤍'}</button>
+        <button onclick="vAct(${v.n},'hl')" class="${st.hl?'on':''}" aria-label="হাইলাইট রঙ বদলান">🖍️</button>
+        <button onclick="vAct(${v.n},'note')" class="${st.note?'on':''}" aria-label="নোট">📝</button>
+        <button onclick="vAct(${v.n},'copy')" aria-label="কপি">📋</button>
+        <button onclick="vAct(${v.n},'share')" aria-label="শেয়ার">↗️</button>
       </div>`;
+}
+
+// single-card refresh — actions never re-render the whole reader
+function refreshVerse(n){
+  if(!VR.live.has(n)) return;
+  const slot = document.getElementById('verse-card-' + n);
+  const v = VR.verses[n - 1];
+  if(slot && v) slot.innerHTML = buildVerseCardHTML(v);
+}
+
+function vAct(n, act){
+  const key = currentOpenSurahNo + ':' + n;
+  const st = RS.verse(key) || {};
+  const v = VR.verses[n - 1];
+  if(act === 'b'){ RS.patchVerse(key, {b: st.b ? 0 : Date.now()}); showToast(st.b ? 'বুকমার্ক মুছে গেছে' : '🔖 বুকমার্ক হয়েছে'); }
+  else if(act === 'f'){ RS.patchVerse(key, {f: st.f ? 0 : Date.now()}); showToast(st.f ? 'প্রিয় থেকে বাদ' : '❤️ প্রিয়তে যুক্ত'); }
+  else if(act === 'hl'){ RS.patchVerse(key, {hl: ((st.hl || 0) + 1) % 5}); }
+  else if(act === 'note'){
+    const cur = st.note || '';
+    const txt = prompt('এই আয়াতের নোট (খালি রেখে OK দিলে মুছে যাবে):', cur);
+    if(txt === null) return;
+    RS.patchVerse(key, {note: txt.trim(), noteTs: txt.trim() ? Date.now() : 0});
+    showToast(txt.trim() ? '📝 নোট সংরক্ষিত' : 'নোট মুছে গেছে');
+  }
+  else if(act === 'copy' || act === 'share'){
+    const text = `${v.ar}\n\n${getVerseText(v)}\n— আল-কুরআন ${localizeNum(currentOpenSurahNo)}:${localizeNum(n)}`;
+    if(act === 'share' && navigator.share){ navigator.share({text}).catch(()=>{}); return; }
+    if(navigator.clipboard) navigator.clipboard.writeText(text).then(() => showToast('📋 কপি হয়েছে')).catch(()=>{});
+    return;
+  }
+  refreshVerse(n);
 }
 
 function materializeVerse(n){
@@ -6409,7 +6717,20 @@ function saveReadingPos(){
   for(const s of document.querySelectorAll('#verse-list .verse-slot')){
     if(s.getBoundingClientRect().bottom > 90){ top = parseInt(s.dataset.n); break; }
   }
-  if(top) try{ localStorage.setItem('quran_pos', JSON.stringify({s: currentOpenSurahNo, a: top})); }catch(e){}
+  if(!top) return;
+  // full session context — surah/ayah plus juz, hizb, rub, ruku and page
+  const v = VR.verses[top - 1] || {};
+  const d = RS.load();
+  d.session = {
+    s: currentOpenSurahNo, a: top,
+    juz: v.juz || 0, hizb: Math.ceil((v.hizb || 0) / 4), rub: v.hizb ? ((v.hizb - 1) % 4) + 1 : 0,
+    ruku: v.ruku || 0, page: v.page || 0, ts: Date.now(),
+  };
+  // per-verse reading trace (drives progress %, revision and future AI features)
+  const key = currentOpenSurahNo + ':' + top;
+  const st = RS.verse(key) || {};
+  RS.patchVerse(key, {lastRead: Date.now(), count: (st.count || 0) + 1});
+  updateReaderFooter();
 }
 window.addEventListener('scroll', () => {
   clearTimeout(_qposTimer);
@@ -6419,8 +6740,7 @@ window.addEventListener('scroll', () => {
 function resumeReadingPos(){
   if(_qResumed) return;
   _qResumed = true;
-  let pos = null;
-  try{ pos = JSON.parse(localStorage.getItem('quran_pos') || 'null'); }catch(e){}
+  const pos = RS.load().session;
   const listView = document.getElementById('quran-surah-list-view');
   if(pos && pos.s && listView && listView.style.display !== 'none'){
     openSurah(pos.s).then(() => { if(pos.a > 1) scrollToAyah(pos.a); });
@@ -6550,7 +6870,7 @@ function show2(id){
   ['quran-surah-list-view','quran-verses-view'].forEach(v =>
     document.getElementById(v).style.display = v===id?'block':'none');
 }
-function goSurahList(){ show2('quran-surah-list-view'); }
+function goSurahList(){ show2('quran-surah-list-view'); setReaderFooterVisible(false); closeSheets(); }
 
 /* ══ HAFZ (MEMORIZATION) TRACKER ══ */
 const HAFZ_STATUS = {NONE:'none', IN_PROGRESS:'in_progress', MEMORIZED:'memorized'};
