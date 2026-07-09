@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v162-reading-engine -->
+<!-- VERSION: v163-audio-engine -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -351,6 +351,11 @@ input:focus,textarea:focus,select:focus{border-color:rgba(16,185,129,.45)!import
 .sw::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#8fa39a;transition:all .2s}
 .sw.on{background:rgba(16,185,129,.35);border-color:rgba(16,185,129,.5)}
 .sw.on::after{left:20px;background:var(--emerald2)}
+/* currently-playing ayah — gold ring on the mushaf panel */
+.verse-slot.playing .mushaf-ar{outline:2.5px solid rgba(227,201,138,.9);outline-offset:2px;box-shadow:0 0 22px rgba(227,201,138,.35)}
+.ae-btn{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:12px;padding:9px 0;color:var(--text2);font-size:16px;cursor:pointer;flex:1;font-family:'Hind Siliguri',sans-serif;transition:all .15s}
+.ae-btn.primary{background:rgba(16,185,129,.16);border-color:rgba(16,185,129,.5);color:var(--emerald2);font-size:20px}
+.ae-btn.on{background:rgba(212,175,106,.15);border-color:rgba(212,175,106,.5);color:var(--gold2)}
 /* gold ayah-end medallion, like the printed circled numbers */
 .ayah-medallion{
   display:inline-flex;align-items:center;justify-content:center;
@@ -993,6 +998,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
     <div class="rf-bar" aria-hidden="true"><div class="rf-fill" id="rf-fill"></div></div>
     <span class="rf-txt" id="rf-txt">০%</span>
     <button onclick="rfBookmark()" aria-label="এই আয়াত বুকমার্ক করুন" title="বুকমার্ক">🔖</button>
+    <button onclick="openAudioSheet()" aria-label="অডিও প্লেয়ার" title="অডিও">🎧</button>
     <button onclick="openBookmarksSheet()" aria-label="বুকমার্ক তালিকা" title="তালিকা">🗂️</button>
     <button onclick="openReaderSettings()" aria-label="পাঠ সেটিংস" title="সেটিংস">⚙️</button>
     <button onclick="window.scrollTo({top:0})" aria-label="উপরে যান" title="উপরে">⬆️</button>
@@ -1002,6 +1008,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
   <div class="sheet-backdrop" id="sheet-backdrop" onclick="closeSheets()"></div>
   <div class="sheet" id="settings-sheet" role="dialog" aria-label="পাঠ সেটিংস"></div>
   <div class="sheet" id="bookmarks-sheet" role="dialog" aria-label="বুকমার্ক ও নোট"></div>
+  <div class="sheet" id="audio-sheet" role="dialog" aria-label="অডিও প্লেয়ার"></div>
 </div>
 
 <!-- Hadith -->
@@ -5241,6 +5248,8 @@ function tasbihSpeak(){
   const btn = document.getElementById('tasbih-audio-btn');
   // tapping while playing = stop
   if(window._tasbihSpeaking){ stopTasbihAudio(); return; }
+  // the quran audio engine shares the media element — release it first
+  if(typeof AE !== 'undefined' && AE.active) AE.stop();
 
   const z = TASBIH_ZIKIR[tasbihZikirIdx];
   const ayat = TASBIH_AYAT[z.bn];
@@ -6397,6 +6406,8 @@ function closeSheets(){
   document.getElementById('sheet-backdrop').style.display = 'none';
   document.getElementById('settings-sheet').style.display = 'none';
   document.getElementById('bookmarks-sheet').style.display = 'none';
+  const au = document.getElementById('audio-sheet');
+  if(au) au.style.display = 'none';
 }
 function _openSheet(id){
   closeSheets();
@@ -6623,6 +6634,9 @@ function materializeVerse(n){
   slot.innerHTML = buildVerseCardHTML(v);
   slot.style.minHeight = '';
   VR.live.add(n);
+  // re-apply the now-playing ring if this verse is the one being recited
+  const cur = typeof AE !== 'undefined' && AE.active ? AE.queue[AE.idx] : null;
+  slot.classList.toggle('playing', !!(cur && cur.s === currentOpenSurahNo && cur.a === n));
   if(wordByWordEnabled) wbwEnsure(n);
 }
 
@@ -6825,45 +6839,304 @@ function renderWbwWords(container, words){
     `</div>`;
 }
 
-/* ══ AUDIO RECITATION (live fetch — uses the public everyayah.com / alquran.cloud CDN) ══ */
+/* ══ QURAN AUDIO ENGINE — playback / queue / repeat / media-session / downloads ══
+   Pure engine: no reader-UI logic inside; the reader subscribes via AE.onchange.
+   Per-ayah mp3 (everyayah.com), offline copies live in a dedicated Cache-API
+   bucket so playback transparently prefers downloaded audio. */
+const AE_RECITERS = [
+  {id: 'Alafasy_128kbps', label: 'মিশারী আল-আফাসি'},
+  {id: 'Husary_64kbps', label: 'মাহমুদ খলিল আল-হুসারি'},
+  {id: 'Abdul_Basit_Murattal_64kbps', label: 'আব্দুল বাসিত (মুরাত্তাল)'},
+  {id: 'Minshawy_Murattal_128kbps', label: 'মুহাম্মদ সিদ্দিক মিনশাওয়ি'},
+  {id: 'Ghamadi_40kbps', label: 'সাদ আল-গামিদি'},
+];
+const AE = {
+  el: null, queue: [], idx: -1, active: false, playing: false,
+  repeat: {mode: 'off', n: 3, done: 0},
+  _gapT: null, _preloaded: null, onchange: null,
 
+  cfg(){
+    const d = RS.load();
+    d.audio = Object.assign({reciter: 0, speed: 1, autoNext: 1, gapAyah: 0, gapRepeat: 0.5}, d.audio || {});
+    return d.audio;
+  },
+  url(s, a){
+    return `https://everyayah.com/data/${AE_RECITERS[this.cfg().reciter].id}/${String(s).padStart(3,'0')}${String(a).padStart(3,'0')}.mp3`;
+  },
+  async src(s, a){
+    // downloaded copy first (offline), network otherwise
+    try{
+      const c = await caches.open('quran-audio-v1');
+      const hit = await c.match(this.url(s, a));
+      if(hit) return URL.createObjectURL(await hit.blob());
+    }catch(e){}
+    return this.url(s, a);
+  },
+  init(){
+    this.el = document.getElementById('surah-audio-player');
+    if(!this.el) return;
+    this.el.addEventListener('ended', () => { if(this.active) this._advance(); });
+    this.el.addEventListener('playing', () => { if(this.active){ this.playing = true; this._notify(); } });
+    this.el.addEventListener('pause', () => { if(this.active){ this.playing = false; this._notify(); } });
+    if('mediaSession' in navigator){
+      const ms = navigator.mediaSession;
+      try{
+        ms.setActionHandler('play', () => this.resume());
+        ms.setActionHandler('pause', () => this.pause());
+        ms.setActionHandler('previoustrack', () => this.prev());
+        ms.setActionHandler('nexttrack', () => this.next());
+        ms.setActionHandler('seekbackward', () => this.prevSurah());
+        ms.setActionHandler('seekforward', () => this.nextSurah());
+      }catch(e){}
+    }
+  },
+
+  // ---- queue builders ----
+  playSurah(s, fromAyah){
+    const build = verses => {
+      this.queue = verses.map(v => ({s, a: v.n}));
+      this.idx = Math.max(0, (fromAyah || 1) - 1);
+      this.repeat.done = 0;
+      this._playCurrent();
+    };
+    if(s === currentOpenSurahNo && VR.verses.length) build(VR.verses);
+    else fetch(`quran-data/surah${s}.json`).then(r => r.json()).then(d => build(d.verses)).catch(()=>{});
+  },
+  playRange(s, from, to){
+    this.queue = [];
+    for(let a = from; a <= to; a++) this.queue.push({s, a});
+    this.idx = 0; this.repeat = {mode: 'range', n: this.repeat.n, done: 0};
+    this._playCurrent();
+  },
+  async playJuz(j){
+    const idx = await loadQuranIndex();
+    const surahs = idx.surahs.filter(x => x.juzFrom <= j && x.juzTo >= j);
+    const q = [];
+    for(const su of surahs){
+      const d = surahCache[su.no] || await fetch(`quran-data/surah${su.no}.json`).then(r => r.json());
+      surahCache[su.no] = d;
+      d.verses.forEach(v => { if(v.juz === j) q.push({s: su.no, a: v.n}); });
+    }
+    if(!q.length) return;
+    this.queue = q; this.idx = 0; this.repeat.done = 0;
+    this._playCurrent();
+  },
+
+  // ---- transport ----
+  async _playCurrent(){
+    const it = this.queue[this.idx];
+    if(!it) return;
+    clearTimeout(this._gapT);
+    this.active = true;
+    if(window._tasbihSpeaking && typeof stopTasbihAudio === 'function') stopTasbihAudio();
+    this.el.src = await this.src(it.s, it.a);
+    this.el.playbackRate = this.cfg().speed;
+    try{ await this.el.play(); }catch(e){ /* autoplay block — user will tap play */ }
+    this._sync(it);
+    this._preloadNext();
+  },
+  resume(){ if(this.active) this.el.play().catch(()=>{}); },
+  pause(){ this.el.pause(); },
+  stop(){
+    clearTimeout(this._gapT);
+    this.active = false; this.playing = false;
+    this.el.pause();
+    this._markPlaying(null);
+    this._notify();
+  },
+  next(){ if(this.idx < this.queue.length - 1){ this.idx++; this.repeat.done = 0; this._playCurrent(); } else this._finished(); },
+  prev(){ if(this.idx > 0){ this.idx--; this.repeat.done = 0; this._playCurrent(); } },
+  prevSurah(){ const it = this.queue[this.idx]; if(it && it.s > 1) this.playSurah(it.s - 1); },
+  nextSurah(){ const it = this.queue[this.idx]; if(it && it.s < 114) this.playSurah(it.s + 1); },
+  setSpeed(v){ this.cfg().speed = v; RS.save(); if(this.el) this.el.playbackRate = v; this._notify(); },
+  setRepeat(mode){ this.repeat.mode = mode; this.repeat.done = 0; this._notify(); },
+
+  _advance(){
+    const gap = ms => new Promise(res => { this._gapT = setTimeout(res, ms); });
+    const r = this.repeat, cfg = this.cfg();
+    const again = async pauseS => { await gap(pauseS * 1000); this._playCurrent(); };
+    if(r.mode === 'ayah' || r.mode === 'until'){ again(cfg.gapRepeat); return; }
+    if(r.mode === 'n' && r.done < r.n - 1){ r.done++; again(cfg.gapRepeat); return; }
+    r.done = 0;
+    (async () => {
+      await gap(cfg.gapAyah * 1000);
+      if(this.idx < this.queue.length - 1){ this.idx++; this._playCurrent(); }
+      else if(r.mode === 'range' || r.mode === 'surah'){ this.idx = 0; this._playCurrent(); }
+      else this._finished();
+    })();
+  },
+  _finished(){
+    const it = this.queue[this.idx];
+    if(this.cfg().autoNext && it && it.s < 114 && this.repeat.mode === 'off'){ this.playSurah(it.s + 1); return; }
+    this.stop();
+  },
+  _preloadNext(){
+    const nx = this.queue[this.idx + 1];
+    if(!nx) return;
+    this.src(nx.s, nx.a).then(u => { this._preloaded = new Audio(); this._preloaded.preload = 'auto'; this._preloaded.src = u; });
+  },
+
+  // ---- reader synchronization (never re-renders the page) ----
+  _sync(it){
+    this._markPlaying(it);
+    const key = it.s + ':' + it.a;
+    const st = RS.verse(key) || {};
+    RS.patchVerse(key, {audio: (st.audio || 0) + 1, lastRead: Date.now()});
+    if('mediaSession' in navigator){
+      const su = quranIndexCache && quranIndexCache.surahs.find(x => x.no === it.s);
+      try{
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: `${su ? surahDisplayName(su) : 'সূরা ' + it.s} — আয়াত ${localizeNum(it.a)}`,
+          artist: AE_RECITERS[this.cfg().reciter].label,
+          album: 'আল-কুরআন',
+          artwork: [{src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png'}],
+        });
+      }catch(e){}
+    }
+    if(it.s === currentOpenSurahNo && RS.load().settings.autoScroll){
+      const slot = document.getElementById('verse-card-' + it.a);
+      if(slot){ materializeVerse(it.a); slot.scrollIntoView({block: 'center', behavior: 'smooth'}); }
+    }
+    this._notify();
+  },
+  _markPlaying(it){
+    document.querySelectorAll('.verse-slot.playing').forEach(el => el.classList.remove('playing'));
+    if(it && it.s === currentOpenSurahNo){
+      const slot = document.getElementById('verse-card-' + it.a);
+      if(slot) slot.classList.add('playing');
+    }
+  },
+  _notify(){
+    const label = document.getElementById('audio-play-label');
+    if(label) label.textContent = this.active && this.playing ? t('audioPause') : t('audioPlay');
+    if(typeof renderAudioSheet === 'function') renderAudioSheet(false);
+    if(this.onchange) this.onchange();
+  },
+};
+
+/* ══ DOWNLOAD MANAGER — offline audio in a dedicated cache bucket ══ */
+const ADL = {
+  running: false, paused: false, cancel: false, prog: {done: 0, total: 0, s: 0},
+  async downloadSurah(s){
+    if(this.running) return;
+    const d = surahCache[s] || await fetch(`quran-data/surah${s}.json`).then(r => r.json());
+    surahCache[s] = d;
+    const c = await caches.open('quran-audio-v1');
+    this.running = true; this.paused = false; this.cancel = false;
+    this.prog = {done: 0, total: d.verses.length, s};
+    for(const v of d.verses){
+      if(this.cancel) break;
+      while(this.paused && !this.cancel) await new Promise(r => setTimeout(r, 400));
+      const u = AE.url(s, v.n);
+      if(!(await c.match(u))){ // never download twice; skip-ahead = resumable
+        try{
+          const res = await fetch(u);
+          // integrity: must be OK, audio-typed and non-trivial in size
+          const ct = res.headers.get('content-type') || '';
+          const buf = await res.clone().arrayBuffer();
+          if(!res.ok || buf.byteLength < 1024 || !(ct.includes('audio') || ct.includes('octet'))) throw new Error('bad file');
+          await c.put(u, res);
+        }catch(e){ /* skip this ayah; a re-run resumes it */ }
+      }
+      this.prog.done++;
+      if(typeof renderAudioSheet === 'function') renderAudioSheet(false);
+    }
+    this.running = false;
+    if(!this.cancel) showToast('📥 সূরার তিলাওয়াত অফলাইনে সংরক্ষিত');
+    renderAudioSheet(false);
+  },
+  async surahStatus(s){
+    const d = surahCache[s];
+    if(!d) return {cached: 0, total: 0};
+    const c = await caches.open('quran-audio-v1');
+    let cached = 0;
+    for(const v of d.verses) if(await c.match(AE.url(s, v.n))) cached++;
+    return {cached, total: d.verses.length};
+  },
+  async deleteSurah(s){
+    const d = surahCache[s] || await fetch(`quran-data/surah${s}.json`).then(r => r.json());
+    const c = await caches.open('quran-audio-v1');
+    for(const v of d.verses) await c.delete(AE.url(s, v.n));
+    showToast('🗑️ অফলাইন অডিও মুছে গেছে');
+    renderAudioSheet(false);
+  },
+  async usage(){
+    try{
+      const est = await navigator.storage.estimate();
+      return Math.round((est.usage || 0) / 1048576);
+    }catch(e){ return -1; }
+  },
+};
+
+/* back-compat wrappers — old buttons keep working through the engine */
 function toggleSurahAudio(){
-  const player = document.getElementById('surah-audio-player');
-  const btn = document.getElementById('audio-play-btn');
-  const label = document.getElementById('audio-play-label');
   if(!currentOpenSurahNo) return;
-
-  if(surahAudioPlaying){
-    player.pause();
-    surahAudioPlaying = false;
-    if(label) label.textContent = t('audioPlay');
-    return;
-  }
-
-  // Mishary Alafasy recitation — widely used, reliable public CDN, full-surah audio files
-  const url = `https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/${currentOpenSurahNo}.mp3`;
-  player.src = url;
-  player.play().then(() => {
-    surahAudioPlaying = true;
-    if(label) label.textContent = t('audioPause');
-  }).catch(() => {
-    if(label) label.textContent = t('audioUnavailable');
-  });
-  player.onended = () => {
-    surahAudioPlaying = false;
-    if(label) label.textContent = t('audioPlay');
-  };
+  if(AE.active && AE.playing){ AE.pause(); return; }
+  if(AE.active){ AE.resume(); return; }
+  AE.playSurah(currentOpenSurahNo, (RS.load().session.a || 1));
+}
+function playVerseAudio(surahNo, verseNo){
+  AE.playSurah(surahNo, verseNo);
 }
 
-function playVerseAudio(surahNo, verseNo){
-  const player = document.getElementById('surah-audio-player');
-  if(!player || !surahNo) return;
-  const surahPadded = String(surahNo).padStart(3, '0');
-  const versePadded = String(verseNo).padStart(3, '0');
-  // everyayah.com — per-ayah audio segments, widely used public source
-  const url = `https://everyayah.com/data/Alafasy_128kbps/${surahPadded}${versePadded}.mp3`;
-  player.src = url;
-  player.play().catch(() => { /* playback blocked or file unavailable — fail silently, UI stays responsive */ });
+/* ══ AUDIO SHEET UI (engine-independent view layer) ══ */
+async function renderAudioSheet(withStatus){
+  const sheet = document.getElementById('audio-sheet');
+  if(!sheet || sheet.style.display !== 'block') return;
+  const cfg = AE.cfg();
+  const it = AE.queue[AE.idx];
+  const su = it && quranIndexCache ? quranIndexCache.surahs.find(x => x.no === it.s) : null;
+  const rbtn = (m, label) => `<button class="ae-btn ${AE.repeat.mode === m ? 'on' : ''}" style="font-size:11.5px" onclick="aeRepeat('${m}')">${label}</button>`;
+  const sbtn = v => `<button class="ae-btn ${cfg.speed === v ? 'on' : ''}" style="font-size:11.5px" onclick="AE.setSpeed(${v})">${v}x</button>`;
+  if(withStatus && currentOpenSurahNo){
+    window._adlStatus = await ADL.surahStatus(currentOpenSurahNo);
+    window._adlUsage = await ADL.usage();
+  }
+  const st = window._adlStatus || {cached: 0, total: 0};
+  sheet.innerHTML = `
+    <h4>🎧 তিলাওয়াত প্লেয়ার</h4>
+    <div style="text-align:center;margin-bottom:10px">
+      <div style="font-size:14px;font-weight:700;color:var(--emerald2)">${it ? `${su ? surahDisplayName(su) : 'সূরা ' + it.s} — আয়াত ${localizeNum(it.a)}` : 'কিছু বাজছে না'}</div>
+      <div style="font-size:11px;color:var(--text3)">${AE_RECITERS[cfg.reciter].label}${it ? ` • ${localizeNum(AE.idx + 1)}/${localizeNum(AE.queue.length)}` : ''}</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="ae-btn" onclick="AE.prevSurah()" aria-label="আগের সূরা">⏮️</button>
+      <button class="ae-btn" onclick="AE.prev()" aria-label="আগের আয়াত">◀️</button>
+      <button class="ae-btn primary" onclick="${AE.active && AE.playing ? 'AE.pause()' : (AE.active ? 'AE.resume()' : 'toggleSurahAudio()')}" aria-label="${AE.playing ? 'বিরতি' : 'বাজান'}">${AE.active && AE.playing ? '⏸️' : '▶️'}</button>
+      <button class="ae-btn" onclick="AE.next()" aria-label="পরের আয়াত">▶️▶</button>
+      <button class="ae-btn" onclick="AE.nextSurah()" aria-label="পরের সূরা">⏭️</button>
+    </div>
+    <div class="row"><span>ক্বারী</span><div class="seg">${AE_RECITERS.map((r, i) => `<button class="${cfg.reciter === i ? 'on' : ''}" style="font-size:10.5px" onclick="aeReciter(${i})">${r.label.split(' ')[0]}</button>`).join('')}</div></div>
+    <div class="row"><span>গতি</span><div class="seg">${[0.5, 0.75, 1, 1.25, 1.5, 2].map(sbtn).join('')}</div></div>
+    <div class="row"><span>রিপিট</span><div class="seg">${rbtn('off','অফ')}${rbtn('ayah','আয়াত')}${rbtn('n', localizeNum(AE.repeat.n) + ' বার')}${rbtn('range','রেঞ্জ')}${rbtn('surah','সূরা')}${rbtn('until','চলমান')}</div></div>
+    <div class="row"><span>আয়াতের মাঝে বিরতি</span><div class="seg"><button onclick="aeGap(-0.5)">−</button><span style="min-width:40px;text-align:center;color:var(--emerald2);font-weight:700">${localizeNum(cfg.gapAyah)}s</span><button onclick="aeGap(0.5)">+</button></div></div>
+    <div class="row"><span>এই সূরা / জুয বাজান</span><div class="seg">
+      <button onclick="AE.playSurah(currentOpenSurahNo||1)">📖 সূরা</button>
+      <button onclick="AE.playJuz(RS.load().session.juz||1)">🧩 জুয ${localizeNum(RS.load().session.juz || 1)}</button></div></div>
+    <div class="row" style="border:none"><span>📥 অফলাইন (এই সূরা): ${localizeNum(st.cached)}/${localizeNum(st.total)}${window._adlUsage >= 0 ? ` • স্টোরেজ ~${localizeNum(window._adlUsage)}MB` : ''}</span>
+      <div class="seg">
+        ${ADL.running ? `<button onclick="ADL.paused=!ADL.paused;renderAudioSheet(false)">${ADL.paused ? '▶️ চালু' : '⏸️ বিরতি'}</button><button onclick="ADL.cancel=true">✕ বাতিল</button><span style="color:var(--gold2);font-weight:700;font-size:11px">${localizeNum(ADL.prog.done)}/${localizeNum(ADL.prog.total)}</span>`
+          : `<button onclick="ADL.downloadSurah(currentOpenSurahNo||1)">নামান</button><button onclick="ADL.deleteSurah(currentOpenSurahNo||1)">মুছুন</button>`}
+      </div></div>
+    <button onclick="closeSheets()" style="width:100%;margin-top:13px;padding:11px;border-radius:12px;border:1px solid rgba(16,185,129,.35);background:rgba(16,185,129,.12);color:var(--emerald2);font-weight:700;font-size:13.5px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">বন্ধ করুন</button>`;
+}
+function openAudioSheet(){ _openSheet('audio-sheet'); renderAudioSheet(true); }
+function aeReciter(i){ AE.cfg().reciter = i; RS.save(); renderAudioSheet(true); }
+function aeGap(d){ const c = AE.cfg(); c.gapAyah = Math.max(0, Math.round((c.gapAyah + d) * 10) / 10); RS.save(); renderAudioSheet(false); }
+function aeRepeat(m){
+  if(m === 'range'){
+    const cur = AE.queue[AE.idx];
+    const from = parseInt(prompt('কোন আয়াত থেকে?', cur ? cur.a : 1) || '0');
+    const to = parseInt(prompt('কোন আয়াত পর্যন্ত?', Math.min((from || 1) + 4, VR.verses.length)) || '0');
+    if(from && to && to >= from) AE.playRange(currentOpenSurahNo || (cur && cur.s) || 1, from, to);
+    AE.setRepeat('range');
+    return;
+  }
+  if(m === 'n'){
+    const n = parseInt(prompt('প্রতি আয়াত কতবার?', AE.repeat.n) || '0');
+    if(n > 1) AE.repeat.n = n;
+  }
+  AE.setRepeat(m);
 }
 
 function show2(id){
@@ -6981,6 +7254,7 @@ renderTasbihPresets();
 selectTasbihZikir(0); // sync arabic/meaning/audio-button state for the default zikir
 placeTasbihBody('home'); // the tasbih starts on the home screen below the zakat card
 applyQuranFont(); // restore the reader's saved mushaf font + size
+AE.init(); // audio engine: media element, media-session handlers
 initNotificationBanner();
 renderBooks();
 show('view-books');
