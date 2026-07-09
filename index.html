@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v164-search-engine -->
+<!-- VERSION: v165-quran-polish -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -977,8 +977,8 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
     <div id="reader-header"></div>
 
     <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-      <button type="button" id="wbw-toggle-btn" onclick="toggleWordByWord()" style="flex:1;min-width:120px;padding:9px 12px;border-radius:12px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:12.5px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s">🔤 <span id="wbw-toggle-label">শব্দে শব্দে অর্থ</span></button>
-      <button type="button" id="audio-play-btn" onclick="toggleSurahAudio()" style="flex:1;min-width:120px;padding:9px 12px;border-radius:12px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:12.5px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s">▶️ <span id="audio-play-label">তিলাওয়াত শুনুন</span></button>
+      <button type="button" id="wbw-toggle-btn" onclick="toggleWordByWord()" style="flex:1;min-width:120px;padding:10px 12px;border-radius:13px;border:1px solid rgba(16,185,129,.25);background:linear-gradient(160deg,rgba(16,185,129,.08),rgba(16,185,129,.02));color:var(--text2);font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.15)">🔤 <span id="wbw-toggle-label">শব্দে শব্দে অর্থ</span></button>
+      <button type="button" id="audio-play-btn" onclick="toggleSurahAudio()" style="flex:1;min-width:120px;padding:10px 12px;border-radius:13px;border:1px solid rgba(16,185,129,.25);background:linear-gradient(160deg,rgba(16,185,129,.08),rgba(16,185,129,.02));color:var(--text2);font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.15)">▶️ <span id="audio-play-label">তিলাওয়াত শুনুন</span></button>
     </div>
     <!-- mushaf display controls: font family cycle + size stepper -->
     <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
@@ -6530,17 +6530,29 @@ async function renderSurahList(){
       el.innerHTML = `<div style="text-align:center;padding:30px 16px;color:var(--text3);font-size:14px">কোনো সূরা পাওয়া যায়নি</div>`;
       return;
     }
-    el.innerHTML = surahs.map(s => `
-      <div class="chapter-item" onclick="openSurah(${s.no})" role="button" tabindex="0" aria-label="সূরা ${s.name}, ${s.verseCount} আয়াত" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openSurah(${s.no})}">
-        <div style="display:flex;align-items:center;gap:12px">
-          <div style="width:32px;height:32px;border-radius:10px;background:rgba(16,185,129,.1);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--emerald2);font-weight:700;flex-shrink:0">${localizeNum(s.no)}</div>
-          <div>
-            <div class="ch-name">${surahDisplayName(s)} <span style="font-family:serif;color:var(--emerald2);direction:rtl">${s.ar}</span></div>
-            <div class="ch-count">${surahDisplayMeaning(s)} • ${localizeNum(s.verseCount)} আয়াত • ${s.revelation==='Mecca'?'মক্কী':'মাদানী'}</div>
+    el.innerHTML = surahs.map(s => {
+      const lastA = (RS.load().session.s === s.no) ? RS.load().session.a : 0;
+      return `
+      <div class="chapter-item" onclick="openSurah(${s.no})" role="button" tabindex="0" aria-label="সূরা ${s.name}, ${s.verseCount} আয়াত" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openSurah(${s.no})}" style="align-items:center">
+        <div style="display:flex;align-items:center;gap:12px;min-width:0">
+          <div style="width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(212,175,106,.28),rgba(212,175,106,.08));border:1.5px solid rgba(212,175,106,.45);display:flex;align-items:center;justify-content:center;font-size:12.5px;color:var(--gold2);font-weight:800;flex-shrink:0;box-shadow:0 0 10px rgba(212,175,106,.12),inset 0 1px 0 rgba(255,255,255,.12)">${localizeNum(s.no)}</div>
+          <div style="min-width:0">
+            <div class="ch-name" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span style="font-weight:800;background:linear-gradient(180deg,#d9fff8 10%,#2dd4bf 70%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">${surahDisplayName(s)}</span>
+              <span lang="ar" dir="rtl" style="font-family:var(--quran-font),serif;font-size:17px;color:var(--gold2);filter:drop-shadow(0 0 6px rgba(212,175,106,.25))">${s.ar}</span>
+              ${lastA > 1 ? '<span style="font-size:9.5px;font-weight:700;color:var(--emerald2);background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);border-radius:50px;padding:1px 7px">▶ চলমান</span>' : ''}
+            </div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:4px">
+              <span class="qse-chip" style="color:${s.revelation==='Mecca'?'#e8c988':'#8fd9c6'}">${s.revelation==='Mecca'?'🕋 মক্কী':'🕌 মাদানী'}</span>
+              <span class="qse-chip">${localizeNum(s.verseCount)} আয়াত</span>
+              <span class="qse-chip">জুয ${localizeNum(s.juzFrom)}${s.juzTo !== s.juzFrom ? '-' + localizeNum(s.juzTo) : ''}</span>
+              <span class="qse-chip" style="opacity:.8">${surahDisplayMeaning(s)}</span>
+            </div>
           </div>
         </div>
-        <div style="color:var(--text3);font-size:18px" aria-hidden="true">›</div>
-      </div>`).join('');
+        <div style="color:var(--gold2);font-size:18px;opacity:.7" aria-hidden="true">›</div>
+      </div>`;
+    }).join('');
   }catch(e){
     el.innerHTML = `<div style="color:#e07070;padding:16px;text-align:center;font-size:14px">লোড ব্যর্থ: ${e.message}</div>`;
   }
@@ -6638,7 +6650,11 @@ function renderReaderHeader(surah, verses){
       ${sajda ? chip('۩ সিজদা আছে', true) : ''}
     </div>
     ${surah.no !== 1 && surah.no !== 9 ? `
-    <div class="mushaf-ar" lang="ar" dir="rtl" style="text-align:center;margin-top:12px;padding:10px 14px;font-size:calc(var(--quran-size) - 2px)" aria-label="বিসমিল্লাহ">${BASMALA_PLAIN}</div>` : ''}
+    <div style="position:relative;margin-top:12px">
+      <div class="mushaf-ar" lang="ar" dir="rtl" style="text-align:center;padding:12px 40px;font-size:calc(var(--quran-size) - 2px)" aria-label="বিসমিল্লাহ">${BASMALA_PLAIN}</div>
+      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#c9a45c;font-size:15px" aria-hidden="true">✦</span>
+      <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#c9a45c;font-size:15px" aria-hidden="true">✦</span>
+    </div>` : ''}
   </div>`;
 }
 
