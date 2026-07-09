@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v166-command-palette -->
+<!-- VERSION: v167-production-ready -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -19,6 +19,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.youtube.com; style-src 'self' 'unsafe-inline' https:; object-src 'none'; base-uri 'self'">
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="preload" href="fonts/scheherazade-new-700-arabic.woff2" as="font" type="font/woff2" crossorigin>
 <style>
@@ -373,6 +374,18 @@ mark{background:rgba(212,175,106,.4);color:#fff3d6;border-radius:3px;padding:0 2
 .cp-item .cp-meta{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cp-hint{padding:8px 14px;font-size:10.5px;color:var(--text3);border-top:1px solid rgba(255,255,255,.05);display:flex;gap:12px;flex-wrap:wrap}
 .cp-kbd{background:rgba(255,255,255,.07);border:1px solid var(--border2);border-radius:5px;padding:0 6px;font-size:10px;font-family:monospace}
+/* accessibility: WCAG 2.2 — motion, touch targets, visible focus */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+.v-act button,#reader-footer button,.sheet .seg button,.ae-btn{min-height:44px;min-width:44px}
+.v-act button{display:inline-flex;align-items:center;justify-content:center}
+button:focus-visible,[tabindex]:focus-visible,.sw:focus-visible{outline:2.5px solid rgba(45,212,191,.85)!important;outline-offset:2px}
+/* stat dashboard tiles */
+.stat-tile{background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:14px;padding:11px 12px;min-width:0}
+.stat-tile .st-v{font-size:19px;font-weight:800;color:var(--emerald2);font-family:'Hind Siliguri',monospace}
+.stat-tile .st-l{font-size:10.5px;color:var(--text3);font-weight:700;margin-top:2px}
+.stat-tile.gold .st-v{color:var(--gold2)}
 /* gold ayah-end medallion, like the printed circled numbers */
 .ayah-medallion{
   display:inline-flex;align-items:center;justify-content:center;
@@ -1025,6 +1038,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
     <span class="rf-txt" id="rf-txt">০%</span>
     <button onclick="rfBookmark()" aria-label="এই আয়াত বুকমার্ক করুন" title="বুকমার্ক">🔖</button>
     <button onclick="openAudioSheet()" aria-label="অডিও প্লেয়ার" title="অডিও">🎧</button>
+    <button onclick="openStatsSheet()" aria-label="পাঠ পরিসংখ্যান" title="পরিসংখ্যান">📊</button>
     <button onclick="openBookmarksSheet()" aria-label="বুকমার্ক তালিকা" title="তালিকা">🗂️</button>
     <button onclick="openReaderSettings()" aria-label="পাঠ সেটিংস" title="সেটিংস">⚙️</button>
     <button onclick="window.scrollTo({top:0})" aria-label="উপরে যান" title="উপরে">⬆️</button>
@@ -1035,6 +1049,9 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
   <div class="sheet" id="settings-sheet" role="dialog" aria-label="পাঠ সেটিংস"></div>
   <div class="sheet" id="bookmarks-sheet" role="dialog" aria-label="বুকমার্ক ও নোট"></div>
   <div class="sheet" id="audio-sheet" role="dialog" aria-label="অডিও প্লেয়ার"></div>
+  <div class="sheet" id="stats-sheet" role="dialog" aria-label="পাঠ পরিসংখ্যান"></div>
+  <div class="sheet" id="health-sheet" role="dialog" aria-label="ডায়াগনস্টিকস"></div>
+  <input type="file" id="qbk-file" accept="application/json" style="display:none" onchange="qbkImport(this.files[0])">
 </div>
 
 <!-- Hadith -->
@@ -6499,6 +6516,9 @@ const CP = {
       [/^(history|recent|হিস্ট্রি)$/, '🕐', 'সাম্প্রতিক পাঠ', () => { const p = RS.load().session; if(p.s){ showTab('quran', document.getElementById('tabbtn-quran')); openSurah(p.s).then(() => scrollToAyah(p.a)); } }],
       [/^(settings?|font|theme|tajweed|সেটিংস|ফন্ট)$/, '⚙️', 'পাঠ সেটিংস', () => { showTab('quran', document.getElementById('tabbtn-quran')); openReaderSettings(); }],
       [/^audio|অডিও$/, '🎧', 'অডিও প্লেয়ার', () => { showTab('quran', document.getElementById('tabbtn-quran')); openAudioSheet(); }],
+      [/^(stats?|analytics|পরিসংখ্যান)$/, '📊', 'পাঠ পরিসংখ্যান', () => { showTab('quran', document.getElementById('tabbtn-quran')); openStatsSheet(); }],
+      [/^(health|diagnostics?|debug|ডায়াগ)$/, '🩺', 'ডায়াগনস্টিকস', () => { showTab('quran', document.getElementById('tabbtn-quran')); openHealthSheet(); }],
+      [/^(backup|export|ব্যাকআপ)$/, '💾', 'পাঠ-ডেটা ব্যাকআপ (JSON)', () => qbkExport()],
     ];
     for(const [re, icon, title, run] of CMDS){
       if(re.test(q)) out.push({icon, title, meta: 'কমান্ড', run});
@@ -6918,14 +6938,26 @@ function rfBookmark(){
 let _lastReadingActivity = 0;
 ['scroll', 'pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, () => { _lastReadingActivity = Date.now(); }, {passive: true}));
 setInterval(() => {
+  const d = RS.load();
+  // audio listening time counts even in the background (lock-screen playback)
+  if(typeof AE !== 'undefined' && AE.active && AE.playing){
+    d.stats.audioSec = (d.stats.audioSec || 0) + 15;
+    RS.save();
+  }
   const vv = document.getElementById('quran-verses-view');
   if(!vv || vv.style.display === 'none') return;
   if(document.visibilityState !== 'visible') return;
   if(Date.now() - _lastReadingActivity > 120000) return;
-  const d = RS.load();
   const day = new Date().toISOString().slice(0, 10);
   d.stats.daily[day] = (d.stats.daily[day] || 0) + 15;
   d.stats.lifetime = (d.stats.lifetime || 0) + 15;
+  // session accounting: a >30min silence starts a new session
+  d.stats.sessions = d.stats.sessions || {count: 0, longest: 0, cur: 0};
+  const gap = Date.now() - (d.stats.lastTick || 0);
+  if(gap > 1800000){ d.stats.sessions.count++; d.stats.sessions.cur = 0; }
+  d.stats.sessions.cur += 15;
+  d.stats.sessions.longest = Math.max(d.stats.sessions.longest, d.stats.sessions.cur);
+  d.stats.lastTick = Date.now();
   RS.save();
 }, 15000);
 
@@ -6934,8 +6966,10 @@ function closeSheets(){
   document.getElementById('sheet-backdrop').style.display = 'none';
   document.getElementById('settings-sheet').style.display = 'none';
   document.getElementById('bookmarks-sheet').style.display = 'none';
-  const au = document.getElementById('audio-sheet');
-  if(au) au.style.display = 'none';
+  ['audio-sheet', 'stats-sheet', 'health-sheet'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = 'none';
+  });
 }
 function _openSheet(id){
   closeSheets();
@@ -7021,6 +7055,215 @@ function bmExportNotes(){
     .map(([k, st]) => `আল-কুরআন ${k} — ${st.note} (${new Date(st.noteTs || 0).toLocaleDateString('bn-BD')})`);
   if(!lines.length){ showToast('কোনো নোট নেই'); return; }
   if(navigator.clipboard) navigator.clipboard.writeText(lines.join('\n\n')).then(() => showToast('📤 ' + localizeNum(lines.length) + 'টি নোট কপি হয়েছে')).catch(()=>{});
+}
+
+/* ══ P0.8 — READING ANALYTICS ENGINE ══ */
+const APP_VERSION = 'v167';
+const QA = {
+  _sum(days){
+    const d = RS.load().stats.daily, now = new Date();
+    let s = 0;
+    for(let i = 0; i < days; i++){
+      const key = new Date(now - i * 86400000).toISOString().slice(0, 10);
+      s += d[key] || 0;
+    }
+    return s;
+  },
+  streaks(){
+    const d = RS.load().stats.daily;
+    const has = k => (d[k] || 0) >= 60; // a day counts with ≥1 minute of reading
+    let cur = 0;
+    for(let i = 0; i < 1000; i++){
+      const key = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+      if(has(key)) cur++;
+      else if(i === 0) continue; // today not read yet — streak survives until midnight
+      else break;
+    }
+    const days = Object.keys(d).filter(has).sort();
+    let longest = 0, run = 0, prev = null;
+    for(const k of days){
+      run = (prev && (new Date(k) - new Date(prev) === 86400000)) ? run + 1 : 1;
+      longest = Math.max(longest, run);
+      prev = k;
+    }
+    return {cur, longest: Math.max(longest, cur)};
+  },
+  async compute(){
+    const d = RS.load();
+    const read = Object.entries(d.verses).filter(([k, st]) => st.count || st.lastRead);
+    const bySurah = {}, byJuz = {}, byPage = {};
+    let key2meta = null;
+    if(QSE.ready){
+      key2meta = {};
+      QSE.meta.forEach(m => key2meta[m[0] + ':' + m[1]] = m);
+    }
+    let weekRead = 0;
+    const weekAgo = Date.now() - 7 * 86400000;
+    for(const [k, st] of read){
+      const s = parseInt(k);
+      bySurah[s] = (bySurah[s] || 0) + (st.count || 1);
+      if(key2meta && key2meta[k]){
+        byJuz[key2meta[k][2]] = (byJuz[key2meta[k][2]] || 0) + (st.count || 1);
+        byPage[key2meta[k][3]] = (byPage[key2meta[k][3]] || 0) + (st.count || 1);
+      }
+      if(st.lastRead > weekAgo) weekRead++;
+    }
+    const top = obj => Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => parseInt(k));
+    const lifetime = d.stats.lifetime || 0;
+    const ses = d.stats.sessions || {count: 0, longest: 0};
+    const distinct = read.length;
+    const perDay = weekRead / 7;
+    const remaining = 6236 - distinct;
+    const etaDays = perDay > 0 ? Math.ceil(remaining / perDay) : 0;
+    return {
+      today: this._sum(1), week: this._sum(7), month: this._sum(30), lifetime,
+      sessions: ses.count, avgSession: ses.count ? Math.round(lifetime / ses.count) : 0, longestSession: ses.longest || 0,
+      speed: lifetime > 60 ? Math.round(distinct / (lifetime / 60) * 10) / 10 : 0,
+      topSurahs: top(bySurah), topJuz: top(byJuz), topPages: top(byPage),
+      bookmarks: Object.values(d.verses).filter(v => v.b).length,
+      favorites: Object.values(d.verses).filter(v => v.f).length,
+      notes: Object.values(d.verses).filter(v => v.note).length,
+      highlights: Object.values(d.verses).filter(v => v.hl).length,
+      audioSec: d.stats.audioSec || 0,
+      streak: this.streaks(),
+      distinct, pct: Math.round(distinct / 6236 * 1000) / 10,
+      eta: etaDays ? new Date(Date.now() + etaDays * 86400000).toLocaleDateString('bn-BD') : null,
+    };
+  },
+};
+
+async function openStatsSheet(){
+  if(!QSE.ready && !QSE.building) QSE.ensure();
+  const a = await QA.compute();
+  const min = s => localizeNum(Math.round(s / 60));
+  const idx = quranIndexCache ? quranIndexCache.surahs : null;
+  const sname = n => idx ? surahDisplayName(idx.find(x => x.no === n)) : 'সূরা ' + localizeNum(n);
+  const tile = (v, l, gold) => `<div class="stat-tile${gold ? ' gold' : ''}"><div class="st-v">${v}</div><div class="st-l">${l}</div></div>`;
+  document.getElementById('stats-sheet').innerHTML = `
+    <h4>📊 পাঠ পরিসংখ্যান</h4>
+    <div style="background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.25);border-radius:14px;padding:12px;margin-bottom:11px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--text2)"><span>কুরআন সমাপ্তি</span><span style="color:var(--emerald2)">${localizeNum(a.pct)}% • ${localizeNum(a.distinct)}/৬২৩৬ আয়াত</span></div>
+      <div style="height:7px;background:rgba(255,255,255,.07);border-radius:6px;margin-top:8px;overflow:hidden"><div style="height:100%;width:${a.pct}%;background:linear-gradient(90deg,var(--emerald2),#f0d795);border-radius:6px"></div></div>
+      ${a.eta ? `<div style="font-size:10.5px;color:var(--text3);margin-top:6px">এই গতিতে আনুমানিক সমাপ্তি: <b style="color:var(--gold2)">${a.eta}</b></div>` : ''}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:11px">
+      ${tile(min(a.today) + ' মি', 'আজকের পাঠ')}
+      ${tile(min(a.week) + ' মি', 'এই সপ্তাহ')}
+      ${tile(min(a.month) + ' মি', 'এই মাস')}
+      ${tile(min(a.lifetime) + ' মি', 'সর্বমোট')}
+      ${tile('🔥 ' + localizeNum(a.streak.cur) + ' দিন', 'বর্তমান স্ট্রিক', 1)}
+      ${tile(localizeNum(a.streak.longest) + ' দিন', 'সর্বোচ্চ স্ট্রিক', 1)}
+      ${tile(localizeNum(a.sessions), 'পাঠ-সেশন')}
+      ${tile(min(a.avgSession) + ' মি', 'গড় সেশন')}
+      ${tile(localizeNum(a.speed), 'আয়াত/মিনিট')}
+      ${tile(min(a.audioSec) + ' মি', 'তিলাওয়াত শোনা')}
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:11px">
+      ${tile(localizeNum(a.bookmarks), '🔖')}
+      ${tile(localizeNum(a.favorites), '❤️')}
+      ${tile(localizeNum(a.highlights), '🖍️')}
+      ${tile(localizeNum(a.notes), '📝')}
+    </div>
+    ${a.topSurahs.length ? `<div class="row"><span>সর্বাধিক পঠিত সূরা</span><span style="color:var(--emerald2);font-weight:700;font-size:12px">${a.topSurahs.map(sname).join(' • ')}</span></div>` : ''}
+    ${a.topJuz.length ? `<div class="row"><span>সর্বাধিক পঠিত জুয</span><span style="color:var(--emerald2);font-weight:700;font-size:12px">${a.topJuz.map(j => 'জুয ' + localizeNum(j)).join(' • ')}</span></div>` : ''}
+    ${a.topPages.length ? `<div class="row"><span>সর্বাধিক পঠিত পৃষ্ঠা</span><span style="color:var(--emerald2);font-weight:700;font-size:12px">${a.topPages.map(p => 'পৃ. ' + localizeNum(p)).join(' • ')}</span></div>` : ''}
+    <div class="row" style="border:none"><span>💾 ব্যাকআপ ও রিস্টোর</span><div class="seg">
+      <button onclick="qbkExport()">📤 এক্সপোর্ট</button>
+      <button onclick="document.getElementById('qbk-file').click()">📥 ইমপোর্ট</button></div></div>
+    <button onclick="closeSheets()" style="width:100%;margin-top:13px;padding:11px;border-radius:12px;border:1px solid rgba(16,185,129,.35);background:rgba(16,185,129,.12);color:var(--emerald2);font-weight:700;font-size:13.5px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">বন্ধ করুন</button>`;
+  _openSheet('stats-sheet');
+}
+
+/* ══ P0.8 — BACKUP & RESTORE (JSON, validated, confirm-gated) ══ */
+function qbkExport(){
+  const payload = {app: 'islamic-ai-deen-companion', schema: 'quran_state_v1', appVersion: APP_VERSION, exportedAt: new Date().toISOString(), data: RS.load()};
+  const blob = new Blob([JSON.stringify(payload, null, 1)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `quran-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+  showToast('📤 ব্যাকআপ ফাইল নামছে…');
+}
+function qbkImport(file){
+  if(!file) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try{
+      const obj = JSON.parse(rd.result);
+      // validation: schema + shape checks — never trust the file blindly
+      if(obj.schema !== 'quran_state_v1' || !obj.data || typeof obj.data !== 'object' || typeof obj.data.verses !== 'object')
+        throw new Error('স্কিমা মেলেনি');
+      const marks = Object.keys(obj.data.verses).length;
+      // never overwrite without explicit confirmation
+      if(!confirm(`ব্যাকআপ পাওয়া গেছে (${obj.exportedAt ? obj.exportedAt.slice(0, 10) : 'তারিখহীন'}) — ${marks}টি চিহ্নিত আয়াত।\n\nবর্তমান পাঠ-ডেটা প্রতিস্থাপিত হবে। এগোবেন?`)) return;
+      // schema migration: same defaults-merge path as a fresh load
+      RS.data = Object.assign({session: {}, verses: {}, stats: {daily: {}, lifetime: 0}, settings: {}}, obj.data);
+      RS.data.settings = Object.assign({font: 0, size: 26, trSize: 14, lh: 2.05, tajweed: 1, showTr: 1, showNum: 1, hc: 0, autoScroll: 0}, RS.data.settings);
+      RS.save();
+      applyQuranFont();
+      if(currentOpenSurahNo && VR.verses.length) renderVerses(VR.verses);
+      showToast('📥 ব্যাকআপ রিস্টোর হয়েছে');
+      closeSheets();
+    }catch(e){ showToast('⚠️ অবৈধ ব্যাকআপ ফাইল: ' + e.message); }
+  };
+  rd.readAsText(file);
+  document.getElementById('qbk-file').value = '';
+}
+
+/* ══ P0.8 — HEALTH MONITOR (hidden diagnostics via command palette) ══ */
+window._errLog = [];
+window.addEventListener('error', e => { window._errLog.unshift({m: String(e.message).slice(0, 120), t: new Date().toISOString()}); window._errLog = window._errLog.slice(0, 8); });
+window.addEventListener('unhandledrejection', e => { window._errLog.unshift({m: ('promise: ' + (e.reason && e.reason.message || e.reason)).slice(0, 120), t: new Date().toISOString()}); window._errLog = window._errLog.slice(0, 8); });
+
+async function openHealthSheet(){
+  let est = {usage: 0, quota: 0};
+  try{ est = await navigator.storage.estimate(); }catch(e){}
+  const cacheRows = [];
+  try{
+    for(const name of await caches.keys()){
+      const c = await caches.open(name);
+      cacheRows.push([name, (await c.keys()).length]);
+    }
+  }catch(e){}
+  let stateKB = 0;
+  try{ stateKB = Math.round((localStorage.getItem(profileKey('quran_state_v1')) || '').length / 1024); }catch(e){}
+  const flag = ok => ok ? '<span style="color:var(--emerald2)">✓</span>' : '<span style="color:#e07070">✕</span>';
+  const row = (l, v) => `<div class="row"><span>${l}</span><span style="color:var(--emerald2);font-weight:700;font-size:12px;text-align:right">${v}</span></div>`;
+  document.getElementById('health-sheet').innerHTML = `
+    <h4>🩺 ডায়াগনস্টিকস</h4>
+    ${row('অ্যাপ ভার্সন', APP_VERSION)}
+    ${row('SW ক্যাশ', cacheRows.filter(([n]) => n.includes('shell')).map(([n]) => n.replace('islamic-ai-shell-', 'v')).join(', ') || '—')}
+    ${row('স্টোরেজ', `${localizeNum(Math.round((est.usage || 0) / 1048576))}MB / ${localizeNum(Math.round((est.quota || 0) / 1073741824))}GB`)}
+    ${row('রিডিং-স্টেট সাইজ', localizeNum(stateKB) + ' KB')}
+    ${cacheRows.map(([n, k]) => row('• ' + n, localizeNum(k) + ' ফাইল')).join('')}
+    ${row('মেমরি (JS হিপ)', performance.memory ? localizeNum(Math.round(performance.memory.usedJSHeapSize / 1048576)) + ' MB' : 'অজানা')}
+    ${row('সার্চ-ইনডেক্স', QSE.ready ? `প্রস্তুত (${localizeNum(QSE.meta.length)} আয়াত)` : (QSE.building ? 'তৈরি হচ্ছে…' : 'অলস'))}
+    ${row('অডিও ইঞ্জিন', AE.active ? (AE.playing ? 'বাজছে' : 'বিরতিতে') : 'নিষ্ক্রিয়')}
+    ${row('শেষ পাঠ-সিঙ্ক', RS.load().session.ts ? new Date(RS.load().session.ts).toLocaleString('bn-BD') : '—')}
+    <div class="row"><span>ফিচার ফ্ল্যাগ</span><span style="font-size:11.5px">MediaSession ${flag('mediaSession' in navigator)} · Share ${flag(!!navigator.share)} · Clipboard ${flag(!!navigator.clipboard)} · IdleCB ${flag(!!window.requestIdleCallback)} · SW ${flag('serviceWorker' in navigator)} · Vibrate ${flag(!!navigator.vibrate)}</span></div>
+    ${window._errLog.length ? `<div class="row" style="align-items:flex-start"><span>সাম্প্রতিক ত্রুটি</span><span style="font-size:10.5px;color:#e0a0a0;text-align:right">${window._errLog.slice(0, 4).map(e => escapeHtml(e.m)).join('<br>')}</span></div>` : row('সাম্প্রতিক ত্রুটি', 'নেই ✓')}
+    <div class="row" style="border:none"><span>রক্ষণাবেক্ষণ</span><div class="seg">
+      <button onclick="qhCleanup()">🧹 পুরনো ক্যাশ পরিষ্কার</button></div></div>
+    <button onclick="closeSheets()" style="width:100%;margin-top:13px;padding:11px;border-radius:12px;border:1px solid rgba(16,185,129,.35);background:rgba(16,185,129,.12);color:var(--emerald2);font-weight:700;font-size:13.5px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">বন্ধ করুন</button>`;
+  _openSheet('health-sheet');
+}
+async function qhCleanup(){
+  let n = 0;
+  try{
+    // stale search-index versions
+    const c = await caches.open('quran-search-v1');
+    for(const req of await c.keys()){
+      if(!req.url.endsWith('/' + QSE.v)){ await c.delete(req); n++; }
+    }
+    // reading stats older than 400 days
+    const d = RS.load().stats.daily;
+    const cutoff = new Date(Date.now() - 400 * 86400000).toISOString().slice(0, 10);
+    for(const k of Object.keys(d)) if(k < cutoff){ delete d[k]; n++; }
+    RS.save();
+  }catch(e){}
+  showToast('🧹 ' + localizeNum(n) + 'টি পুরনো আইটেম পরিষ্কার');
+  openHealthSheet();
 }
 
 function getVerseText(v){
@@ -7361,7 +7604,7 @@ function renderWbwWords(container, words){
   container.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:10px;direction:rtl;justify-content:flex-end">` +
     words.map(w => `
       <div style="text-align:center;min-width:50px">
-        <div style="font-family:serif;font-size:17px;color:var(--emerald2)">${w.ar}</div>
+        <div style="font-family:serif;font-size:17px;color:var(--emerald2)" lang="ar" dir="rtl">${escapeHtml(w.ar)}</div>
         <div style="font-size:10px;color:var(--text3);margin-top:3px;direction:ltr">${escapeHtml(w.translation)}</div>
       </div>`).join('') +
     `</div>`;
