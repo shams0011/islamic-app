@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v165-quran-polish -->
+<!-- VERSION: v166-command-palette -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -361,6 +361,18 @@ mark{background:rgba(212,175,106,.4);color:#fff3d6;border-radius:3px;padding:0 2
 .qse-item.kb-active{outline:2px solid rgba(16,185,129,.6);outline-offset:1px}
 .verse-slot.search-hit .mushaf-ar{outline:2.5px solid rgba(45,212,191,.9);outline-offset:2px;box-shadow:0 0 22px rgba(45,212,191,.35)}
 .qse-chip{font-size:10px;font-weight:700;padding:2px 8px;border-radius:50px;background:rgba(255,255,255,.05);border:1px solid var(--border2);color:var(--text3)}
+/* command palette — VS Code style centered overlay */
+#cp-backdrop{position:fixed;inset:0;background:rgba(4,8,6,.6);backdrop-filter:blur(5px);z-index:90;display:none}
+#cp-modal{position:fixed;left:50%;top:12%;transform:translateX(-50%);width:min(560px,92vw);z-index:91;display:none;background:linear-gradient(170deg,#121c16,#0b100d);border:1px solid rgba(16,185,129,.35);border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.6),0 0 30px rgba(16,185,129,.1);overflow:hidden}
+#cp-input{width:100%;background:rgba(0,0,0,.35);border:none;border-bottom:1px solid rgba(212,175,106,.25);padding:15px 18px;color:var(--text);font-size:15px;outline:none;font-family:'Hind Siliguri',sans-serif}
+#cp-list{max-height:min(48vh,420px);overflow-y:auto;padding:6px}
+.cp-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;cursor:pointer;transition:background .12s}
+.cp-item:hover,.cp-item.active{background:rgba(16,185,129,.12)}
+.cp-item .cp-icon{width:34px;height:34px;border-radius:10px;background:rgba(212,175,106,.1);border:1px solid rgba(212,175,106,.25);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.cp-item .cp-title{font-size:13.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cp-item .cp-meta{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cp-hint{padding:8px 14px;font-size:10.5px;color:var(--text3);border-top:1px solid rgba(255,255,255,.05);display:flex;gap:12px;flex-wrap:wrap}
+.cp-kbd{background:rgba(255,255,255,.07);border:1px solid var(--border2);border-radius:5px;padding:0 6px;font-size:10px;font-family:monospace}
 /* gold ayah-end medallion, like the printed circled numbers */
 .ayah-medallion{
   display:inline-flex;align-items:center;justify-content:center;
@@ -822,6 +834,14 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
   </div>
   <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(16,185,129,.35),transparent);margin:0 8px 4px" aria-hidden="true"></div>
   <div id="home-tasbih-slot"></div>
+</div>
+
+<!-- universal command palette (Ctrl+K) — global overlay, usable from any tab -->
+<div id="cp-backdrop" onclick="commandPalette.close()"></div>
+<div id="cp-modal" role="dialog" aria-label="কমান্ড প্যালেট" aria-modal="true">
+  <input id="cp-input" placeholder="সূরা, 2:255, জুয ৩০, পৃষ্ঠা ৬০৪, play, bookmark…" aria-label="কমান্ড লিখুন" autocomplete="off">
+  <div id="cp-list" role="listbox" aria-label="ফলাফল"></div>
+  <div class="cp-hint"><span><span class="cp-kbd">↑↓</span> বাছাই</span><span><span class="cp-kbd">Enter</span> চালান</span><span><span class="cp-kbd">Esc</span> বন্ধ</span><span><span class="cp-kbd">Ctrl+K</span> খুলুন</span></div>
 </div>
 
 <div id="daily-widget" class="daily-widget" role="region" aria-label="দৈনিক আয়াত বা হাদিস">
@@ -6424,6 +6444,218 @@ const QSE = {
   searchByTopic(){ return Promise.resolve({hits: [], field: 'topic', note: 'future'}); },
 };
 window.searchEngine = QSE;
+
+/* ══ UNIVERSAL COMMAND PALETTE — VS Code-style instant navigation ══
+   Local-only (QSE index + surah index), no page change on open. Command
+   grammar → ranked buckets: exact command > surah > ayah > page > juz >
+   hizb > ruku > keyword > history. Future AI/voice/OCR commands register
+   handlers in CP.aiHandlers without touching the router. */
+const CP = {
+  open(){
+    document.getElementById('cp-backdrop').style.display = 'block';
+    document.getElementById('cp-modal').style.display = 'block';
+    const inp = document.getElementById('cp-input');
+    inp.value = ''; inp.focus();
+    this.render([]); this._suggest();
+    if(typeof QSE !== 'undefined' && !QSE.ready && !QSE.building) QSE.ensure(); // warm the index
+  },
+  close(){
+    document.getElementById('cp-backdrop').style.display = 'none';
+    document.getElementById('cp-modal').style.display = 'none';
+  },
+  isOpen(){ return document.getElementById('cp-modal').style.display === 'block'; },
+  aiHandlers: [], // future: {match(q), run(q)} — AI/voice/OCR modules plug in here
+
+  _digits(q){ return q.replace(/[০-৯]/g, d => _DIGIT_MAP[d]); },
+  _norm(q){ return this._digits(q.trim()).toLowerCase(); },
+
+  async search(qRaw){
+    const q = this._norm(qRaw);
+    if(!q) return [];
+    const out = [];
+    const idx = (quranIndexCache || await loadQuranIndex()).surahs;
+    const goto = async (label, icon, meta, s, a) => ({icon, title: label, meta, run: () => { showTab('quran', document.getElementById('tabbtn-quran')); openSurah(s).then(() => { if(a > 1) scrollToAyah(a); }); }});
+    const structural = async (mi, val, icon, label) => {
+      if(!QSE.ready){
+        if(!QSE.building) QSE.ensure();
+        return {icon: '⏳', title: label, meta: 'ইনডেক্স প্রস্তুত হচ্ছে — কয়েক সেকেন্ড পরে আবার লিখুন', run: () => {}};
+      }
+      const row = QSE.meta.find(x => x[mi] === val);
+      if(!row) return null;
+      return goto(label, icon, `সূরা ${localizeNum(row[0])}, আয়াত ${localizeNum(row[1])} থেকে`, row[0], row[1]);
+    };
+    let m;
+
+    // 1) exact system/audio commands
+    const CMDS = [
+      [/^(play|চালাও|বাজাও)$/, '▶️', 'তিলাওয়াত চালান', () => toggleSurahAudio()],
+      [/^(pause|stop|থামাও|বিরতি)$/, '⏸️', 'তিলাওয়াত থামান', () => AE.pause()],
+      [/^(next|পরের)$/, '⏭️', 'পরের আয়াত', () => AE.next()],
+      [/^(previous|prev|আগের)$/, '⏮️', 'আগের আয়াত', () => AE.prev()],
+      [/^(repeat|রিপিট)$/, '🔁', 'রিপিট: আয়াত', () => AE.setRepeat('ayah')],
+      [/^(bookmarks?|বুকমার্ক)$/, '🗂️', 'বুকমার্ক ম্যানেজার', () => { showTab('quran', document.getElementById('tabbtn-quran')); openBookmarksSheet(); }],
+      [/^(favorites?|প্রিয়)$/, '❤️', 'প্রিয় আয়াতসমূহ', () => { showTab('quran', document.getElementById('tabbtn-quran')); bmFilter = 'f'; openBookmarksSheet(); }],
+      [/^(continue|resume|চালিয়ে যাও)$/, '📖', 'পড়া চালিয়ে যান', () => { const p = RS.load().session; if(p.s){ showTab('quran', document.getElementById('tabbtn-quran')); openSurah(p.s).then(() => scrollToAyah(p.a)); } }],
+      [/^(history|recent|হিস্ট্রি)$/, '🕐', 'সাম্প্রতিক পাঠ', () => { const p = RS.load().session; if(p.s){ showTab('quran', document.getElementById('tabbtn-quran')); openSurah(p.s).then(() => scrollToAyah(p.a)); } }],
+      [/^(settings?|font|theme|tajweed|সেটিংস|ফন্ট)$/, '⚙️', 'পাঠ সেটিংস', () => { showTab('quran', document.getElementById('tabbtn-quran')); openReaderSettings(); }],
+      [/^audio|অডিও$/, '🎧', 'অডিও প্লেয়ার', () => { showTab('quran', document.getElementById('tabbtn-quran')); openAudioSheet(); }],
+    ];
+    for(const [re, icon, title, run] of CMDS){
+      if(re.test(q)) out.push({icon, title, meta: 'কমান্ড', run});
+    }
+    if((m = q.match(/^speed\s*([\d.]+)$/))){
+      const v = parseFloat(m[1]);
+      if(v >= 0.5 && v <= 2) out.push({icon: '⏩', title: `প্লেব্যাক গতি ${m[1]}x`, meta: 'কমান্ড', run: () => AE.setSpeed(v)});
+    }
+    // future AI commands → routed to registered handlers (stub until modules land)
+    if((m = q.match(/^(explain|summarize|memorize|quiz|reflection)\s+(.+)$/))){
+      const h = this.aiHandlers.find(h => h.match && h.match(q));
+      out.push(h ? {icon: '🤖', title: h.title(q), meta: 'AI', run: () => h.run(q)}
+        : {icon: '🤖', title: `AI: ${m[1]} ${m[2]}`, meta: 'AI মডিউল শিগগিরই আসছে', run: () => showToast('🤖 AI মডিউল শিগগিরই আসছে, ইনশাআল্লাহ')});
+    }
+
+    // 2-3) surah number / ayah reference
+    if((m = q.match(/^(?:surah\s+|সূরা\s+)?(\d{1,3})$/)) && +m[1] >= 1 && +m[1] <= 114){
+      const s = idx.find(x => x.no === +m[1]);
+      out.push(await goto(`${surahDisplayName(s)} খুলুন`, '📖', `সূরা ${localizeNum(s.no)} • ${localizeNum(s.verseCount)} আয়াত • জুয ${localizeNum(s.juzFrom)}`, s.no, 1));
+    }
+    if((m = q.match(/^(?:ayah\s+|আয়াত\s+)?(\d{1,3})\s*[:\/.]\s*(\d{1,3})$/)) && +m[1] >= 1 && +m[1] <= 114){
+      const s = idx.find(x => x.no === +m[1]);
+      if(s && +m[2] >= 1 && +m[2] <= s.verseCount)
+        out.push(await goto(`${surahDisplayName(s)} — আয়াত ${localizeNum(+m[2])}`, '🎯', `সূরা ${localizeNum(s.no)}:${localizeNum(+m[2])}`, s.no, +m[2]));
+    }
+    // 4-7) page / juz / hizb / rub / ruku
+    if((m = q.match(/^(?:page|p|পৃষ্ঠা|পৃ)\s*(\d{1,3})$/)) && +m[1] >= 1 && +m[1] <= 604){
+      const r = await structural(3, +m[1], '📄', `মুসহাফ পৃষ্ঠা ${localizeNum(+m[1])}`); if(r) out.push(r);
+    }
+    if((m = q.match(/^(?:juz|para|j|জুয|পারা)\s*(\d{1,2})$/)) && +m[1] >= 1 && +m[1] <= 30){
+      const r = await structural(2, +m[1], '🧩', `জুয ${localizeNum(+m[1])}`); if(r) out.push(r);
+    }
+    if((m = q.match(/^(?:hizb|h|হিযব)\s*(\d{1,2})$/)) && +m[1] >= 1 && +m[1] <= 60){
+      const r = await structural(5, (+m[1] - 1) * 4 + 1, '📚', `হিযব ${localizeNum(+m[1])}`); if(r) out.push(r);
+    }
+    if((m = q.match(/^(?:rub|r|রুব)\s*(\d{1,3})$/)) && +m[1] >= 1 && +m[1] <= 240){
+      const r = await structural(5, +m[1], '📚', `রুব-এল-হিযব ${localizeNum(+m[1])}`); if(r) out.push(r);
+    }
+    if((m = q.match(/^(?:ruku|রুকু)\s*(\d{1,3})$/)) && +m[1] >= 1 && +m[1] <= 556){
+      const r = await structural(4, +m[1], '📚', `রুকু ${localizeNum(+m[1])}`); if(r) out.push(r);
+    }
+
+    // 2) surah by name (bn / en / ar), exact > prefix > contains > fuzzy
+    const qa = QSE.normAr ? QSE.normAr(q) : q;
+    const scored = [];
+    for(const s of idx){
+      const names = [surahBnName(s.no), s.name.toLowerCase(), s.en.toLowerCase(), QSE.normAr(s.ar)];
+      let best = 0;
+      for(const nm of names){
+        const n = nm.toLowerCase();
+        if(n === q || n === qa) best = Math.max(best, 100);
+        else if(n.startsWith(q) || n.startsWith(qa)) best = Math.max(best, 80);
+        else if(q.length > 2 && (n.includes(q) || n.includes(qa))) best = Math.max(best, 60);
+        else if(q.length > 3 && QSE._ed1 && QSE._ed1(n.replace(/[-\s]/g, ''), q.replace(/[-\s]/g, ''))) best = Math.max(best, 40);
+      }
+      if(best) scored.push({s, best});
+    }
+    scored.sort((a, b) => b.best - a.best || a.s.no - b.s.no);
+    for(const {s} of scored.slice(0, 5)){
+      out.push(await goto(surahDisplayName(s), '📖', `সূরা ${localizeNum(s.no)} • ${localizeNum(s.verseCount)} আয়াত • জুয ${localizeNum(s.juzFrom)} • ${s.revelation === 'Mecca' ? 'মক্কী' : 'মাদানী'}`, s.no, 1));
+    }
+
+    // 8) keyword full-text (top 5 inline) — only when nothing structural matched strongly
+    if(q.length > 2 && !/^\d/.test(q)){
+      if(!QSE.ready){
+        // never block the palette on the one-time background index build
+        if(!QSE.building) QSE.ensure();
+        out.push({icon: '⏳', title: 'আয়াত-সার্চ ইনডেক্স প্রস্তুত হচ্ছে…', meta: 'কয়েক সেকেন্ড পরে আবার লিখুন', run: () => {}});
+        return out.slice(0, 12);
+      }
+      const res = await QSE.search(qRaw);
+      for(const h of res.hits.slice(0, 5)){
+        const [s, a, juz, page] = QSE.meta[h.id];
+        const su = idx.find(x => x.no === s);
+        out.push({icon: '🔍', title: `${surahDisplayName(su)} ${localizeNum(s)}:${localizeNum(a)}`, meta: (QSE.tbn[h.id] || '').slice(0, 60) + '…',
+          run: () => { showTab('quran', document.getElementById('tabbtn-quran')); qseOpen(s, a); }});
+      }
+      if(res.hits.length > 5) out.push({icon: '🔎', title: `সবগুলো ফলাফল দেখুন (${localizeNum(res.hits.length)})`, meta: 'পূর্ণ সার্চ', run: () => {
+        showTab('quran', document.getElementById('tabbtn-quran')); goSurahList();
+        const si = document.getElementById('surah-search'); si.value = qRaw; qseRender();
+      }});
+    }
+    return out.slice(0, 12);
+  },
+  async execute(input){
+    const r = await this.search(input);
+    if(r.length){ this.close(); r[0].run(); return true; }
+    return false;
+  },
+
+  render(items){
+    const list = document.getElementById('cp-list');
+    list.innerHTML = items.length ? items.map((it, i) => `
+      <div class="cp-item ${i === 0 ? 'active' : ''}" role="option" data-i="${i}" onclick="CP._run(${i})">
+        <div class="cp-icon" aria-hidden="true">${it.icon}</div>
+        <div style="min-width:0"><div class="cp-title">${it.title}</div><div class="cp-meta">${it.meta || ''}</div></div>
+      </div>`).join('')
+      : `<div style="padding:16px;text-align:center;color:var(--text3);font-size:12.5px">লিখুন: সূরার নাম, 2:255, জুয ৩০, পৃষ্ঠা ৬০৪, রুকু ১৫, play, bookmark…</div>`;
+    this._items = items;
+  },
+  _run(i){ const it = this._items[i]; if(it){ this.close(); it.run(); } },
+  _suggest(){
+    // recent searches + continue-reading as instant suggestions
+    const sug = [];
+    const p = RS.load().session;
+    if(p && p.s) sug.push({icon: '📖', title: 'পড়া চালিয়ে যান', meta: `সূরা ${localizeNum(p.s)}, আয়াত ${localizeNum(p.a)} • জুয ${localizeNum(p.juz || 1)}`, run: () => { showTab('quran', document.getElementById('tabbtn-quran')); openSurah(p.s).then(() => scrollToAyah(p.a)); }});
+    ((RS.load().search || {}).recent || []).slice(0, 4).forEach(qq => sug.push({icon: '🕐', title: qq, meta: 'সাম্প্রতিক সার্চ', run: () => { const inp = document.getElementById('cp-input'); inp.value = qq; CP._onInput(); }}));
+    if(sug.length) this.render(sug);
+  },
+  _onInput(){
+    clearTimeout(this._t);
+    this._t = setTimeout(async () => {
+      const q = document.getElementById('cp-input').value;
+      if(!q.trim()){ this._suggest(); return; }
+      const items = await this.search(q);
+      if(document.getElementById('cp-input').value === q) this.render(items);
+    }, 90);
+  },
+};
+window.commandPalette = CP;
+
+// wiring: Ctrl+K / Ctrl+P open; Esc closes; ↑↓ Enter navigate
+window.addEventListener('keydown', e => {
+  if((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'p')){ e.preventDefault(); CP.isOpen() ? CP.close() : CP.open(); return; }
+  if(!CP.isOpen()) return;
+  if(e.key === 'Escape'){ CP.close(); return; }
+  if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+    e.preventDefault();
+    const items = [...document.querySelectorAll('.cp-item')];
+    if(!items.length) return;
+    const cur = items.findIndex(x => x.classList.contains('active'));
+    const nx = e.key === 'ArrowDown' ? Math.min(cur + 1, items.length - 1) : Math.max(cur - 1, 0);
+    items.forEach(x => x.classList.remove('active'));
+    items[nx].classList.add('active');
+    items[nx].scrollIntoView({block: 'nearest'});
+  }else if(e.key === 'Enter'){
+    e.preventDefault();
+    const act = document.querySelector('.cp-item.active') || document.querySelector('.cp-item');
+    if(act) CP._run(parseInt(act.dataset.i));
+  }
+});
+document.addEventListener('DOMContentLoaded', () => {
+  const inp = document.getElementById('cp-input');
+  if(inp) inp.addEventListener('input', () => CP._onInput());
+  // mobile: long-press the search icon opens the palette
+  const icon = document.querySelector('#tab-quran .search-icon');
+  if(icon){
+    let lt = null;
+    const start = () => { lt = setTimeout(() => CP.open(), 500); };
+    const cancel = () => clearTimeout(lt);
+    icon.addEventListener('touchstart', start, {passive: true});
+    icon.addEventListener('mousedown', start);
+    ['touchend', 'touchmove', 'mouseup', 'mouseleave'].forEach(ev => icon.addEventListener(ev, cancel));
+    icon.style.cursor = 'pointer';
+    icon.setAttribute('title', 'চেপে ধরুন: কমান্ড প্যালেট (Ctrl+K)');
+  }
+});
 
 /* ── search UI: universal input, filters, keyboard nav, recent/popular ── */
 let _qseT = null;
