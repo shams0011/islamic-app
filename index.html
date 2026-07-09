@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v167-production-ready -->
+<!-- VERSION: v168-quran-ai -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -1051,6 +1051,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
   <div class="sheet" id="audio-sheet" role="dialog" aria-label="অডিও প্লেয়ার"></div>
   <div class="sheet" id="stats-sheet" role="dialog" aria-label="পাঠ পরিসংখ্যান"></div>
   <div class="sheet" id="health-sheet" role="dialog" aria-label="ডায়াগনস্টিকস"></div>
+  <div class="sheet" id="ai-sheet" role="dialog" aria-label="AI ব্যাখ্যা"></div>
   <input type="file" id="qbk-file" accept="application/json" style="display:none" onchange="qbkImport(this.files[0])">
 </div>
 
@@ -6527,11 +6528,43 @@ const CP = {
       const v = parseFloat(m[1]);
       if(v >= 0.5 && v <= 2) out.push({icon: '⏩', title: `প্লেব্যাক গতি ${m[1]}x`, meta: 'কমান্ড', run: () => AE.setSpeed(v)});
     }
-    // future AI commands → routed to registered handlers (stub until modules land)
-    if((m = q.match(/^(explain|summarize|memorize|quiz|reflection)\s+(.+)$/))){
+    // ---- AI commands (live: quranAI module) ----
+    await loadQuranIndex();
+    if((m = this._digits(qRaw.trim()).match(/^(?:explain|ব্যাখ্যা)\s+(\d{1,3})\s*[:\/.]\s*(\d{1,3})$/i))){
+      out.push({icon: '🤖', title: `আয়াত ${localizeNum(+m[1])}:${localizeNum(+m[2])} এর ব্যাখ্যা`, meta: 'AI ব্যাখ্যা', run: () => quranAI({type: 'ayah', s: +m[1], a: +m[2]})});
+    }
+    else if((m = qRaw.trim().match(/^(explain|summarize|summary|সারাংশ|ব্যাখ্যা)\s+(.+)$/i))){
+      const s = resolveSurahRef(m[2]);
+      if(s){
+        const type = /summar|সারাংশ/i.test(m[1]) ? 'summary' : 'explain';
+        out.push({icon: '🤖', title: `${type === 'summary' ? 'সারাংশ' : 'ব্যাখ্যা'}: সূরা ${localizeNum(s)}`, meta: 'AI', run: () => quranAI({type, s})});
+      }
+    }
+    if((m = qRaw.trim().match(/^(?:lessons?(?:\s+from)?|শিক্ষা)\s+(.+)$/i))){
+      const s = resolveSurahRef(m[1]);
+      if(s) out.push({icon: '🤖', title: `শিক্ষা: সূরা ${localizeNum(s)}`, meta: 'AI', run: () => quranAI({type: 'lessons', s})});
+    }
+    if((m = qRaw.trim().match(/^(?:related(?:\s+verses)?|সম্পর্কিত)\s*(.*)$/i)) && m[1]){
+      out.push({icon: '🤖', title: `সম্পর্কিত আয়াত: "${m[1]}"`, meta: 'AI', run: () => quranAI({type: 'related', q: m[1]})});
+    }
+    // ---- offline topic search (curated verse lists — no AI needed) ----
+    if((m = qRaw.trim().match(/^(?:topic|টপিক)\s*[:\-]?\s*(.+)$/i)) || topicFind(qRaw)){
+      const topic = topicFind(m ? m[1] : qRaw);
+      if(topic){
+        const idxS = (quranIndexCache || {surahs: []}).surahs;
+        out.push({icon: '🏷️', title: `বিষয়: ${topic.bn} — ${localizeNum(topic.refs.length)}টি আয়াত`, meta: topic.refs.slice(0, 6).map(([s, a]) => `${s}:${a}`).join(' • ') + ' …', run: () => {}});
+        for(const [s, a] of topic.refs.slice(0, 7)){
+          const su = idxS.find(x => x.no === s);
+          out.push({icon: '📖', title: `${su ? surahDisplayName(su) : 'সূরা ' + s} — আয়াত ${localizeNum(a)}`, meta: topic.bn,
+            run: () => { showTab('quran', document.getElementById('tabbtn-quran')); openSurah(s).then(() => scrollToAyah(a)); }});
+        }
+      }
+    }
+    // other future modes (memorize/quiz/reflection) still route through registered handlers
+    if((m = q.match(/^(memorize|quiz|reflection)\s+(.+)$/))){
       const h = this.aiHandlers.find(h => h.match && h.match(q));
       out.push(h ? {icon: '🤖', title: h.title(q), meta: 'AI', run: () => h.run(q)}
-        : {icon: '🤖', title: `AI: ${m[1]} ${m[2]}`, meta: 'AI মডিউল শিগগিরই আসছে', run: () => showToast('🤖 AI মডিউল শিগগিরই আসছে, ইনশাআল্লাহ')});
+        : {icon: '🤖', title: `AI: ${m[1]} ${m[2]}`, meta: 'এই AI মোডটি শিগগিরই আসছে', run: () => showToast('🤖 এই AI মোডটি শিগগিরই আসছে, ইনশাআল্লাহ')});
     }
 
     // 2-3) surah number / ayah reference
@@ -6966,7 +6999,7 @@ function closeSheets(){
   document.getElementById('sheet-backdrop').style.display = 'none';
   document.getElementById('settings-sheet').style.display = 'none';
   document.getElementById('bookmarks-sheet').style.display = 'none';
-  ['audio-sheet', 'stats-sheet', 'health-sheet'].forEach(id => {
+  ['audio-sheet', 'stats-sheet', 'health-sheet', 'ai-sheet'].forEach(id => {
     const el = document.getElementById(id);
     if(el) el.style.display = 'none';
   });
@@ -7058,7 +7091,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v167';
+const APP_VERSION = 'v168';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -7266,6 +7299,96 @@ async function qhCleanup(){
   openHealthSheet();
 }
 
+/* ══ QURAN AI MODULE — explain / summarize / lessons / related + offline topics ══
+   Topic search is fully OFFLINE (curated authentic verse lists). AI commands go
+   through the existing Cloudflare proxy (key stays server-side). */
+const TOPIC_INDEX = [
+  {key: 'patience', bn: 'ধৈর্য (সবর)', alias: ['patience', 'sabr', 'সবর', 'ধৈর্য'],
+   refs: [[2,45],[2,153],[2,155],[2,156],[2,157],[3,200],[8,46],[11,115],[16,127],[39,10],[70,5],[94,5],[103,3]]},
+  {key: 'rizq', bn: 'রিজিক', alias: ['rizq', 'rizk', 'রিজিক', 'রিযিক'],
+   refs: [[2,172],[11,6],[17,30],[17,31],[29,60],[34,39],[42,19],[51,22],[51,58],[62,10],[65,2],[65,3],[67,15]]},
+  {key: 'marriage', bn: 'বিবাহ ও দাম্পত্য', alias: ['marriage', 'nikah', 'বিবাহ', 'বিয়ে', 'নিকাহ'],
+   refs: [[2,187],[2,221],[4,1],[4,19],[4,21],[7,189],[16,72],[24,26],[24,32],[25,74],[30,21],[66,6]]},
+  {key: 'parents', bn: 'মাতা-পিতা', alias: ['parents', 'মাতা-পিতা', 'বাবা-মা', 'পিতা-মাতা'],
+   refs: [[2,83],[4,36],[6,151],[14,41],[17,23],[17,24],[19,14],[29,8],[31,14],[31,15],[46,15],[71,28]]},
+  {key: 'jannah', bn: 'জান্নাত', alias: ['jannah', 'paradise', 'জান্নাত'],
+   refs: [[2,25],[3,133],[3,185],[9,72],[13,35],[18,107],[32,17],[36,55],[36,56],[36,57],[36,58],[47,15],[55,46],[76,12],[88,8]]},
+  {key: 'tawbah', bn: 'তাওবা', alias: ['tawbah', 'taubah', 'repentance', 'তাওবা', 'তওবা'],
+   refs: [[2,222],[3,135],[4,17],[4,18],[5,74],[6,54],[24,31],[25,70],[25,71],[39,53],[42,25],[66,8],[110,3]]},
+];
+function topicFind(q){
+  const n = q.toLowerCase().trim();
+  return TOPIC_INDEX.find(t => t.alias.some(a => a === n || n.includes(a)));
+}
+
+const QAI_SYSTEM = 'তুমি একজন বিনয়ী ইসলামিক সহকারী। বাংলায় উত্তর দাও। কুরআনের আয়াতের ব্যাখ্যায় প্রসিদ্ধ তাফসিরের (ইবনে কাসির, তাফসির আস-সাদি) আলোকে সংক্ষিপ্ত, নির্ভরযোগ্য কথা বলো; সূরা:আয়াত রেফারেন্স দাও; নিজে ফতোয়া দিয়ো না এবং জটিল ফিকহি প্রশ্নে আলেমের কাছে যেতে বলো। উত্তর ২৫০ শব্দের মধ্যে রাখো, সুন্দর অনুচ্ছেদে।';
+
+async function quranAI(cmd){
+  const sheet = document.getElementById('ai-sheet');
+  const titleMap = {ayah: '🤖 আয়াতের ব্যাখ্যা', explain: '🤖 সূরার ব্যাখ্যা', summary: '🤖 সূরার সারাংশ', lessons: '🤖 সূরার শিক্ষা', related: '🤖 সম্পর্কিত আয়াত'};
+  const render = body => {
+    sheet.innerHTML = `<h4>${titleMap[cmd.type] || '🤖 AI'}</h4>${body}
+      <button onclick="closeSheets()" style="width:100%;margin-top:13px;padding:11px;border-radius:12px;border:1px solid rgba(16,185,129,.35);background:rgba(16,185,129,.12);color:var(--emerald2);font-weight:700;font-size:13.5px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">বন্ধ করুন</button>`;
+    _openSheet('ai-sheet');
+  };
+  render(`<div style="text-align:center;padding:26px;color:var(--text3);font-size:13px">🤖 উত্তর তৈরি হচ্ছে…</div>`);
+
+  // build the user prompt with real verse context where applicable
+  let prompt = '', heading = '';
+  try{
+    const idx = (quranIndexCache || await loadQuranIndex()).surahs;
+    if(cmd.type === 'ayah'){
+      const d = surahCache[cmd.s] || await fetch(`quran-data/surah${cmd.s}.json`).then(r => r.json());
+      surahCache[cmd.s] = d;
+      const v = d.verses[cmd.a - 1];
+      const su = idx.find(x => x.no === cmd.s);
+      heading = `<div class="mushaf-ar" lang="ar" dir="rtl" style="font-size:calc(var(--quran-size) - 4px);margin-bottom:8px">${escapeHtml(stripBasmala(v.ar, cmd.s, cmd.a))}</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:10px">${escapeHtml(v.bn)}<br><b style="color:var(--gold2)">— ${surahDisplayName(su)} ${localizeNum(cmd.s)}:${localizeNum(cmd.a)}</b></div>`;
+      prompt = `এই আয়াতটির ব্যাখ্যা করো (প্রেক্ষাপট/শানে নুযুল যদি প্রসিদ্ধ থাকে, মূল বার্তা, আমাদের জীবনে শিক্ষা):\n\n${v.ar}\n\nঅনুবাদ: ${v.bn}\n(সূরা ${cmd.s}, আয়াত ${cmd.a})`;
+    }else if(cmd.type === 'related'){
+      prompt = `"${cmd.q}" — এই বিষয়ে/আয়াতের সাথে সম্পর্কিত কুরআনের প্রধান আয়াতগুলো তালিকা করো (সূরা:আয়াত রেফারেন্স + এক লাইনে প্রাসঙ্গিকতা)।`;
+    }else{
+      const su = idx.find(x => x.no === cmd.s);
+      const what = cmd.type === 'summary' ? 'সংক্ষিপ্ত সারাংশ (মূল বিষয়বস্তু, ভাগ, কেন্দ্রীয় বার্তা)' : cmd.type === 'lessons' ? 'প্রধান শিক্ষাগুলো (পয়েন্ট আকারে, প্রাসঙ্গিক আয়াত-রেফারেন্সসহ)' : 'ব্যাখ্যা (নামের অর্থ, অবতরণ-প্রেক্ষাপট, মূল বিষয়বস্তু, ফজিলত)';
+      heading = `<div style="font-size:13px;color:var(--gold2);font-weight:700;margin-bottom:10px">${surahDisplayName(su)} (সূরা ${localizeNum(cmd.s)}, ${localizeNum(su.verseCount)} আয়াত, ${su.revelation === 'Mecca' ? 'মক্কী' : 'মাদানী'})</div>`;
+      prompt = `সূরা ${su.name} (${cmd.s} নম্বর সূরা)-এর ${what} বাংলায় লেখো।`;
+    }
+
+    if(!AI_PROXY_URL) throw new Error('no-proxy');
+    const r = await fetch(AI_PROXY_URL, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({max_tokens: 1100, system: QAI_SYSTEM, messages: [{role: 'user', content: prompt}]}),
+    });
+    const data = await r.json();
+    if(!r.ok || data.error) throw new Error((data.error && data.error.message) || 'proxy ' + r.status);
+    const reply = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n') || 'উত্তর পাওয়া যায়নি।';
+    render(`${heading}<div style="font-size:13px;color:var(--text2);line-height:1.85;white-space:pre-wrap">${escapeHtml(reply)}</div>
+      <div style="font-size:10.5px;color:var(--text3);margin-top:10px;border-top:1px solid rgba(255,255,255,.06);padding-top:8px">⚠️ AI-উত্তর সহায়ক মাত্র — গুরুত্বপূর্ণ বিষয়ে বিজ্ঞ আলেমের শরণাপন্ন হোন।</div>`);
+  }catch(e){
+    render(`${heading}<div style="text-align:center;padding:18px;color:#e0a0a0;font-size:12.5px">${e.message === 'no-proxy'
+      ? '⚙️ AI সেবা এখনো চালু হয়নি।'
+      : 'AI সংযোগে সমস্যা (' + escapeHtml(e.message) + ') — ইন্টারনেট বা AI-ক্রেডিট পরীক্ষা করে আবার চেষ্টা করুন।'}</div>`);
+  }
+}
+
+// resolve "surah kahf" / "সূরা ইয়াসীন" / "18" to a surah number
+function resolveSurahRef(txt){
+  const t = txt.trim().toLowerCase().replace(/^(surah|সূরা)\s+/, '');
+  const n = parseInt(t.replace(/[০-৯]/g, d => _DIGIT_MAP[d]));
+  if(n >= 1 && n <= 114) return n;
+  if(!quranIndexCache) return null;
+  let hit = quranIndexCache.surahs.find(s =>
+    s.name.toLowerCase().includes(t) || s.en.toLowerCase().includes(t) ||
+    surahBnName(s.no).includes(txt.trim()) || t.includes(s.name.toLowerCase().replace(/[^a-z]/g, '')));
+  if(!hit){
+    // transliteration variants (yasin/yaseen, fatiha/faatiha): consonant skeleton
+    const sk = x => x.toLowerCase().replace(/[^a-z]/g, '').replace(/[aeiou]/g, '');
+    const ts = sk(t);
+    if(ts.length > 1) hit = quranIndexCache.surahs.find(s => sk(s.name).includes(ts) || ts.includes(sk(s.name)));
+  }
+  return hit ? hit.no : null;
+}
+
 function getVerseText(v){
   if(currentLang === 'en') return v.en || v.bn || '';
   if(currentLang === 'ar') return ''; // Arabic verse is always shown separately above; avoid duplicate
@@ -7363,6 +7486,7 @@ function buildVerseCardHTML(v){
         <button onclick="vAct(${v.n},'note')" class="${st.note?'on':''}" aria-label="নোট">📝</button>
         <button onclick="vAct(${v.n},'copy')" aria-label="কপি">📋</button>
         <button onclick="vAct(${v.n},'share')" aria-label="শেয়ার">↗️</button>
+        <button onclick="vAct(${v.n},'ai')" aria-label="AI ব্যাখ্যা">🤖</button>
       </div>`;
 }
 
@@ -7388,6 +7512,7 @@ function vAct(n, act){
     RS.patchVerse(key, {note: txt.trim(), noteTs: txt.trim() ? Date.now() : 0});
     showToast(txt.trim() ? '📝 নোট সংরক্ষিত' : 'নোট মুছে গেছে');
   }
+  else if(act === 'ai'){ quranAI({type: 'ayah', s: currentOpenSurahNo, a: n}); return; }
   else if(act === 'copy' || act === 'share'){
     const text = `${v.ar}\n\n${getVerseText(v)}\n— আল-কুরআন ${localizeNum(currentOpenSurahNo)}:${localizeNum(n)}`;
     if(act === 'share' && navigator.share){ navigator.share({text}).catch(()=>{}); return; }
