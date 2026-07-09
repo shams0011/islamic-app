@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v170-word-karaoke -->
+<!-- VERSION: v171-animated-marker -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -354,10 +354,18 @@ input:focus,textarea:focus,select:focus{border-color:rgba(16,185,129,.45)!import
 .sw.on::after{left:20px;background:var(--emerald2)}
 /* currently-playing ayah — gold ring on the mushaf panel */
 .verse-slot.playing .mushaf-ar{outline:2.5px solid rgba(227,201,138,.9);outline-offset:2px;box-shadow:0 0 22px rgba(227,201,138,.35)}
-/* karaoke word-sync: the word being recited glows with a red underline
-   (like following the printed mushaf with a finger) */
-.qw{border-radius:6px;padding:0 2px;transition:background .12s}
-.qw.qw-on{background:rgba(240,200,90,.5);box-shadow:0 3px 0 rgba(224,40,24,.85)}
+/* karaoke word-sync: a glowing marker GLIDES word-to-word under the recitation
+   (like following the printed mushaf with a finger), active word softly pulses */
+.qw{border-radius:6px;padding:0 2px;transition:background .15s}
+.qw.qw-on{background:rgba(240,200,90,.42);animation:qwPulse 1s ease-in-out infinite}
+@keyframes qwPulse{0%,100%{background:rgba(240,200,90,.3)}50%{background:rgba(240,200,90,.58)}}
+.mushaf-ar{position:relative}
+.qw-marker{
+  position:absolute;height:4px;border-radius:3px;pointer-events:none;
+  background:linear-gradient(90deg,#e02818,#e8930c);
+  box-shadow:0 0 9px rgba(224,40,24,.65),0 0 3px rgba(232,147,12,.8);
+  transition:left .38s cubic-bezier(.4,0,.2,1),top .38s cubic-bezier(.4,0,.2,1),width .38s cubic-bezier(.4,0,.2,1),opacity .3s;
+}
 .ae-btn{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:12px;padding:9px 0;color:var(--text2);font-size:16px;cursor:pointer;flex:1;font-family:'Hind Siliguri',sans-serif;transition:all .15s}
 .ae-btn.primary{background:rgba(16,185,129,.16);border-color:rgba(16,185,129,.5);color:var(--emerald2);font-size:20px}
 .ae-btn.on{background:rgba(212,175,106,.15);border-color:rgba(212,175,106,.5);color:var(--gold2)}
@@ -7095,7 +7103,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v170';
+const APP_VERSION = 'v171';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -7955,6 +7963,7 @@ const AE = {
   _markPlaying(it){
     document.querySelectorAll('.verse-slot.playing').forEach(el => el.classList.remove('playing'));
     document.querySelectorAll('.qw.qw-on').forEach(el => el.classList.remove('qw-on'));
+    document.querySelectorAll('.qw-marker').forEach(el => el.remove());
     this._kSegs = null; this._kWord = -1;
     if(it && it.s === currentOpenSurahNo){
       const slot = document.getElementById('verse-card-' + it.a);
@@ -8018,7 +8027,28 @@ const AE = {
     this._kWord = target;
     ar.querySelectorAll('.qw.qw-on').forEach(el => el.classList.remove('qw-on'));
     const w = ar.querySelector(`.qw[data-wi="${target}"]`);
-    if(w) w.classList.add('qw-on');
+    if(!w) return;
+    w.classList.add('qw-on');
+    // the glide marker: an underline bar that ANIMATES to the active word's
+    // position (CSS transition carries it smoothly, even across line wraps)
+    let mk = ar.querySelector('.qw-marker');
+    if(!mk){
+      mk = document.createElement('span');
+      mk.className = 'qw-marker';
+      mk.setAttribute('aria-hidden', 'true');
+      ar.appendChild(mk);
+      mk.style.opacity = '0';
+      // first placement without transition-jump: position, then fade in
+      mk.style.left = w.offsetLeft + 'px';
+      mk.style.top = (w.offsetTop + w.offsetHeight - 8) + 'px';
+      mk.style.width = w.offsetWidth + 'px';
+      setTimeout(() => { mk.style.opacity = '1'; }, 30);
+      return;
+    }
+    mk.style.opacity = '1';
+    mk.style.left = w.offsetLeft + 'px';
+    mk.style.top = (w.offsetTop + w.offsetHeight - 8) + 'px';
+    mk.style.width = w.offsetWidth + 'px';
   },
   _notify(){
     const label = document.getElementById('audio-play-label');
