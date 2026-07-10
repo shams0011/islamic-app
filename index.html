@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v180-tr-toggle -->
+<!-- VERSION: v181-collapsed-actions -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -7211,7 +7211,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v180';
+const APP_VERSION = 'v181';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -7646,13 +7646,15 @@ function buildVerseCardHTML(v){
       <div class="h-arabic mushaf-ar${hl}" id="verse-arabic-${v.n}" lang="ar" dir="rtl">${arabicHtml}</div>
       ${cfg.showTr ? `<div class="h-text">${escapeHtml(getVerseText(v))}</div>` : ''}
       ${st.note ? `<div class="v-note">📝 ${escapeHtml(st.note)}</div>` : ''}
-      <div class="h-meta">
+      <div class="h-meta" style="align-items:center">
         <span class="badge bg">${localizeNum(v.n)}</span>
-        ${v.sajda ? '<span class="badge bt">🕌 সিজদা</span>' : ''}
+        ${v.sajda ? '<span class="badge bt">۩</span>' : ''}
         <span class="badge" style="background:rgba(255,255,255,.04);color:var(--text3)">জুয ${localizeNum(v.juz)} • পৃ. ${localizeNum(v.page)}</span>
-        <button onclick="playVerseAudio(${currentOpenSurahNo}, ${v.n})" aria-label="আয়াত শুনুন" style="margin-left:auto;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);border-radius:50px;padding:4px 10px;color:var(--emerald2);font-size:12px;cursor:pointer">🔊</button>
+        ${st.b || st.f || st.hl || st.note ? `<span style="font-size:11px;letter-spacing:1px" aria-hidden="true">${st.b?'🔖':''}${st.f?'❤️':''}${st.hl?'🖍️':''}${st.note?'📝':''}</span>` : ''}
+        <button onclick="playVerseAudio(${currentOpenSurahNo}, ${v.n})" aria-label="আয়াত শুনুন" style="margin-left:auto;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);border-radius:50px;min-width:40px;min-height:32px;color:var(--emerald2);font-size:12px;cursor:pointer">🔊</button>
+        <button onclick="vActToggle(${v.n})" aria-expanded="${window._vactOpen && window._vactOpen.has(v.n)}" aria-label="আরো অ্যাকশন" id="vact-toggle-${v.n}" style="background:rgba(212,175,106,.08);border:1px solid rgba(212,175,106,.28);border-radius:50px;min-width:40px;min-height:32px;color:var(--gold2);font-size:13px;cursor:pointer;font-weight:800">⋯</button>
       </div>
-      <div class="v-act" role="group" aria-label="আয়াত ${localizeNum(v.n)} অ্যাকশন">
+      <div class="v-act" id="vact-${v.n}" style="display:${window._vactOpen && window._vactOpen.has(v.n) ? 'flex' : 'none'}" role="group" aria-label="আয়াত ${localizeNum(v.n)} অ্যাকশন">
         <button onclick="vAct(${v.n},'b')" class="${st.b?'on':''}" aria-pressed="${!!st.b}" aria-label="বুকমার্ক">🔖${st.b?' ✓':''}</button>
         <button onclick="vAct(${v.n},'f')" class="${st.f?'on':''}" aria-pressed="${!!st.f}" aria-label="প্রিয়">${st.f?'❤️':'🤍'}</button>
         <button onclick="vAct(${v.n},'hl')" class="${st.hl?'on':''}" aria-label="হাইলাইট রঙ বদলান">🖍️</button>
@@ -7661,6 +7663,18 @@ function buildVerseCardHTML(v){
         <button onclick="vAct(${v.n},'share')" aria-label="শেয়ার">↗️</button>
         <button onclick="vAct(${v.n},'ai')" aria-label="AI ব্যাখ্যা">🤖</button>
       </div>`;
+}
+
+// action row expand/collapse (⋯) — stays open across single-card refreshes
+window._vactOpen = new Set();
+function vActToggle(n){
+  const row = document.getElementById('vact-' + n);
+  const btn = document.getElementById('vact-toggle-' + n);
+  if(!row) return;
+  const open = row.style.display === 'none';
+  row.style.display = open ? 'flex' : 'none';
+  if(btn) btn.setAttribute('aria-expanded', String(open));
+  if(open) window._vactOpen.add(n); else window._vactOpen.delete(n);
 }
 
 // single-card refresh — actions never re-render the whole reader
