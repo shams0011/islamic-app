@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v174-surah-dropdown -->
+<!-- VERSION: v175-tab-to-list -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -1013,6 +1013,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
 <div id="tab-quran" class="section" role="tabpanel" aria-labelledby="tabbtn-quran">
   <div id="quran-surah-list-view">
     <div class="sec-title"><div class="sec-gem"></div><span id="quran-sec-title">পবিত্র কুরআন</span><div class="sec-gem"></div></div>
+    <div id="quran-resume-banner"></div>
     <!-- premium quick-jump: surah + ayah dropdowns (same pattern as the tasbih card) -->
     <div style="border:1px solid transparent;background:linear-gradient(160deg,#101a16,#0c1210) padding-box,linear-gradient(120deg,rgba(212,175,106,.35),rgba(16,185,129,.3) 55%,rgba(212,175,106,.3)) border-box;border-radius:17px;padding:11px 10px 12px;box-shadow:0 6px 20px rgba(0,0,0,.25);margin-bottom:12px">
       <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:8px">
@@ -4301,8 +4302,12 @@ function showTab(id,btn){
   }
   // likewise the tasbih body: home area owns it unless the tasbih tab is active
   if(typeof placeTasbihBody === 'function') placeTasbihBody(id === 'tasbih' ? 'tab' : 'home');
-  // first visit to the Quran tab after a reload resumes the last reading position
-  if(id === 'quran' && typeof resumeReadingPos === 'function') resumeReadingPos();
+  // the quran tab button ALWAYS lands on the surah list — resuming the last
+  // position is one tap on the resume banner at the top of the list
+  if(id === 'quran'){
+    goSurahList();
+    if(typeof renderResumeBanner === 'function') renderResumeBanner();
+  }
   // lazy background indexing — the search index builds/loads during idle time
   if(id === 'quran' && typeof QSE !== 'undefined' && !QSE.ready && !QSE.building){
     setTimeout(() => QSE.ensure(), 700); // plain timeout — rIC stalls in hidden tabs
@@ -7164,7 +7169,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v174';
+const APP_VERSION = 'v175';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -7772,14 +7777,28 @@ window.addEventListener('scroll', () => {
   _qposTimer = setTimeout(saveReadingPos, 400);
 }, {passive: true});
 
-function resumeReadingPos(){
-  if(_qResumed) return;
-  _qResumed = true;
+// the quran tab always lands on the SURAH LIST; resuming is one tap on this
+// premium banner instead of an auto-redirect into the reader
+function renderResumeBanner(){
+  const el = document.getElementById('quran-resume-banner');
+  if(!el) return;
   const pos = RS.load().session;
-  const listView = document.getElementById('quran-surah-list-view');
-  if(pos && pos.s && listView && listView.style.display !== 'none'){
-    openSurah(pos.s).then(() => { if(pos.a > 1) scrollToAyah(pos.a); });
-  }
+  if(!pos || !pos.s){ el.innerHTML = ''; return; }
+  const su = quranIndexCache && quranIndexCache.surahs.find(x => x.no === pos.s);
+  el.innerHTML = `
+  <div role="button" tabindex="0" onclick="resumeReadingPos()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();resumeReadingPos()}" aria-label="পড়া চালিয়ে যান"
+    style="display:flex;align-items:center;gap:11px;margin-bottom:12px;padding:11px 13px;border-radius:15px;cursor:pointer;border:1px solid rgba(16,185,129,.35);background:linear-gradient(160deg,rgba(16,185,129,.13),rgba(16,185,129,.04));box-shadow:0 4px 16px rgba(0,0,0,.2),0 0 16px rgba(16,185,129,.08);transition:transform .15s">
+    <span style="width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(16,185,129,.35),rgba(16,185,129,.12));border:1.5px solid rgba(16,185,129,.5);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0" aria-hidden="true">▶</span>
+    <span style="min-width:0">
+      <span style="display:block;font-size:13px;font-weight:800;color:var(--emerald2)">পড়া চালিয়ে যান</span>
+      <span style="display:block;font-size:11px;color:var(--text3);margin-top:1px">${su ? surahDisplayName(su) : 'সূরা ' + localizeNum(pos.s)} • আয়াত ${localizeNum(pos.a || 1)}${pos.juz ? ' • জুয ' + localizeNum(pos.juz) : ''}${pos.page ? ' • পৃ. ' + localizeNum(pos.page) : ''}</span>
+    </span>
+    <span style="margin-left:auto;color:var(--emerald2);font-size:17px;opacity:.8" aria-hidden="true">›</span>
+  </div>`;
+}
+function resumeReadingPos(){
+  const pos = RS.load().session;
+  if(pos && pos.s) openSurah(pos.s).then(() => { if(pos.a > 1) scrollToAyah(pos.a); });
 }
 
 /* ══ WORD-BY-WORD TRANSLATION (live fetch — uses the public Quran.com API) ══
@@ -8248,7 +8267,12 @@ function show2(id){
   ['quran-surah-list-view','quran-verses-view'].forEach(v =>
     document.getElementById(v).style.display = v===id?'block':'none');
 }
-function goSurahList(){ show2('quran-surah-list-view'); setReaderFooterVisible(false); closeSheets(); }
+function goSurahList(){
+  show2('quran-surah-list-view');
+  setReaderFooterVisible(false);
+  closeSheets();
+  if(typeof renderResumeBanner === 'function') renderResumeBanner(); // fresh last-read info
+}
 
 /* ══ HAFZ (MEMORIZATION) TRACKER ══ */
 const HAFZ_STATUS = {NONE:'none', IN_PROGRESS:'in_progress', MEMORIZED:'memorized'};
