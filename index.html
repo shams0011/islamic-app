@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v173-jumuah-fix -->
+<!-- VERSION: v174-surah-dropdown -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -1013,6 +1013,21 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
 <div id="tab-quran" class="section" role="tabpanel" aria-labelledby="tabbtn-quran">
   <div id="quran-surah-list-view">
     <div class="sec-title"><div class="sec-gem"></div><span id="quran-sec-title">পবিত্র কুরআন</span><div class="sec-gem"></div></div>
+    <!-- premium quick-jump: surah + ayah dropdowns (same pattern as the tasbih card) -->
+    <div style="border:1px solid transparent;background:linear-gradient(160deg,#101a16,#0c1210) padding-box,linear-gradient(120deg,rgba(212,175,106,.35),rgba(16,185,129,.3) 55%,rgba(212,175,106,.3)) border-box;border-radius:17px;padding:11px 10px 12px;box-shadow:0 6px 20px rgba(0,0,0,.25);margin-bottom:12px">
+      <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:8px">
+        <div style="position:relative;min-width:0">
+          <label for="qsd-surah" style="display:block;font-size:11px;font-weight:700;color:var(--gold2);margin-bottom:5px;letter-spacing:.3px">📖 সূরা বাছাই</label>
+          <select id="qsd-surah" onchange="qsdSurah(parseInt(this.value))" style="width:100%;min-width:0;appearance:none;-webkit-appearance:none;background:rgba(212,175,106,.06);border:1px solid rgba(212,175,106,.3);border-radius:12px;padding:9px 26px 9px 10px;color:var(--gold2);font-size:12.5px;font-weight:700;font-family:'Hind Siliguri',sans-serif;cursor:pointer;outline:none;text-overflow:ellipsis"></select>
+          <span style="position:absolute;right:10px;bottom:12px;pointer-events:none;color:var(--gold2);font-size:10px" aria-hidden="true">▼</span>
+        </div>
+        <div style="position:relative;min-width:0">
+          <label for="qsd-ayah" style="display:block;font-size:11px;font-weight:700;color:var(--emerald2);margin-bottom:5px;letter-spacing:.3px">🎯 আয়াতে যান</label>
+          <select id="qsd-ayah" onchange="qsdAyah(parseInt(this.value))" style="width:100%;min-width:0;appearance:none;-webkit-appearance:none;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.35);border-radius:12px;padding:9px 26px 9px 10px;color:var(--emerald2);font-size:12.5px;font-weight:700;font-family:'Hind Siliguri',sans-serif;cursor:pointer;outline:none"></select>
+          <span style="position:absolute;right:10px;bottom:12px;pointer-events:none;color:var(--emerald2);font-size:10px" aria-hidden="true">▼</span>
+        </div>
+      </div>
+    </div>
     <div class="search-wrap">
       <span class="search-icon">🔍</span>
       <input class="search-input" id="surah-search" oninput="universalSearchInput()" onkeydown="qseKeyNav(event)" placeholder="সূরা, আয়াত, অনুবাদ, আরবি খুঁজুন..." aria-label="কুরআনে খুঁজুন" autocomplete="off">
@@ -6726,6 +6741,36 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+/* ── premium quick-jump dropdowns: surah + ayah ── */
+function qsdPopulate(){
+  const sel = document.getElementById('qsd-surah');
+  if(!sel || !quranIndexCache || sel.options.length === 114) return;
+  sel.innerHTML = quranIndexCache.surahs.map(s =>
+    `<option value="${s.no}" style="background:#0c1210;color:#e8dcc0">${localizeNum(s.no)}. ${surahDisplayName(s)} — ${localizeNum(s.verseCount)} আয়াত</option>`
+  ).join('');
+  const ses = RS.load().session;
+  qsdFillAyah(ses.s || 1, ses.a || 1);
+  sel.value = String(ses.s || 1);
+}
+function qsdFillAyah(surahNo, selected){
+  const sel = document.getElementById('qsd-ayah');
+  const su = quranIndexCache && quranIndexCache.surahs.find(x => x.no === surahNo);
+  if(!sel || !su) return;
+  let html = '';
+  for(let a = 1; a <= su.verseCount; a++) html += `<option value="${a}" style="background:#0c1210;color:#d8f5ec">আয়াত ${localizeNum(a)}</option>`;
+  sel.innerHTML = html;
+  sel.value = String(Math.min(selected || 1, su.verseCount));
+}
+function qsdSurah(s){
+  qsdFillAyah(s, 1);
+  openSurah(s); // opens instantly at the top
+}
+function qsdAyah(a){
+  const s = parseInt(document.getElementById('qsd-surah').value);
+  if(currentOpenSurahNo === s && VR.verses.length){ scrollToAyah(a); return; }
+  openSurah(s).then(() => { if(a > 1) scrollToAyah(a); });
+}
+
 /* ── search UI: universal input, filters, keyboard nav, recent/popular ── */
 let _qseT = null;
 function universalSearchInput(){
@@ -6816,6 +6861,7 @@ async function renderSurahList(){
   const q = (document.getElementById('surah-search')?.value || '').toLowerCase();
   try{
     const data = await loadQuranIndex();
+    qsdPopulate(); // quick-jump dropdowns fill once the index is here
     let surahs = data.surahs;
     if(q){
       surahs = surahs.filter(s =>
@@ -6893,6 +6939,9 @@ async function openSurah(no){
     renderVerses(currentSurahVerses);
     setReaderFooterVisible(true);
     updateReaderFooter();
+    // keep the quick-jump dropdowns in sync however the surah was opened
+    const qs = document.getElementById('qsd-surah');
+    if(qs && qs.options.length){ qs.value = String(no); qsdFillAyah(no, 1); }
   }catch(e){
     document.getElementById('verse-list').innerHTML = `<div style="color:#e07070;padding:16px;text-align:center;font-size:14px">লোড ব্যর্থ: ${e.message}</div>`;
   }
@@ -7115,7 +7164,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v173';
+const APP_VERSION = 'v174';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
