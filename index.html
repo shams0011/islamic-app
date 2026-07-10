@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v184-mushaf-scroll-anchor -->
+<!-- VERSION: v185-goal-card-hifz-mode -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -354,6 +354,15 @@ input:focus,textarea:focus,select:focus{border-color:rgba(16,185,129,.45)!import
 .sw.on::after{left:20px;background:var(--emerald2)}
 /* currently-playing ayah — gold ring on the mushaf panel */
 .verse-slot.playing .mushaf-ar{outline:2.5px solid rgba(227,201,138,.9);outline-offset:2px;box-shadow:0 0 22px rgba(227,201,138,.35)}
+/* hifz mode: verses in the practice range are hidden behind a blur;
+   press-and-hold the card to peek (pointer handlers add .hifz-peek) */
+/* #verse-list prefix: must out-rank `#verse-list .h-arabic.mushaf-ar{filter:none}` (line ~314) */
+#verse-list .verse-slot.hifz-blur .h-arabic,#verse-list .verse-slot.hifz-blur .h-text{filter:blur(9px);user-select:none;-webkit-user-select:none}
+#verse-list .verse-slot.hifz-blur.hifz-peek .h-arabic,#verse-list .verse-slot.hifz-blur.hifz-peek .h-text{filter:none}
+/* the hint reuses the card's ::after (normally the 3px accent strip) — every
+   positioning prop is reset so it becomes a gold pill badge at the top-right */
+#verse-list .verse-slot.hifz-blur::after{content:'🧠 চেপে ধরে দেখুন';position:absolute;left:auto;right:12px;top:10px;bottom:auto;width:auto;height:auto;background:rgba(212,175,106,.14);border:1px solid rgba(212,175,106,.35);border-radius:50px;padding:3px 10px;font-size:10px;font-weight:700;color:var(--gold2);font-family:'Hind Siliguri',sans-serif;pointer-events:none;z-index:2;line-height:1.5}
+#verse-list .verse-slot.hifz-blur.hifz-peek::after{opacity:.25}
 /* karaoke word-sync: a glowing marker GLIDES word-to-word under the recitation
    (like following the printed mushaf with a finger), active word softly pulses */
 .qw{border-radius:6px;padding:0 2px;transition:background .15s}
@@ -876,6 +885,9 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
   <div id="home-tasbih-slot"></div>
 </div>
 
+<!-- daily reading-goal card: ring progress + streak, powered by RS.stats -->
+<div id="home-goal-card" style="margin:14px 16px 0"></div>
+
 <!-- universal command palette (Ctrl+K) — global overlay, usable from any tab -->
 <div id="cp-backdrop" onclick="commandPalette.close()"></div>
 <div id="cp-modal" role="dialog" aria-label="কমান্ড প্যালেট" aria-modal="true">
@@ -1085,6 +1097,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
     <button onclick="rfBookmark()" aria-label="এই আয়াত বুকমার্ক করুন" title="বুকমার্ক">🔖</button>
     <button onclick="openAudioSheet()" aria-label="অডিও প্লেয়ার" title="অডিও">🎧</button>
     <button onclick="openStatsSheet()" aria-label="পাঠ পরিসংখ্যান" title="পরিসংখ্যান">📊</button>
+    <button onclick="openHifzSheet()" aria-label="হিফজ-মোড: মুখস্থ অনুশীলন" title="হিফজ">🧠</button>
     <button onclick="openBookmarksSheet()" aria-label="বুকমার্ক তালিকা" title="তালিকা">🗂️</button>
     <button onclick="openReaderSettings()" aria-label="পাঠ সেটিংস" title="সেটিংস">⚙️</button>
     <button onclick="window.scrollTo({top:0})" aria-label="উপরে যান" title="উপরে">⬆️</button>
@@ -1098,6 +1111,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
   <div class="sheet" id="stats-sheet" role="dialog" aria-label="পাঠ পরিসংখ্যান"></div>
   <div class="sheet" id="health-sheet" role="dialog" aria-label="ডায়াগনস্টিকস"></div>
   <div class="sheet" id="ai-sheet" role="dialog" aria-label="AI ব্যাখ্যা"></div>
+  <div class="sheet" id="hifz-sheet" role="dialog" aria-label="হিফজ-মোড"></div>
   <input type="file" id="qbk-file" accept="application/json" style="display:none" onchange="qbkImport(this.files[0])">
 </div>
 
@@ -4326,6 +4340,7 @@ function showTab(id,btn){
   }
   // likewise the tasbih body: home area owns it unless the tasbih tab is active
   if(typeof placeTasbihBody === 'function') placeTasbihBody(id === 'tasbih' ? 'tab' : 'home');
+  if(typeof renderGoalCard === 'function') renderGoalCard(); // fresh minutes/streak when home reappears
   // the quran tab opens the READER (Surah Al-Fatiha by default); the premium
   // card list lives behind the surah dropdown button at the top
   if(id === 'quran'){
@@ -6572,6 +6587,7 @@ const CP = {
       [/^(next|পরের)$/, '⏭️', 'পরের আয়াত', () => AE.next()],
       [/^(previous|prev|আগের)$/, '⏮️', 'আগের আয়াত', () => AE.prev()],
       [/^(repeat|রিপিট)$/, '🔁', 'রিপিট: আয়াত', () => AE.setRepeat('ayah')],
+      [/^(hifz|memorize|হিফজ|মুখস্থ)$/, '🧠', 'হিফজ-মোড (মুখস্থ অনুশীলন)', () => { showTab('quran', document.getElementById('tabbtn-quran')); setTimeout(openHifzSheet, 350); }],
       [/^(bookmarks?|বুকমার্ক)$/, '🗂️', 'বুকমার্ক ম্যানেজার', () => { showTab('quran', document.getElementById('tabbtn-quran')); openBookmarksSheet(); }],
       [/^(favorites?|প্রিয়)$/, '❤️', 'প্রিয় আয়াতসমূহ', () => { showTab('quran', document.getElementById('tabbtn-quran')); bmFilter = 'f'; openBookmarksSheet(); }],
       [/^(continue|resume|চালিয়ে যাও)$/, '📖', 'পড়া চালিয়ে যান', () => { const p = RS.load().session; if(p.s){ showTab('quran', document.getElementById('tabbtn-quran')); openSurah(p.s).then(() => scrollToAyah(p.a)); } }],
@@ -6621,8 +6637,14 @@ const CP = {
         }
       }
     }
-    // other future modes (memorize/quiz/reflection) still route through registered handlers
-    if((m = q.match(/^(memorize|quiz|reflection)\s+(.+)$/))){
+    // memorize <surah> is live — opens the surah and the hifz sheet
+    if((m = qRaw.trim().match(/^(?:memorize|hifz|হিফজ|মুখস্থ)\s+(.+)$/i))){
+      const s = resolveSurahRef(m[1]);
+      if(s) out.push({icon: '🧠', title: `হিফজ-মোড: সূরা ${localizeNum(s)}`, meta: 'মুখস্থ অনুশীলন',
+        run: () => { showTab('quran', document.getElementById('tabbtn-quran')); openSurah(s).then(() => setTimeout(openHifzSheet, 250)); }});
+    }
+    // other future modes (quiz/reflection) still route through registered handlers
+    if((m = q.match(/^(quiz|reflection)\s+(.+)$/))){
       const h = this.aiHandlers.find(h => h.match && h.match(q));
       out.push(h ? {icon: '🤖', title: h.title(q), meta: 'AI', run: () => h.run(q)}
         : {icon: '🤖', title: `AI: ${m[1]} ${m[2]}`, meta: 'এই AI মোডটি শিগগিরই আসছে', run: () => showToast('🤖 এই AI মোডটি শিগগিরই আসছে, ইনশাআল্লাহ')});
@@ -7235,6 +7257,7 @@ setInterval(() => {
   d.stats.sessions.longest = Math.max(d.stats.sessions.longest, d.stats.sessions.cur);
   d.stats.lastTick = Date.now();
   RS.save();
+  renderGoalCard(); // keep the home goal-ring live while reading
 }, 15000);
 
 /* ══ BOTTOM SHEETS — reader settings + bookmarks/notes manager ══ */
@@ -7242,7 +7265,7 @@ function closeSheets(){
   document.getElementById('sheet-backdrop').style.display = 'none';
   document.getElementById('settings-sheet').style.display = 'none';
   document.getElementById('bookmarks-sheet').style.display = 'none';
-  ['audio-sheet', 'stats-sheet', 'health-sheet', 'ai-sheet'].forEach(id => {
+  ['audio-sheet', 'stats-sheet', 'health-sheet', 'ai-sheet', 'hifz-sheet'].forEach(id => {
     const el = document.getElementById(id);
     if(el) el.style.display = 'none';
   });
@@ -7342,7 +7365,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v184';
+const APP_VERSION = 'v185';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -7415,6 +7438,54 @@ const QA = {
     };
   },
 };
+
+/* ══ DAILY READING GOAL — home card with ring progress + streak ══ */
+function goalCfg(){
+  const d = RS.load();
+  d.goal = Object.assign({min: 10}, d.goal || {});
+  return d.goal;
+}
+function renderGoalCard(){
+  const el = document.getElementById('home-goal-card');
+  if(!el) return;
+  const d = RS.load();
+  const today = new Date().toISOString().slice(0, 10);
+  const sec = (d.stats.daily && d.stats.daily[today]) || 0;
+  const goalMin = goalCfg().min;
+  const pct = Math.min(100, Math.round(sec / (goalMin * 60) * 100));
+  const done = pct >= 100;
+  const streak = QA.streaks().cur;
+  const R = 26, C = Math.round(2 * Math.PI * R);
+  el.innerHTML = `
+  <div style="display:flex;align-items:center;gap:13px;border:1px solid transparent;background:linear-gradient(160deg,#101a16,#0c1210) padding-box,linear-gradient(120deg,rgba(16,185,129,.4),rgba(212,175,106,.3) 55%,rgba(16,185,129,.35)) border-box;border-radius:19px;padding:12px 14px;box-shadow:0 6px 20px rgba(0,0,0,.25),0 0 24px rgba(16,185,129,.05);position:relative;overflow:hidden">
+    <div style="position:absolute;top:-60%;left:-8%;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(16,185,129,.12),transparent 70%);pointer-events:none" aria-hidden="true"></div>
+    <div style="position:relative;width:64px;height:64px;flex-shrink:0" role="img" aria-label="আজকের পাঠ ${localizeNum(Math.round(sec/60))} মিনিট, লক্ষ্যের ${localizeNum(pct)}%">
+      <svg viewBox="0 0 64 64" style="transform:rotate(-90deg)" aria-hidden="true">
+        <circle cx="32" cy="32" r="${R}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="5"/>
+        <circle cx="32" cy="32" r="${R}" fill="none" stroke="${done ? '#f0d795' : 'url(#goal-grad)'}" stroke-width="5" stroke-linecap="round"
+          stroke-dasharray="${C}" stroke-dashoffset="${Math.round(C * (1 - pct / 100))}" style="transition:stroke-dashoffset .6s ease"/>
+        <defs><linearGradient id="goal-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34d399"/><stop offset="1" stop-color="#f0d795"/></linearGradient></defs>
+      </svg>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:${done ? 'var(--gold2)' : 'var(--emerald2)'}">${done ? '✓' : localizeNum(pct) + '%'}</div>
+    </div>
+    <div style="min-width:0;flex:1;position:relative">
+      <div style="font-size:13.5px;font-weight:800;color:${done ? 'var(--gold2)' : 'var(--emerald2)'}">${done ? '🎉 আজকের লক্ষ্য পূর্ণ, মাশাআল্লাহ!' : '🎯 আজকের পাঠ-লক্ষ্য'}</div>
+      <div style="font-size:11.5px;color:var(--text3);margin-top:3px">তিলাওয়াত ${localizeNum(Math.round(sec / 60))}/${localizeNum(goalMin)} মিনিট${streak ? ` • 🔥 স্ট্রিক ${localizeNum(streak)} দিন` : ''}</div>
+      <div style="display:flex;gap:6px;margin-top:7px;align-items:center">
+        <button onclick="goalStep(-5)" aria-label="লক্ষ্য কমান" style="min-width:34px;min-height:30px;border-radius:9px;border:1px solid var(--border2);background:rgba(255,255,255,.04);color:var(--text2);font-size:13px;cursor:pointer">−</button>
+        <button onclick="goalStep(5)" aria-label="লক্ষ্য বাড়ান" style="min-width:34px;min-height:30px;border-radius:9px;border:1px solid var(--border2);background:rgba(255,255,255,.04);color:var(--text2);font-size:13px;cursor:pointer">+</button>
+        <button onclick="showTab('quran', document.getElementById('tabbtn-quran'))" style="flex:1;min-height:30px;border-radius:9px;border:1px solid rgba(16,185,129,.35);background:rgba(16,185,129,.12);color:var(--emerald2);font-size:11.5px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif">📖 পড়তে বসুন</button>
+      </div>
+    </div>
+  </div>`;
+}
+function goalStep(d){
+  const g = goalCfg();
+  g.min = Math.min(120, Math.max(5, g.min + d));
+  RS.save();
+  renderGoalCard();
+  showToast('🎯 দৈনিক লক্ষ্য: ' + localizeNum(g.min) + ' মিনিট');
+}
 
 async function openStatsSheet(){
   if(!QSE.ready && !QSE.building) QSE.ensure();
@@ -7781,7 +7852,7 @@ function buildVerseCardHTML(v){
         <span class="badge bg">${localizeNum(v.n)}</span>
         ${v.sajda ? '<span class="badge bt">۩</span>' : ''}
         <span class="badge" style="background:rgba(255,255,255,.04);color:var(--text3)">জুয ${localizeNum(v.juz)} • পৃ. ${localizeNum(v.page)}</span>
-        ${st.b || st.f || st.hl || st.note ? `<span style="font-size:11px;letter-spacing:1px" aria-hidden="true">${st.b?'🔖':''}${st.f?'❤️':''}${st.hl?'🖍️':''}${st.note?'📝':''}</span>` : ''}
+        ${st.b || st.f || st.hl || st.note || st.mem ? `<span style="font-size:11px;letter-spacing:1px" aria-hidden="true">${st.b?'🔖':''}${st.f?'❤️':''}${st.hl?'🖍️':''}${st.note?'📝':''}${st.mem?'🧠':''}</span>` : ''}
         <button onclick="playVerseAudio(${currentOpenSurahNo}, ${v.n})" aria-label="আয়াত শুনুন" style="margin-left:auto;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);border-radius:50px;min-width:40px;min-height:32px;color:var(--emerald2);font-size:12px;cursor:pointer">🔊</button>
         <button onclick="vActToggle(${v.n})" aria-expanded="${window._vactOpen && window._vactOpen.has(v.n)}" aria-label="আরো অ্যাকশন" id="vact-toggle-${v.n}" style="background:rgba(212,175,106,.08);border:1px solid rgba(212,175,106,.28);border-radius:50px;min-width:40px;min-height:32px;color:var(--gold2);font-size:13px;cursor:pointer;font-weight:800">⋯</button>
       </div>
@@ -7851,6 +7922,8 @@ function materializeVerse(n){
   // re-apply the now-playing ring if this verse is the one being recited
   const cur = typeof AE !== 'undefined' && AE.active ? AE.queue[AE.idx] : null;
   slot.classList.toggle('playing', !!(cur && cur.s === currentOpenSurahNo && cur.a === n));
+  // hifz range stays hidden even after the virtualizer recycles the slot
+  slot.classList.toggle('hifz-blur', !!(typeof HZ !== 'undefined' && HZ.on && HZ.hide && HZ.s === currentOpenSurahNo && n >= HZ.from && n <= HZ.to));
   if(wordByWordEnabled) wbwEnsure(n);
 }
 
@@ -8467,6 +8540,109 @@ function aeRepeat(m){
   AE.setRepeat(m);
 }
 
+/* ══ HIFZ MODE — memorization practice ══
+   Pick an ayah range → each ayah repeats N times (AE repeat 'n' + playRange),
+   the range is blurred out (recall from memory), press-and-hold peeks, and a
+   "মুখস্থ ✓" button stamps st.mem on the range (🧠 shows in the verse meta row). */
+const HZ = {on: false, s: 0, from: 0, to: 0, hide: 1, rep: 3};
+
+function hifzTopVisibleAyah(){
+  for(let n = 1; n <= VR.verses.length; n++){
+    const el = document.getElementById('verse-card-' + n);
+    if(el && el.getBoundingClientRect().bottom > 90) return n;
+  }
+  return 1;
+}
+
+function openHifzSheet(){
+  if(!currentOpenSurahNo || !VR.verses.length){ showToast('আগে একটি সূরা খুলুন'); return; }
+  const total = VR.verses.length;
+  const cur = hifzTopVisibleAyah();
+  const from = HZ.on && HZ.s === currentOpenSurahNo ? HZ.from : cur;
+  const to = HZ.on && HZ.s === currentOpenSurahNo ? HZ.to : Math.min(cur + 4, total);
+  let memCount = 0;
+  const vs = RS.load().verses;
+  for(let n = 1; n <= total; n++) if((vs[currentOpenSurahNo + ':' + n] || {}).mem) memCount++;
+  const num = (id, val) => `<input type="number" id="${id}" value="${val}" min="1" max="${total}" style="width:64px;padding:8px;border-radius:10px;border:1px solid var(--border2);background:rgba(255,255,255,.05);color:var(--text);font-size:14px;text-align:center">`;
+  document.getElementById('hifz-sheet').innerHTML = `
+    <h4>🧠 হিফজ-মোড — মুখস্থ অনুশীলন</h4>
+    <div style="font-size:11.5px;color:var(--text3);margin:-4px 0 10px">এই সূরায় মুখস্থ: ${localizeNum(memCount)}/${localizeNum(total)} আয়াত</div>
+    <div class="row"><span>আয়াত রেঞ্জ</span><div style="display:flex;gap:7px;align-items:center">${num('hz-from', from)}<span style="color:var(--text3)">—</span>${num('hz-to', to)}</div></div>
+    <div class="row"><span>প্রতি আয়াত রিপিট</span><div class="seg">${[3, 5, 7, 10].map(r => `<button class="${HZ.rep === r ? 'on' : ''}" onclick="HZ.rep=${r};this.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));this.classList.add('on')">${localizeNum(r)} বার</button>`).join('')}</div></div>
+    <div class="row"><span>আয়াত ঢেকে রাখো (চেপে ধরে দেখা)</span><div class="sw ${HZ.hide ? 'on' : ''}" role="switch" aria-checked="${!!HZ.hide}" tabindex="0" onclick="HZ.hide=HZ.hide?0:1;this.classList.toggle('on')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}"></div></div>
+    <div style="display:flex;gap:8px;margin-top:13px">
+      ${HZ.on
+        ? `<button onclick="hifzStop()" style="flex:1;padding:11px;border-radius:12px;border:1px solid rgba(239,68,68,.4);background:rgba(239,68,68,.12);color:#fca5a5;font-weight:700;font-size:13.5px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">⏹ অনুশীলন বন্ধ</button>`
+        : ''}
+      <button onclick="hifzStart()" style="flex:2;padding:11px;border-radius:12px;border:1px solid rgba(16,185,129,.4);background:rgba(16,185,129,.14);color:var(--emerald2);font-weight:800;font-size:13.5px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">▶️ ${HZ.on ? 'নতুন রেঞ্জে শুরু' : 'অনুশীলন শুরু'}</button>
+      <button onclick="hifzMarkMem()" style="flex:1;padding:11px;border-radius:12px;border:1px solid rgba(212,175,106,.4);background:rgba(212,175,106,.1);color:var(--gold2);font-weight:700;font-size:13.5px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">মুখস্থ ✓</button>
+    </div>
+    <button onclick="closeSheets()" style="width:100%;margin-top:10px;padding:11px;border-radius:12px;border:1px solid var(--border2);background:rgba(255,255,255,.04);color:var(--text2);font-weight:700;font-size:13.5px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">বন্ধ করুন</button>`;
+  _openSheet('hifz-sheet');
+}
+
+function _hifzRange(){
+  const total = VR.verses.length;
+  let from = Math.max(1, Math.min(total, parseInt(document.getElementById('hz-from').value) || 1));
+  let to = Math.max(1, Math.min(total, parseInt(document.getElementById('hz-to').value) || from));
+  if(to < from){ const t = from; from = to; to = t; }
+  return [from, to];
+}
+
+function hifzStart(){
+  const [from, to] = _hifzRange();
+  hifzClearBlur(); // old range (if any) unblurs before the new one applies
+  HZ.on = true; HZ.s = currentOpenSurahNo; HZ.from = from; HZ.to = to;
+  if(HZ.hide) for(let n = from; n <= to; n++){
+    const el = document.getElementById('verse-card-' + n);
+    if(el) el.classList.add('hifz-blur');
+  }
+  AE.playRange(HZ.s, from, to); // playRange resets repeat to 'range' — override AFTER it
+  AE.repeat.n = HZ.rep;
+  AE.setRepeat('n');
+  closeSheets();
+  scrollToAyah(from);
+  showToast(HZ.hide ? '🧠 হিফজ-মোড চালু — আয়াত চেপে ধরলে দেখা যাবে' : '🧠 হিফজ-মোড চালু — প্রতি আয়াত ' + localizeNum(HZ.rep) + ' বার');
+}
+
+function hifzStop(){
+  HZ.on = false;
+  hifzClearBlur();
+  AE.setRepeat('off');
+  AE.pause();
+  closeSheets();
+  showToast('হিফজ-মোড বন্ধ হয়েছে');
+}
+
+function hifzClearBlur(){
+  document.querySelectorAll('.verse-slot.hifz-blur').forEach(el => el.classList.remove('hifz-blur', 'hifz-peek'));
+}
+
+function hifzMarkMem(){
+  const [from, to] = _hifzRange();
+  for(let n = from; n <= to; n++){
+    RS.patchVerse(currentOpenSurahNo + ':' + n, {mem: Date.now()});
+    refreshVerse(n);
+  }
+  showToast('🧠 আয়াত ' + localizeNum(from) + '–' + localizeNum(to) + ' মুখস্থ চিহ্নিত — মাশাআল্লাহ!');
+  openHifzSheet(); // refresh the memorized counter
+}
+
+// press-and-hold peek — delegated so it works on virtualizer-recycled cards
+(function(){
+  const list = document.getElementById('verse-list');
+  if(!list) return;
+  let peekEl = null;
+  const end = () => { if(peekEl){ peekEl.classList.remove('hifz-peek'); peekEl = null; } };
+  list.addEventListener('pointerdown', e => {
+    const card = e.target.closest && e.target.closest('.verse-slot.hifz-blur');
+    if(!card || e.target.closest('button')) return; // action buttons keep working normally
+    peekEl = card;
+    card.classList.add('hifz-peek');
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => list.addEventListener(ev, end));
+})();
+
 function show2(id){
   ['quran-surah-list-view','quran-verses-view','quran-mushaf-view'].forEach(v => {
     const el = document.getElementById(v);
@@ -8588,6 +8764,7 @@ renderZakatForm(); // the calculator sits on the home screen, so fill it at star
 renderTasbihPresets();
 selectTasbihZikir(0); // sync arabic/meaning/audio-button state for the default zikir
 placeTasbihBody('home'); // the tasbih starts on the home screen below the zakat card
+renderGoalCard(); // daily reading-goal ring below the tasbih card
 applyQuranFont(); // restore the reader's saved mushaf font + size
 AE.init(); // audio engine: media element, media-session handlers
 initNotificationBanner();
