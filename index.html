@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v176-surah-dd-reader -->
+<!-- VERSION: v177-inline-wbw -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -359,6 +359,11 @@ input:focus,textarea:focus,select:focus{border-color:rgba(16,185,129,.45)!import
 .qw{border-radius:6px;padding:0 2px;transition:background .15s}
 .qw.qw-on{background:rgba(240,200,90,.42);animation:qwPulse 1s ease-in-out infinite}
 @keyframes qwPulse{0%,100%{background:rgba(240,200,90,.3)}50%{background:rgba(240,200,90,.58)}}
+/* word-by-word INSIDE the mushaf: each word becomes a little column with its
+   translation right underneath (RTL flow preserved) */
+.mushaf-ar.wbw-on .qw{display:inline-flex;flex-direction:column;align-items:center;vertical-align:top;margin:3px 1px}
+.qw-tr{display:block;font-family:'Hind Siliguri',sans-serif;font-weight:600;font-size:10.5px;color:#8a7440;line-height:1.35;margin-top:1px;max-width:110px;text-align:center;white-space:normal}
+#verse-list.hc .qw-tr{color:#555}
 .mushaf-ar{position:relative}
 .qw-marker{
   position:absolute;height:4px;border-radius:3px;pointer-events:none;
@@ -7178,7 +7183,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v176';
+const APP_VERSION = 'v177';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -7609,7 +7614,6 @@ function buildVerseCardHTML(v){
   const hl = st.hl ? ` hl-${st.hl}` : '';
   return `
       <div class="h-arabic mushaf-ar${hl}" id="verse-arabic-${v.n}" lang="ar" dir="rtl">${arabicHtml}</div>
-      <div id="wbw-container-${v.n}" style="display:${wordByWordEnabled?'block':'none'};margin-bottom:13px"></div>
       ${cfg.showTr ? `<div class="h-text">${escapeHtml(getVerseText(v))}</div>` : ''}
       ${st.note ? `<div class="v-note">📝 ${escapeHtml(st.note)}</div>` : ''}
       <div class="h-meta">
@@ -7824,12 +7828,33 @@ function toggleWordByWord(){
   }
   if(label) label.textContent = wordByWordEnabled ? t('wbwHide') : t('wbwShow');
 
-  document.querySelectorAll('[id^="wbw-container-"]').forEach(el => {
-    el.style.display = wordByWordEnabled ? 'block' : 'none';
+  if(wordByWordEnabled){
+    // lazy: only fetch for verses that are actually materialized right now;
+    // the render engine calls wbwEnsure() as new verses come into view
+    VR.live.forEach(n => wbwEnsure(n, false));
+  }else{
+    // strip the inline per-word translations
+    document.querySelectorAll('.mushaf-ar .qw-tr').forEach(e => e.remove());
+    document.querySelectorAll('.mushaf-ar.wbw-on').forEach(e => e.classList.remove('wbw-on'));
+  }
+}
+
+// inject each word's translation DIRECTLY UNDER the word inside the mushaf text
+function applyWbwInline(n, words){
+  if(!wordByWordEnabled) return;
+  const ar = document.getElementById('verse-arabic-' + n);
+  if(!ar || !words || !words.length) return;
+  ar.classList.add('wbw-on');
+  ar.querySelectorAll('.qw').forEach(w => {
+    if(w.querySelector('.qw-tr')) return;
+    const t = words[parseInt(w.dataset.wi)];
+    if(!t || !t.translation) return;
+    const s = document.createElement('span');
+    s.className = 'qw-tr';
+    s.setAttribute('dir', 'auto');
+    s.textContent = t.translation;
+    w.appendChild(s);
   });
-  // lazy: only fetch for verses that are actually materialized right now;
-  // the render engine calls wbwEnsure() as new verses come into view
-  if(wordByWordEnabled) VR.live.forEach(n => wbwEnsure(n, false));
 }
 
 // load one verse's word-by-word data (permanent cache, in-flight dedupe),
@@ -7844,17 +7869,15 @@ function wbwEnsure(n, prefetch = true){
 async function wbwLoad(n){
   const surah = currentOpenSurahNo;
   const cacheKey = `${surah}:${n}`;
-  const container = document.getElementById(`wbw-container-${n}`);
   if(wbwCache[cacheKey]){
-    if(container && !container.childElementCount) renderWbwWords(container, wbwCache[cacheKey]);
+    applyWbwInline(n, wbwCache[cacheKey]);
     return;
   }
   if(wbwInFlight.has(cacheKey)) return; // never request the same verse twice
   wbwInFlight.add(cacheKey);
-  if(container) container.innerHTML = `<div style="font-size:11px;color:var(--text3)">${t('wbwLoading')}</div>`;
   try{
     // Quran.com API v4 — word-by-word data with per-word translation, language-aware
-    const langMap = {bn:'bengali', en:'english', ar:'arabic', ur:'urdu', fr:'french', zh:'english'}; // zh falls back to english (no zh word-by-word coverage)
+    const langMap = {bn:'bn', en:'en', ar:'ar', ur:'ur', fr:'fr', zh:'en'}; // ISO codes — API ignores full names; zh falls back to en
     const apiLang = langMap[currentLang] || 'english';
     const url = `https://api.quran.com/api/v4/verses/by_key/${surah}:${n}?words=true&word_fields=text_uthmani&translation_fields=text&language=${apiLang}`;
     const r = await fetch(url);
@@ -7864,12 +7887,9 @@ async function wbwLoad(n){
       .filter(w => w.char_type_name === 'word')
       .map(w => ({ar: w.text_uthmani || w.text, translation: (w.translation && w.translation.text) || ''}));
     wbwCache[cacheKey] = words;
-    const c2 = document.getElementById(`wbw-container-${n}`);
-    if(c2 && surah === currentOpenSurahNo) renderWbwWords(c2, words);
-  }catch(e){
-    const c2 = document.getElementById(`wbw-container-${n}`);
-    if(c2) c2.innerHTML = `<div style="font-size:11px;color:var(--text3)">${t('wbwUnavailable')}</div>`;
-  }finally{
+    if(surah === currentOpenSurahNo) applyWbwInline(n, words);
+  }catch(e){ /* offline — the plain arabic stays perfectly readable */ }
+  finally{
     wbwInFlight.delete(cacheKey);
   }
 }
