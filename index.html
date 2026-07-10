@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v172-ux-polish -->
+<!-- VERSION: v173-jumuah-fix -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -2438,9 +2438,19 @@ const PRAYER_LABELS = {
   maghrib:{bn:'মাগরিব', ar:'المغرب', en:'Maghrib', zh:'昏礼', ur:'مغرب', fr:'Maghrib'},
   isha:{bn:'ইশা', ar:'العشاء', en:'Isha', zh:'宵礼', ur:'عشاء', fr:'Isha'}
 };
+// on Fridays the dhuhr slot IS jumu'ah — every display goes through these two
+const JUMUAH_LABEL = {bn:'জুমা', ar:'الجمعة', en:"Jumu'ah", zh:'聚礼', ur:'جمعہ', fr:'Joumoua'};
+function isFridayDhuhr(key){
+  try{ return key === 'dhuhr' && getLocationNow().getDay() === 5; }catch(e){ return false; }
+}
 function prayerName(key){
+  if(isFridayDhuhr(key)) return JUMUAH_LABEL[currentLang] || JUMUAH_LABEL.bn;
   const p = PRAYER_LABELS[key];
   return (p && (p[currentLang] || p.bn)) || key;
+}
+function prayerArabic(key){
+  if(isFridayDhuhr(key)) return JUMUAH_LABEL.ar;
+  return (PRAYER_LABELS[key] || {}).ar || '';
 }
 
 function updateActivePrayerHighlight(){
@@ -2564,7 +2574,7 @@ function triggerPrayerAlarm(prayerKey){
   if(!label) return;
 
   document.getElementById('alarm-prayer-name').textContent = prayerName(prayerKey);
-  document.getElementById('alarm-prayer-arabic').textContent = label.ar;
+  document.getElementById('alarm-prayer-arabic').textContent = prayerArabic(prayerKey);
   document.getElementById('alarm-overlay').style.display = 'flex';
 
   playAlarmTone();
@@ -2576,7 +2586,7 @@ function triggerPrayerAlarm(prayerKey){
   // Browser notification (works even if the tab is in background, as long as browser is running)
   try{
     if('Notification' in window && Notification.permission === 'granted'){
-      new Notification(`${prayerName(prayerKey)} (${label.ar})`, {
+      new Notification(`${prayerName(prayerKey)} (${prayerArabic(prayerKey)})`, {
         body: `${t('prayerTimeNow')} — ${t('getReady')}`,
         icon: undefined,
         tag: 'prayer-alarm',
@@ -4218,7 +4228,7 @@ function tick(){
   // ── LEFT column — full prayer timeline (fard + forbidden + nafl) ──
   const seg = currentSegment(pt, curHour);
   const segName = seg.type==='fard' ? prayerName(seg.key) : t(seg.nameK);
-  const segAr   = seg.type==='fard' ? PRAYER_LABELS[seg.key].ar : seg.ar;
+  const segAr   = seg.type==='fard' ? prayerArabic(seg.key) : seg.ar;
   setTextIfExists('np-cur-name', segName);
   setTextIfExists('np-cur-arabic', segAr);
   setTextIfExists('np-cur-range', localizeNum(fmtHM(seg.start % 24) + ' – ' + fmtHM(seg.end % 24)));
@@ -4242,7 +4252,7 @@ function tick(){
   // ── RIGHT column — next of the five fard prayers only (unchanged) ──
   const endMap = {fajr: pt.sunrise, dhuhr: pt.asr, asr: pt.maghrib, maghrib: pt.isha, isha: pt.fajr};
   setTextIfExists('np-next-name', prayerName(next.name));
-  setTextIfExists('np-next-arabic', PRAYER_LABELS[next.name].ar);
+  setTextIfExists('np-next-arabic', prayerArabic(next.name));
   setTextIfExists('np-next-range', localizeNum(fmtHM(next.time) + ' – ' + fmtHM(endMap[next.name])));
   setTextIfExists('countdown', localizeNum(fmtCd(diffHours)));
 
@@ -7105,7 +7115,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v172';
+const APP_VERSION = 'v173';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
