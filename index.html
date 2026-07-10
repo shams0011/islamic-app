@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v171-animated-marker -->
+<!-- VERSION: v172-ux-polish -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -390,8 +390,13 @@ mark{background:rgba(212,175,106,.4);color:#fff3d6;border-radius:3px;padding:0 2
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
-.v-act button,#reader-footer button,.sheet .seg button,.ae-btn{min-height:44px;min-width:44px}
-.v-act button{display:inline-flex;align-items:center;justify-content:center}
+#reader-footer button,.sheet .seg button,.ae-btn{min-height:44px;min-width:44px}
+/* verse action chips: 40px targets (WCAG 2.2 AA min is 24) so all 7 fit one line on 375px */
+.v-act{gap:4px}
+.v-act button{display:inline-flex;align-items:center;justify-content:center;min-height:40px;min-width:40px;padding:2px 8px;background:transparent;border-color:rgba(255,255,255,.08)}
+.v-act button.on{background:rgba(212,175,106,.12)}
+/* the floating footer must never cover the last verses */
+#verse-list{padding-bottom:96px}
 button:focus-visible,[tabindex]:focus-visible,.sw:focus-visible{outline:2.5px solid rgba(45,212,191,.85)!important;outline-offset:2px}
 /* stat dashboard tiles */
 .stat-tile{background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:14px;padding:11px 12px;min-width:0}
@@ -1021,23 +1026,12 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
     <div class="sec-title" id="surah-title"><div class="sec-gem"></div>সূরা<div class="sec-gem"></div></div>
     <div id="reader-header"></div>
 
-    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-      <button type="button" id="wbw-toggle-btn" onclick="toggleWordByWord()" style="flex:1;min-width:120px;padding:10px 12px;border-radius:13px;border:1px solid rgba(16,185,129,.25);background:linear-gradient(160deg,rgba(16,185,129,.08),rgba(16,185,129,.02));color:var(--text2);font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.15)">🔤 <span id="wbw-toggle-label">শব্দে শব্দে অর্থ</span></button>
-      <button type="button" id="audio-play-btn" onclick="toggleSurahAudio()" style="flex:1;min-width:120px;padding:10px 12px;border-radius:13px;border:1px solid rgba(16,185,129,.25);background:linear-gradient(160deg,rgba(16,185,129,.08),rgba(16,185,129,.02));color:var(--text2);font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.15)">▶️ <span id="audio-play-label">তিলাওয়াত শুনুন</span></button>
-    </div>
-    <!-- mushaf display controls: font family cycle + size stepper -->
-    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
-      <button type="button" id="qfont-btn" onclick="cycleQuranFont()" style="flex:1;min-width:150px;padding:8px 12px;border-radius:12px;border:1px solid rgba(212,175,106,.3);background:rgba(212,175,106,.07);color:var(--gold2);font-size:12.5px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif">🖋️ ফন্ট: <span id="qfont-label">শেহেরজাদ</span></button>
-      <button type="button" onclick="stepQuranSize(-2)" aria-label="আরবি ফন্ট ছোট করুন" style="width:44px;padding:8px 0;border-radius:12px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:13px;font-weight:800;cursor:pointer;font-family:'Hind Siliguri',sans-serif">আ−</button>
-      <button type="button" onclick="stepQuranSize(2)" aria-label="আরবি ফন্ট বড় করুন" style="width:44px;padding:8px 0;border-radius:12px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:15px;font-weight:800;cursor:pointer;font-family:'Hind Siliguri',sans-serif">আ+</button>
-    </div>
-    <!-- tajweed colour legend — mirrors the printed mushaf's key -->
-    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;font-size:10.5px;font-weight:700">
-      <span style="color:var(--tajweed-ghunnah);background:rgba(224,40,24,.08);border:1px solid rgba(224,40,24,.25);border-radius:50px;padding:2px 9px">গুন্নাহ</span>
-      <span style="color:var(--tajweed-ikhfa);background:rgba(216,27,140,.08);border:1px solid rgba(216,27,140,.25);border-radius:50px;padding:2px 9px">ইখফা-ইকলাব</span>
-      <span style="color:var(--tajweed-qalqalah);background:rgba(31,91,212,.1);border:1px solid rgba(31,91,212,.3);border-radius:50px;padding:2px 9px">কলকলা</span>
-      <span style="color:var(--tajweed-madd);background:rgba(232,147,12,.08);border:1px solid rgba(232,147,12,.3);border-radius:50px;padding:2px 9px">মাদ</span>
-      <span style="color:var(--tajweed-silent);background:rgba(149,162,154,.08);border:1px solid rgba(149,162,154,.3);border-radius:50px;padding:2px 9px">উচ্চারণহীন</span>
+    <!-- one compact toolbar — font/size/legend live in the ⚙️ settings sheet -->
+    <div style="display:flex;gap:7px;margin-bottom:12px;align-items:stretch">
+      <button type="button" id="wbw-toggle-btn" onclick="toggleWordByWord()" style="flex:1;min-width:0;padding:9px 8px;border-radius:13px;border:1px solid rgba(16,185,129,.25);background:linear-gradient(160deg,rgba(16,185,129,.08),rgba(16,185,129,.02));color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🔤 <span id="wbw-toggle-label">শব্দার্থ</span></button>
+      <button type="button" id="audio-play-btn" onclick="toggleSurahAudio()" style="flex:1;min-width:0;padding:9px 8px;border-radius:13px;border:1px solid rgba(16,185,129,.25);background:linear-gradient(160deg,rgba(16,185,129,.08),rgba(16,185,129,.02));color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">▶️ <span id="audio-play-label">তিলাওয়াত</span></button>
+      <button type="button" id="qfont-btn" onclick="cycleQuranFont()" aria-label="আরবি ফন্ট বদলান" title="ফন্ট" style="width:46px;flex-shrink:0;border-radius:13px;border:1px solid rgba(212,175,106,.3);background:rgba(212,175,106,.07);color:var(--gold2);font-size:15px;cursor:pointer">🖋️<span id="qfont-label" style="display:none"></span></button>
+      <button type="button" onclick="openReaderSettings()" aria-label="পাঠ সেটিংস" title="সেটিংস" style="width:46px;flex-shrink:0;border-radius:13px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:15px;cursor:pointer">⚙️</button>
     </div>
     <audio id="surah-audio-player" style="display:none"></audio>
 
@@ -6916,7 +6910,7 @@ function applyQuranFont(){
   if(vl) vl.classList.toggle('hc', !!s.hc);
   RS.save();
 }
-function cycleQuranFont(){ const s = RS.load().settings; s.font = (s.font + 1) % QURAN_FONTS.length; applyQuranFont(); }
+function cycleQuranFont(){ const s = RS.load().settings; s.font = (s.font + 1) % QURAN_FONTS.length; applyQuranFont(); showToast('🖋️ ফন্ট: ' + QURAN_FONTS[s.font].label); }
 function stepQuranSize(d){ const s = RS.load().settings; s.size += d; applyQuranFont(); }
 
 /* ══ READER HEADER — premium mushaf header with full surah metadata ══ */
@@ -6929,7 +6923,7 @@ function renderReaderHeader(surah, verses){
   const sajda = verses.some(v => v.sajda);
   const chip = (txt, gold) => `<span style="font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:50px;${gold ? 'color:var(--gold2);background:rgba(212,175,106,.1);border:1px solid rgba(212,175,106,.28)' : 'color:var(--text2);background:rgba(255,255,255,.05);border:1px solid var(--border2)'}">${txt}</span>`;
   el.innerHTML = `
-  <div style="border:1px solid transparent;background:linear-gradient(160deg,#101a16,#0c1210) padding-box,linear-gradient(120deg,rgba(212,175,106,.45),rgba(16,185,129,.3) 55%,rgba(212,175,106,.4)) border-box;border-radius:18px;padding:14px 14px 12px;margin-bottom:12px">
+  <div style="border:1px solid transparent;background:linear-gradient(160deg,#101a16,#0c1210) padding-box,linear-gradient(120deg,rgba(212,175,106,.45),rgba(16,185,129,.3) 55%,rgba(212,175,106,.4)) border-box;border-radius:18px;padding:11px 12px 10px;margin-bottom:10px">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
       <div>
         <div style="font-size:19px;font-weight:800;background:linear-gradient(180deg,#c8fff8 10%,#2dd4bf 62%,#0fb5a0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">${surahDisplayName(surah)}</div>
@@ -6947,8 +6941,8 @@ function renderReaderHeader(surah, verses){
       ${sajda ? chip('۩ সিজদা আছে', true) : ''}
     </div>
     ${surah.no !== 1 && surah.no !== 9 ? `
-    <div style="position:relative;margin-top:12px">
-      <div class="mushaf-ar" lang="ar" dir="rtl" style="text-align:center;padding:12px 40px;font-size:calc(var(--quran-size) - 2px)" aria-label="বিসমিল্লাহ">${BASMALA_PLAIN}</div>
+    <div style="position:relative;margin-top:9px">
+      <div class="mushaf-ar" lang="ar" dir="rtl" style="text-align:center;padding:8px 36px;font-size:calc(var(--quran-size) - 4px)" aria-label="বিসমিল্লাহ">${BASMALA_PLAIN}</div>
       <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#c9a45c;font-size:15px" aria-hidden="true">✦</span>
       <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#c9a45c;font-size:15px" aria-hidden="true">✦</span>
     </div>` : ''}
@@ -7037,7 +7031,15 @@ function openReaderSettings(){
     ${sw('showNum', 'আয়াত-নম্বর মেডেলিয়ন')}
     ${sw('hc', 'উচ্চ কনট্রাস্ট (সাদা পাতা)')}
     ${sw('autoScroll', 'অডিওর সাথে অটো-স্ক্রল')}
-    <div class="row" style="border:none"><span>শব্দে-শব্দে অর্থ</span><div class="sw ${wordByWordEnabled ? 'on' : ''}" role="switch" aria-checked="${wordByWordEnabled}" tabindex="0" onclick="toggleWordByWord();openReaderSettings()"></div></div>
+    <div class="row"><span>শব্দে-শব্দে অর্থ</span><div class="sw ${wordByWordEnabled ? 'on' : ''}" role="switch" aria-checked="${wordByWordEnabled}" tabindex="0" onclick="toggleWordByWord();openReaderSettings()"></div></div>
+    <div class="row" style="border:none;flex-wrap:wrap"><span>তাজবীদ রঙের অর্থ</span>
+      <span style="display:flex;gap:5px;flex-wrap:wrap;font-size:10px;font-weight:700">
+        <span style="color:var(--tajweed-ghunnah)">● গুন্নাহ</span>
+        <span style="color:var(--tajweed-ikhfa)">● ইখফা-ইকলাব</span>
+        <span style="color:var(--tajweed-qalqalah)">● কলকলা</span>
+        <span style="color:var(--tajweed-madd)">● মাদ</span>
+        <span style="color:var(--tajweed-silent)">● উচ্চারণহীন</span>
+      </span></div>
     <button onclick="closeSheets()" style="width:100%;margin-top:14px;padding:11px;border-radius:12px;border:1px solid rgba(16,185,129,.35);background:rgba(16,185,129,.12);color:var(--emerald2);font-weight:700;font-size:13.5px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">বন্ধ করুন</button>`;
   _openSheet('settings-sheet');
 }
@@ -7103,7 +7105,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v171';
+const APP_VERSION = 'v172';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
