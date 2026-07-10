@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v186-premium-sheets -->
+<!-- VERSION: v187-settings-sliders -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -355,6 +355,11 @@ input:focus,textarea:focus,select:focus{border-color:rgba(16,185,129,.45)!import
 .sheet .seg{display:flex;gap:6px;flex-wrap:wrap}
 .sheet .seg button{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:10px;padding:6px 12px;color:var(--text2);font-size:12px;cursor:pointer;font-family:'Hind Siliguri',sans-serif}
 .sheet .seg button.on{background:rgba(16,185,129,.14);border-color:rgba(16,185,129,.45);color:var(--emerald2);font-weight:700}
+/* settings sliders — emerald→gold filled track (--pct), gold orb thumb */
+.rs-slider{flex:1;-webkit-appearance:none;appearance:none;height:6px;border-radius:6px;background:linear-gradient(90deg,var(--emerald2) 0%,#e3c98a var(--pct),rgba(255,255,255,.09) var(--pct));outline:none;cursor:pointer}
+.rs-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#f5e3b8,#d4af6a);border:2px solid #0b100d;box-shadow:0 0 0 2px rgba(212,175,106,.55),0 2px 8px rgba(0,0,0,.5);cursor:grab}
+.rs-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#f5e3b8,#d4af6a);border:2px solid #0b100d;box-shadow:0 0 0 2px rgba(212,175,106,.55);cursor:grab}
+.rs-slider:active::-webkit-slider-thumb{cursor:grabbing;box-shadow:0 0 0 4px rgba(212,175,106,.35),0 2px 8px rgba(0,0,0,.5)}
 .sw{position:relative;width:42px;height:24px;border-radius:50px;background:rgba(255,255,255,.1);border:1px solid var(--border2);cursor:pointer;transition:all .2s;flex-shrink:0}
 .sw::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#8fa39a;transition:all .2s}
 .sw.on{background:rgba(16,185,129,.35);border-color:rgba(16,185,129,.5)}
@@ -7286,13 +7291,22 @@ function _openSheet(id){
 function openReaderSettings(){
   const s = RS.load().settings;
   const sw = (key, label) => `<div class="row"><span>${label}</span><div class="sw ${s[key] ? 'on' : ''}" role="switch" aria-checked="${!!s[key]}" tabindex="0" onclick="rsToggle('${key}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();rsToggle('${key}')}"></div></div>`;
-  const step = (key, label, d1, d2, fmt) => `<div class="row"><span>${label}</span><div class="seg"><button onclick="rsStep('${key}',${d1})">−</button><span style="min-width:44px;text-align:center;color:var(--emerald2);font-weight:700">${fmt}</span><button onclick="rsStep('${key}',${d2})">+</button></div></div>`;
+  // premium slider row: label + live value on top, gold-thumb range with min/max marks below
+  const sld = (key, label, min, max, stp, val, fmt) => `
+    <div class="row" style="flex-direction:column;align-items:stretch;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center"><span>${label}</span><span class="rs-val" style="color:var(--emerald2);font-weight:800;font-size:13.5px">${fmt}</span></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:10.5px;color:var(--text3);font-weight:700">${localizeNum(min)}</span>
+        <input type="range" class="rs-slider" min="${min}" max="${max}" step="${stp}" value="${val}" style="--pct:${Math.round((val - min) / (max - min) * 100)}%" oninput="rsSlide('${key}', this)" aria-label="${label}">
+        <span style="font-size:10.5px;color:var(--text3);font-weight:700">${localizeNum(max)}</span>
+      </div>
+    </div>`;
   document.getElementById('settings-sheet').innerHTML = `
     <h4>⚙️ পাঠ সেটিংস</h4>
     <div class="row"><span>আরবি ফন্ট</span><div class="seg">${QURAN_FONTS.map((f, i) => `<button class="${s.font === i ? 'on' : ''}" onclick="rsFont(${i})">${f.label}</button>`).join('')}</div></div>
-    ${step('size', 'আরবি সাইজ', -2, 2, localizeNum(s.size) + 'px')}
-    ${step('trSize', 'অনুবাদ সাইজ', -1, 1, localizeNum(s.trSize) + 'px')}
-    ${step('lh', 'লাইন-স্পেসিং', -0.15, 0.15, localizeNum(Math.round(s.lh * 100) / 100))}
+    ${sld('size', 'আরবি সাইজ', 20, 38, 1, s.size, localizeNum(s.size) + 'px')}
+    ${sld('trSize', 'অনুবাদ সাইজ', 11, 22, 1, s.trSize, localizeNum(s.trSize) + 'px')}
+    ${sld('lh', 'লাইন-স্পেসিং', 1.6, 2.8, 0.05, s.lh, localizeNum(Math.round(s.lh * 100) / 100))}
     ${sw('tajweed', 'তাজবীদ রঙ')}
     ${sw('showTr', 'অনুবাদ দেখান')}
     ${sw('showNum', 'আয়াত-নম্বর মেডেলিয়ন')}
@@ -7312,6 +7326,15 @@ function openReaderSettings(){
 }
 function rsFont(i){ RS.load().settings.font = i; applyQuranFont(); openReaderSettings(); }
 function rsStep(key, d){ const s = RS.load().settings; s[key] = Math.round((s[key] + d) * 100) / 100; applyQuranFont(); openReaderSettings(); }
+// slider drag: apply live WITHOUT re-rendering the sheet (a re-render would kill the drag)
+function rsSlide(key, input){
+  const s = RS.load().settings;
+  s[key] = Math.round(parseFloat(input.value) * 100) / 100;
+  applyQuranFont(); // clamps, applies the CSS vars, saves
+  input.style.setProperty('--pct', Math.round((input.value - input.min) / (input.max - input.min) * 100) + '%');
+  const lbl = input.closest('.row').querySelector('.rs-val');
+  if(lbl) lbl.textContent = key === 'lh' ? localizeNum(Math.round(s.lh * 100) / 100) : localizeNum(s[key]) + 'px';
+}
 function rsToggle(key){
   const s = RS.load().settings;
   s[key] = s[key] ? 0 : 1;
@@ -7372,7 +7395,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v186';
+const APP_VERSION = 'v187';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
