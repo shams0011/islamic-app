@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v183-mushaf-current-page -->
+<!-- VERSION: v184-mushaf-scroll-anchor -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -6871,7 +6871,10 @@ async function openMushafPage(p){
     host.innerHTML = `<div style="border:1px solid transparent;background:linear-gradient(160deg,#fdfaf0,#f3eddb) padding-box,linear-gradient(140deg,rgba(212,175,106,.6),rgba(201,164,92,.35) 50%,rgba(212,175,106,.55)) border-box;border-radius:18px;padding:14px 13px;box-shadow:0 8px 26px rgba(0,0,0,.3)">${html}
       <div style="text-align:center;margin-top:8px;font-family:'Hind Siliguri',sans-serif;font-size:11px;color:#8a7440;font-weight:700">۝ ${localizeNum(p)} ۝</div></div>`;
     setTextIfExists('mushaf-page-chip', `পৃষ্ঠা ${localizeNum(p)} • জুয ${localizeNum(rows[0].juz)} • ${names.join(' · ')}`);
-    window.scrollTo(0, 0);
+    // bring the mushaf itself to the top of the screen — the quran tab sits far
+    // below the always-visible home cards, so scrollTo(0,0) would land on the clock
+    document.getElementById('quran-mushaf-view').scrollIntoView({block: 'start'});
+    window.scrollBy(0, -62);
   }catch(e){
     host.innerHTML = `<div style="color:#e07070;padding:16px;text-align:center;font-size:14px">লোড ব্যর্থ: ${escapeHtml(e.message)}</div>`;
   }
@@ -6883,8 +6886,12 @@ function mvJump(s, a){
   else openSurah(s).then(() => scrollToAyah(a));
 }
 function closeMushaf(){
-  if(currentOpenSurahNo){ show2('quran-verses-view'); setReaderFooterVisible(true); }
-  else openSurah(1);
+  if(currentOpenSurahNo){
+    show2('quran-verses-view');
+    setReaderFooterVisible(true);
+    document.getElementById('quran-verses-view').scrollIntoView({block: 'start'});
+    window.scrollBy(0, -62);
+  }else openSurah(1);
 }
 // swipe + arrow keys turn pages
 (function(){
@@ -7335,7 +7342,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v183';
+const APP_VERSION = 'v184';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
