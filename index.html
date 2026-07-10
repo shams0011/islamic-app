@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v179-header-premium -->
+<!-- VERSION: v180-tr-toggle -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -1053,6 +1053,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
     <!-- one compact toolbar — font/size/legend live in the ⚙️ settings sheet -->
     <div style="display:flex;gap:7px;margin-bottom:12px;align-items:stretch">
       <button type="button" id="wbw-toggle-btn" onclick="toggleWordByWord()" style="flex:1;min-width:0;padding:9px 8px;border-radius:13px;border:1px solid rgba(16,185,129,.25);background:linear-gradient(160deg,rgba(16,185,129,.08),rgba(16,185,129,.02));color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🔤 <span id="wbw-toggle-label">শব্দার্থ</span></button>
+      <button type="button" id="tr-toggle-btn" onclick="toggleTranslation()" aria-pressed="false" style="flex:1;min-width:0;padding:9px 8px;border-radius:13px;border:1px solid rgba(16,185,129,.25);background:linear-gradient(160deg,rgba(16,185,129,.08),rgba(16,185,129,.02));color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📃 অনুবাদ</button>
       <button type="button" id="audio-play-btn" onclick="toggleSurahAudio()" style="flex:1;min-width:0;padding:9px 8px;border-radius:13px;border:1px solid rgba(16,185,129,.25);background:linear-gradient(160deg,rgba(16,185,129,.08),rgba(16,185,129,.02));color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">▶️ <span id="audio-play-label">তিলাওয়াত</span></button>
       <button type="button" id="qfont-btn" onclick="cycleQuranFont()" aria-label="আরবি ফন্ট বদলান" title="ফন্ট" style="width:46px;flex-shrink:0;border-radius:13px;border:1px solid rgba(212,175,106,.3);background:rgba(212,175,106,.07);color:var(--gold2);font-size:15px;cursor:pointer">🖋️<span id="qfont-label" style="display:none"></span></button>
       <button type="button" onclick="openReaderSettings()" aria-label="পাঠ সেটিংস" title="সেটিংস" style="width:46px;flex-shrink:0;border-radius:13px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:15px;cursor:pointer">⚙️</button>
@@ -6988,9 +6989,29 @@ function applyQuranFont(){
   setTextIfExists('qfont-label', QURAN_FONTS[s.font].label);
   const vl = document.getElementById('verse-list');
   if(vl) vl.classList.toggle('hc', !!s.hc);
+  if(typeof updateTrBtn === 'function') updateTrBtn();
   RS.save();
 }
 function cycleQuranFont(){ const s = RS.load().settings; s.font = (s.font + 1) % QURAN_FONTS.length; applyQuranFont(); showToast('🖋️ ফন্ট: ' + QURAN_FONTS[s.font].label); }
+
+/* translation visibility: toolbar button beside শব্দার্থ (hidden by default) */
+function updateTrBtn(){
+  const b = document.getElementById('tr-toggle-btn');
+  if(!b) return;
+  const on = !!RS.load().settings.showTr;
+  b.setAttribute('aria-pressed', String(on));
+  b.style.background = on ? 'rgba(16,185,129,.18)' : 'linear-gradient(160deg,rgba(16,185,129,.08),rgba(16,185,129,.02))';
+  b.style.borderColor = on ? 'rgba(16,185,129,.55)' : 'rgba(16,185,129,.25)';
+  b.style.color = on ? 'var(--emerald2)' : 'var(--text2)';
+}
+function toggleTranslation(){
+  const s = RS.load().settings;
+  s.showTr = s.showTr ? 0 : 1;
+  RS.save();
+  if(currentOpenSurahNo && VR.verses.length) renderVerses(VR.verses);
+  updateTrBtn();
+  showToast(s.showTr ? '📃 অনুবাদ দেখানো হচ্ছে' : 'অনুবাদ লুকানো হলো');
+}
 function stepQuranSize(d){ const s = RS.load().settings; s.size += d; applyQuranFont(); }
 
 /* ══ READER HEADER — premium mushaf header with full surah metadata ══ */
@@ -7190,7 +7211,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v179';
+const APP_VERSION = 'v180';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -7539,7 +7560,9 @@ const RS = {
     let d = null;
     try{ d = JSON.parse(localStorage.getItem(profileKey('quran_state_v1')) || 'null'); }catch(e){}
     this.data = Object.assign({session:{}, verses:{}, stats:{daily:{}, lifetime:0}, settings:{}}, d || {});
-    this.data.settings = Object.assign({font:0, size:26, trSize:14, lh:2.05, tajweed:1, showTr:1, showNum:1, hc:0, autoScroll:0}, this.data.settings);
+    this.data.settings = Object.assign({font:0, size:26, trSize:14, lh:2.05, tajweed:1, showTr:0, showNum:1, hc:0, autoScroll:0}, this.data.settings);
+    // one-time policy change: translation hidden by default, toolbar button toggles it
+    if(!this.data.settings._trBtn){ this.data.settings.showTr = 0; this.data.settings._trBtn = 1; }
     // one-time migration of the old scattered keys
     try{
       const pos = JSON.parse(localStorage.getItem('quran_pos') || 'null');
