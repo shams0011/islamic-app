@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v181-collapsed-actions -->
+<!-- VERSION: v182-mushaf-mode -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -365,6 +365,9 @@ input:focus,textarea:focus,select:focus{border-color:rgba(16,185,129,.45)!import
    inline run so arabic letters keep joining; only the block .qw-tr drops below */
 .mushaf-ar.wbw-on .qw{display:inline-block;text-align:center;vertical-align:top;margin:3px 2px;white-space:nowrap}
 .qw-tr{display:block;font-family:'Hind Siliguri',sans-serif;font-weight:600;font-size:10.5px;color:#8a7440;line-height:1.35;margin-top:1px;max-width:110px;text-align:center;white-space:normal}
+/* mushaf-mode ayah pieces: tappable, subtle hover */
+.mv-ayah{cursor:pointer;border-radius:6px;transition:background .15s}
+.mv-ayah:hover,.mv-ayah:focus-visible{background:rgba(212,175,106,.14)}
 #verse-list.hc .qw-tr{color:#555}
 .mushaf-ar{position:relative}
 .qw-marker{
@@ -1046,6 +1049,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
         <select id="qsd-ayah" onchange="qsdAyah(parseInt(this.value))" aria-label="আয়াতে যান" style="width:100%;height:100%;appearance:none;-webkit-appearance:none;background:linear-gradient(160deg,rgba(16,185,129,.12),rgba(16,185,129,.03));border:1px solid rgba(16,185,129,.4);border-radius:15px;padding:9px 24px 9px 12px;color:var(--emerald2);font-size:12.5px;font-weight:800;font-family:'Hind Siliguri',sans-serif;cursor:pointer;outline:none;box-shadow:0 4px 16px rgba(0,0,0,.25),0 0 14px rgba(16,185,129,.06)"></select>
         <span style="position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--emerald2);font-size:9px;background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.35);border-radius:50px;padding:3px 7px" aria-hidden="true">▼</span>
       </div>
+      <button type="button" onclick="openMushafFromReader()" aria-label="মুসহাফ-মোড (পৃষ্ঠা-ভিত্তিক)" title="মুসহাফ-মোড" style="width:46px;flex-shrink:0;border-radius:15px;border:1px solid rgba(212,175,106,.4);background:radial-gradient(circle at 35% 30%,rgba(212,175,106,.2),rgba(212,175,106,.05));color:var(--gold2);font-size:16px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25)">📜</button>
     </div>
     <div class="sec-title" id="surah-title" style="display:none"><div class="sec-gem"></div>সূরা<div class="sec-gem"></div></div>
     <div id="reader-header"></div>
@@ -1061,6 +1065,17 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
     <audio id="surah-audio-player" style="display:none"></audio>
 
     <div id="verse-list"></div>
+  </div>
+
+  <!-- mushaf mode: one printed page per screen, swipe to turn -->
+  <div id="quran-mushaf-view" style="display:none">
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:11px">
+      <button type="button" onclick="mushafFlip(-1)" aria-label="আগের পৃষ্ঠা" style="width:46px;min-height:44px;border-radius:14px;border:1px solid rgba(212,175,106,.35);background:rgba(212,175,106,.08);color:var(--gold2);font-size:15px;cursor:pointer">⟨</button>
+      <div id="mushaf-page-chip" style="flex:1;min-width:0;text-align:center;padding:9px 8px;border-radius:14px;border:1px solid transparent;background:linear-gradient(160deg,#101a16,#0c1210) padding-box,linear-gradient(120deg,rgba(212,175,106,.5),rgba(16,185,129,.35) 55%,rgba(212,175,106,.45)) border-box;font-size:12.5px;font-weight:800;color:var(--gold2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 4px 14px rgba(0,0,0,.25)">পৃষ্ঠা</div>
+      <button type="button" onclick="mushafFlip(1)" aria-label="পরের পৃষ্ঠা" style="width:46px;min-height:44px;border-radius:14px;border:1px solid rgba(212,175,106,.35);background:rgba(212,175,106,.08);color:var(--gold2);font-size:15px;cursor:pointer">⟩</button>
+      <button type="button" onclick="closeMushaf()" aria-label="মুসহাফ-মোড বন্ধ" style="width:46px;min-height:44px;border-radius:14px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:14px;cursor:pointer">✕</button>
+    </div>
+    <div id="mushaf-page"></div>
   </div>
 
   <!-- reader footer: progress + quick actions (visible only while reading) -->
@@ -6624,8 +6639,10 @@ const CP = {
         out.push(await goto(`${surahDisplayName(s)} — আয়াত ${localizeNum(+m[2])}`, '🎯', `সূরা ${localizeNum(s.no)}:${localizeNum(+m[2])}`, s.no, +m[2]));
     }
     // 4-7) page / juz / hizb / rub / ruku
-    if((m = q.match(/^(?:page|p|পৃষ্ঠা|পৃ)\s*(\d{1,3})$/)) && +m[1] >= 1 && +m[1] <= 604){
-      const r = await structural(3, +m[1], '📄', `মুসহাফ পৃষ্ঠা ${localizeNum(+m[1])}`); if(r) out.push(r);
+    if((m = q.match(/^(?:page|p|পৃষ্ঠা|পৃ|mushaf|মুসহাফ)\s*(\d{1,3})$/)) && +m[1] >= 1 && +m[1] <= 604){
+      const pg = +m[1];
+      out.push({icon: '📜', title: `মুসহাফ পৃষ্ঠা ${localizeNum(pg)} খুলুন`, meta: 'পৃষ্ঠা-ভিত্তিক মুসহাফ-মোড', run: () => { showTab('quran', document.getElementById('tabbtn-quran')); openMushafPage(pg); }});
+      const r = await structural(3, pg, '📄', `রিডারে পৃষ্ঠা ${localizeNum(pg)}`); if(r) out.push(r);
     }
     if((m = q.match(/^(?:juz|para|j|জুয|পারা)\s*(\d{1,2})$/)) && +m[1] >= 1 && +m[1] <= 30){
       const r = await structural(2, +m[1], '🧩', `জুয ${localizeNum(+m[1])}`); if(r) out.push(r);
@@ -6783,6 +6800,103 @@ function qsdSurah(s){
 function qsdAyah(a){
   if(currentOpenSurahNo && VR.verses.length) scrollToAyah(a);
 }
+/* ══ MUSHAF MODE — one printed page (1-604) per screen, swipe to turn ══ */
+const MV = {page: 0};
+function openMushafFromReader(){
+  const p = (RS.load().session && RS.load().session.page) || 1;
+  openMushafPage(p);
+}
+async function openMushafPage(p){
+  p = Math.min(604, Math.max(1, p));
+  MV.page = p;
+  show2('quran-mushaf-view');
+  setReaderFooterVisible(false);
+  const host = document.getElementById('mushaf-page');
+  host.innerHTML = loading('পৃষ্ঠা সাজানো হচ্ছে…');
+  try{
+    await QSE.ensure(); // page → verse mapping lives in the search meta table
+    const idx = (quranIndexCache || await loadQuranIndex()).surahs;
+    const rows = [];
+    QSE.meta.forEach(m => { if(m[3] === p) rows.push({s: m[0], a: m[1], juz: m[2]}); });
+    if(!rows.length) throw new Error('পৃষ্ঠা পাওয়া যায়নি');
+    // group consecutive rows by surah, fetch text + tajweed per surah
+    const groups = [];
+    rows.forEach(r => {
+      const g = groups[groups.length - 1];
+      if(g && g.s === r.s) g.rows.push(r); else groups.push({s: r.s, rows: [r]});
+    });
+    let html = '';
+    const names = [];
+    for(const g of groups){
+      const su = idx.find(x => x.no === g.s);
+      names.push(surahDisplayName(su));
+      const d = surahCache[g.s] || await fetch(`quran-data/surah${g.s}.json`).then(r => r.json());
+      surahCache[g.s] = d;
+      if(!tajweedCache[g.s]){
+        try{ const r = await fetch(`quran-data/tajweed${g.s}.json`); if(r.ok) tajweedCache[g.s] = await r.json(); }catch(e){}
+      }
+      const taj = RS.load().settings.tajweed ? tajweedCache[g.s] : null;
+      // surah banner when the surah begins on this page
+      if(g.rows[0].a === 1){
+        html += `<div style="text-align:center;margin:${html ? '14px' : '0'} 0 8px">
+          <div style="display:inline-flex;align-items:center;gap:9px;padding:6px 18px;border-radius:50px;border:1px solid rgba(212,175,106,.4);background:rgba(212,175,106,.08)">
+            <span style="color:#c9a45c;font-size:10px" aria-hidden="true">✦</span>
+            <span style="font-size:14px;font-weight:800;background:linear-gradient(180deg,#d9fff8 10%,#2dd4bf 70%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">${surahDisplayName(su)}</span>
+            <span lang="ar" dir="rtl" style="font-family:var(--quran-font),serif;font-size:16px;color:var(--gold2)">${su.ar}</span>
+            <span style="color:#c9a45c;font-size:10px" aria-hidden="true">✦</span>
+          </div>
+          ${g.s !== 1 && g.s !== 9 ? `<div lang="ar" dir="rtl" style="font-family:var(--quran-font),serif;font-weight:700;font-size:calc(var(--quran-size) - 5px);color:var(--tajweed-normal);margin-top:6px">${BASMALA_PLAIN}</div>` : ''}
+        </div>`;
+      }
+      // the continuous mushaf flow of this group's ayat
+      html += `<div class="h-arabic mushaf-ar" lang="ar" dir="rtl" style="text-align:justify;text-align-last:right;border-bottom:none;margin-bottom:0;padding-bottom:6px">`;
+      for(const r of g.rows){
+        const v = d.verses[r.a - 1];
+        const tj = taj && taj.verses && taj.verses[String(r.a)];
+        const body = tj || escapeHtml(stripBasmala(v.ar, g.s, r.a));
+        html += `<span class="mv-ayah" role="button" tabindex="0" data-s="${g.s}" data-a="${r.a}" onclick="mvJump(${g.s},${r.a})" onkeydown="if(event.key==='Enter'){mvJump(${g.s},${r.a})}" aria-label="${surahDisplayName(su)} আয়াত ${localizeNum(r.a)}">${body}<span class="ayah-medallion" style="min-width:26px;height:26px;font-size:11px;margin:0 5px">${localizeNum(r.a)}</span></span> `;
+      }
+      html += `</div>`;
+    }
+    host.innerHTML = `<div style="border:1px solid transparent;background:linear-gradient(160deg,#fdfaf0,#f3eddb) padding-box,linear-gradient(140deg,rgba(212,175,106,.6),rgba(201,164,92,.35) 50%,rgba(212,175,106,.55)) border-box;border-radius:18px;padding:14px 13px;box-shadow:0 8px 26px rgba(0,0,0,.3)">${html}
+      <div style="text-align:center;margin-top:8px;font-family:'Hind Siliguri',sans-serif;font-size:11px;color:#8a7440;font-weight:700">۝ ${localizeNum(p)} ۝</div></div>`;
+    setTextIfExists('mushaf-page-chip', `পৃষ্ঠা ${localizeNum(p)} • জুয ${localizeNum(rows[0].juz)} • ${names.join(' · ')}`);
+    window.scrollTo(0, 0);
+  }catch(e){
+    host.innerHTML = `<div style="color:#e07070;padding:16px;text-align:center;font-size:14px">লোড ব্যর্থ: ${escapeHtml(e.message)}</div>`;
+  }
+}
+function mushafFlip(d){ openMushafPage(MV.page + d); }
+function mvJump(s, a){
+  closeMushaf();
+  if(currentOpenSurahNo === s && VR.verses.length) scrollToAyah(a);
+  else openSurah(s).then(() => scrollToAyah(a));
+}
+function closeMushaf(){
+  if(currentOpenSurahNo){ show2('quran-verses-view'); setReaderFooterVisible(true); }
+  else openSurah(1);
+}
+// swipe + arrow keys turn pages
+(function(){
+  let x0 = null;
+  document.addEventListener('touchstart', e => {
+    const mv = document.getElementById('quran-mushaf-view');
+    if(mv && mv.style.display !== 'none') x0 = e.touches[0].clientX;
+  }, {passive: true});
+  document.addEventListener('touchend', e => {
+    if(x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    x0 = null;
+    if(Math.abs(dx) > 60) mushafFlip(dx < 0 ? 1 : -1);
+  }, {passive: true});
+  window.addEventListener('keydown', e => {
+    const mv = document.getElementById('quran-mushaf-view');
+    if(!mv || mv.style.display === 'none' || CP.isOpen()) return;
+    if(e.key === 'ArrowLeft') mushafFlip(1);   // mushaf pages advance leftward
+    if(e.key === 'ArrowRight') mushafFlip(-1);
+  });
+})();
+
 // close the surah picker: back to the open reader (or Fatiha if nothing open yet)
 function closeSurahList(){
   if(currentOpenSurahNo){
@@ -7211,7 +7325,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v181';
+const APP_VERSION = 'v182';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -8337,8 +8451,10 @@ function aeRepeat(m){
 }
 
 function show2(id){
-  ['quran-surah-list-view','quran-verses-view'].forEach(v =>
-    document.getElementById(v).style.display = v===id?'block':'none');
+  ['quran-surah-list-view','quran-verses-view','quran-mushaf-view'].forEach(v => {
+    const el = document.getElementById(v);
+    if(el) el.style.display = v === id ? 'block' : 'none';
+  });
 }
 function goSurahList(){
   show2('quran-surah-list-view');
