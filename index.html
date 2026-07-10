@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v182-mushaf-mode -->
+<!-- VERSION: v183-mushaf-current-page -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -6803,7 +6803,17 @@ function qsdAyah(a){
 /* ══ MUSHAF MODE — one printed page (1-604) per screen, swipe to turn ══ */
 const MV = {page: 0};
 function openMushafFromReader(){
-  const p = (RS.load().session && RS.load().session.page) || 1;
+  // open the page of the ayah CURRENTLY on screen — not the stale session position
+  let p = 0;
+  if(currentOpenSurahNo && VR.verses.length){
+    let top = null;
+    for(const s of document.querySelectorAll('#verse-list .verse-slot')){
+      if(s.getBoundingClientRect().bottom > 90){ top = parseInt(s.dataset.n); break; }
+    }
+    const v = VR.verses[(top || 1) - 1];
+    if(v) p = v.page;
+  }
+  if(!p) p = (RS.load().session && RS.load().session.page) || 1;
   openMushafPage(p);
 }
 async function openMushafPage(p){
@@ -7325,7 +7335,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v182';
+const APP_VERSION = 'v183';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
