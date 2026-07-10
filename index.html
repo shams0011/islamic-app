@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v185-goal-card-hifz-mode -->
+<!-- VERSION: v186-premium-sheets -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -341,10 +341,17 @@ input:focus,textarea:focus,select:focus{border-color:rgba(16,185,129,.45)!import
 #reader-footer button{background:none;border:none;color:var(--text2);font-size:16px;cursor:pointer;padding:2px 4px}
 #reader-footer .rf-txt{font-size:10.5px;color:var(--text3);font-weight:700;white-space:nowrap}
 /* bottom sheets (settings / bookmarks) */
-.sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:70;display:none}
-.sheet{position:fixed;left:0;right:0;bottom:0;z-index:71;display:none;max-height:78vh;overflow-y:auto;background:linear-gradient(170deg,#111a15,#0b100d);border:1px solid rgba(212,175,106,.25);border-bottom:none;border-radius:22px 22px 0 0;padding:16px 16px 24px;box-shadow:0 -10px 40px rgba(0,0,0,.5)}
-.sheet h4{font-size:14px;color:var(--gold2);margin:0 0 12px;display:flex;align-items:center;gap:8px}
-.sheet .row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px;color:var(--text2)}
+.sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);z-index:70;display:none}
+/* bottom sheet — full-width on mobile, centered premium card capped at 560px on desktop */
+.sheet{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:560px;z-index:71;display:none;max-height:78vh;overflow-y:auto;background:linear-gradient(170deg,#131f18,#0b100d);border:1px solid rgba(212,175,106,.3);border-bottom:none;border-radius:22px 22px 0 0;padding:12px 20px 24px;box-shadow:0 -10px 44px rgba(0,0,0,.6),0 0 0 1px rgba(16,185,129,.06) inset}
+.sheet::before{content:'';display:block;width:44px;height:4px;border-radius:4px;background:linear-gradient(90deg,rgba(212,175,106,.45),rgba(212,175,106,.2));margin:0 auto 13px}
+@media(min-width:640px){
+  .sheet{bottom:26px;border-radius:22px;border-bottom:1px solid rgba(212,175,106,.3)}
+  .sheet::before{display:none}
+}
+.sheet h4{font-size:15px;font-weight:800;letter-spacing:.4px;color:var(--gold2);margin:0 0 4px;padding-bottom:10px;display:flex;align-items:center;gap:9px;border-bottom:1px solid transparent;border-image:linear-gradient(90deg,rgba(212,175,106,.4),rgba(212,175,106,.05)) 1}
+.sheet .row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px;color:var(--text2)}
+.sheet .row:hover{color:var(--text)}
 .sheet .seg{display:flex;gap:6px;flex-wrap:wrap}
 .sheet .seg button{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:10px;padding:6px 12px;color:var(--text2);font-size:12px;cursor:pointer;font-family:'Hind Siliguri',sans-serif}
 .sheet .seg button.on{background:rgba(16,185,129,.14);border-color:rgba(16,185,129,.45);color:var(--emerald2);font-weight:700}
@@ -7365,7 +7372,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v185';
+const APP_VERSION = 'v186';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
