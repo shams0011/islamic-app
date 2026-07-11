@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v190-notification-center -->
+<!-- VERSION: v191-premium-calendar -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -358,6 +358,16 @@ input:focus,textarea:focus,select:focus{border-color:rgba(16,185,129,.45)!import
 .sheet .seg{display:flex;gap:6px;flex-wrap:wrap}
 .sheet .seg button{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:10px;padding:6px 12px;color:var(--text2);font-size:12px;cursor:pointer;font-family:'Hind Siliguri',sans-serif}
 .sheet .seg button.on{background:rgba(16,185,129,.14);border-color:rgba(16,185,129,.45);color:var(--emerald2);font-weight:700}
+/* islamic calendar — premium cells + nav */
+.cal-nav{width:36px;height:36px;border-radius:50%;border:1px solid rgba(212,175,106,.35);background:rgba(212,175,106,.08);color:var(--gold2);font-size:17px;font-weight:800;cursor:pointer;flex-shrink:0;transition:all .15s;line-height:1}
+.cal-nav:hover{background:rgba(212,175,106,.18);transform:scale(1.06);box-shadow:0 0 12px rgba(212,175,106,.25)}
+.cal-cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;cursor:pointer;position:relative;background:transparent;border:1px solid transparent;transition:transform .15s,box-shadow .15s,border-color .15s}
+.cal-cell:hover{transform:translateY(-2px);border-color:rgba(16,185,129,.4);box-shadow:0 4px 12px rgba(0,0,0,.35)}
+.cal-cell.fri{background:repeating-linear-gradient(135deg,rgba(212,175,106,.07) 0 3px,rgba(212,175,106,.02) 3px 6px);border-color:rgba(212,175,106,.14)}
+.cal-cell.fast{background:rgba(16,185,129,.09);border-color:rgba(16,185,129,.25)}
+.cal-cell.ev{background:linear-gradient(150deg,rgba(212,175,106,.17),rgba(212,175,106,.04));border-color:rgba(212,175,106,.4)}
+.cal-cell.today{background:linear-gradient(135deg,var(--emerald3),var(--emerald));border-color:transparent;box-shadow:0 0 0 2px rgba(45,212,191,.6),0 0 18px rgba(16,185,129,.45)}
+.cal-cell.today:hover{transform:none}
 /* hifz sheet — gold pill number inputs (native spinners hidden) */
 .hz-num{width:68px;padding:9px 6px;border-radius:12px;border:1px solid rgba(212,175,106,.35);background:linear-gradient(160deg,rgba(212,175,106,.09),rgba(212,175,106,.02));color:var(--gold2);font-size:15px;font-weight:800;text-align:center;outline:none;-moz-appearance:textfield;appearance:textfield}
 .hz-num::-webkit-outer-spin-button,.hz-num::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
@@ -1649,18 +1659,26 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
     <button type="button" class="back-btn" onclick="closeToolView()">← টুলসে ফিরুন</button>
     <div class="sec-title"><div class="sec-gem"></div><span id="calendar-sec-title">ইসলামিক ক্যালেন্ডার</span><div class="sec-gem"></div></div>
 
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:12px 16px">
-      <button type="button" onclick="navigateCalendarMonth(-1)" aria-label="আগের মাস" style="width:34px;height:34px;border-radius:11px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:15px;cursor:pointer">‹</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;background:linear-gradient(150deg,rgba(16,185,129,.08),var(--card) 45%,rgba(212,175,106,.06));border:1px solid rgba(212,175,106,.28);border-radius:18px;padding:13px 15px;box-shadow:0 4px 16px rgba(0,0,0,.25),0 0 0 1px rgba(16,185,129,.05) inset;position:relative;overflow:hidden">
+      <span aria-hidden="true" style="position:absolute;top:-14px;right:14px;font-size:52px;opacity:.07;pointer-events:none">🌙</span>
+      <button type="button" class="cal-nav" onclick="navigateCalendarMonth(-1)" aria-label="আগের মাস">‹</button>
       <div style="text-align:center">
-        <div id="calendar-month-label" style="font-size:15px;font-weight:700;color:var(--text)"></div>
+        <div id="calendar-month-label" style="font-size:16.5px;font-weight:800;letter-spacing:.4px;background:linear-gradient(180deg,#c8fff8 10%,#2dd4bf 62%,#0fb5a0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--emerald2);filter:drop-shadow(0 0 8px rgba(45,212,191,.3))"></div>
         <div id="calendar-hijri-label" style="font-size:11.5px;font-weight:700;margin-top:3px;background:linear-gradient(180deg,#f0d795,#c9a45c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--gold2)"></div>
       </div>
-      <button type="button" onclick="navigateCalendarMonth(1)" aria-label="পরের মাস" style="width:34px;height:34px;border-radius:11px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:15px;cursor:pointer">›</button>
+      <button type="button" class="cal-nav" onclick="navigateCalendarMonth(1)" aria-label="পরের মাস">›</button>
     </div>
 
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:16px">
-      <div id="calendar-weekday-header" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px"></div>
-      <div id="calendar-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px"></div>
+    <div style="background:linear-gradient(165deg,var(--card2),var(--card));border:1px solid rgba(212,175,106,.22);border-radius:18px;padding:14px 12px 12px;margin-bottom:16px;box-shadow:0 4px 16px rgba(0,0,0,.22)">
+      <div id="calendar-weekday-header" style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:4px"></div>
+      <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,106,.35),transparent);margin:0 4px 9px"></div>
+      <div id="calendar-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px"></div>
+      <div style="display:flex;gap:13px;justify-content:center;flex-wrap:wrap;margin-top:12px;font-size:10px;font-weight:700;color:var(--text3)">
+        <span><span style="color:var(--gold2)">●</span> গুরুত্বপূর্ণ দিন</span>
+        <span><span style="color:#34d399">●</span> রোজার দিন</span>
+        <span><span style="color:#e07070">●</span> রোজা নিষিদ্ধ</span>
+        <span><span style="color:var(--gold2);opacity:.7">▧</span> জুমার দিন</span>
+      </div>
       <div id="calendar-day-info" style="display:none"></div>
     </div>
 
@@ -3506,7 +3524,8 @@ function renderCalendar(){
   setTextIfExists('calendar-hijri-label', `🌙 ${hijriLabel}`);
 
   const headerEl = document.getElementById('calendar-weekday-header');
-  headerEl.innerHTML = weekdayShort.map(w => `<div style="text-align:center;font-size:12.5px;color:var(--emerald2);font-weight:700">${w}</div>`).join('');
+  // Friday (index 5) gets gold — the week's crown, matching the জুমা tint on its column
+  headerEl.innerHTML = weekdayShort.map((w, i) => `<div style="text-align:center;font-size:12.5px;color:${i === 5 ? 'var(--gold2)' : 'var(--emerald2)'};font-weight:800;${i === 5 ? 'text-shadow:0 0 8px rgba(212,175,106,.4)' : ''}">${w}</div>`).join('');
 
   const firstDay = new Date(year, month, 1);
   const startWeekday = firstDay.getDay(); // 0=Sunday
@@ -3530,27 +3549,21 @@ function renderCalendar(){
     const isToday = isCurrentMonth && day === today.getDate();
     const clickable = event || fast;
 
-    const bg = isToday ? 'linear-gradient(135deg,var(--emerald3),var(--emerald))'
-      : event ? 'rgba(212,175,106,.12)'
-      : isFast ? 'rgba(16,185,129,.08)'
-      : 'transparent';
     const textColor = isToday ? '#000' : event ? 'var(--gold2)' : isFast ? 'var(--emerald2)' : 'var(--text)';
-    const border = isToday ? '1px solid transparent'
-      : event ? '1px solid rgba(212,175,106,.3)'
-      : isFast ? '1px solid rgba(16,185,129,.22)'
-      : '1px solid transparent';
+    const cls = 'cal-cell'
+      + (isToday ? ' today' : event ? ' ev' : isFast ? ' fast' : date.getDay() === 5 ? ' fri' : '');
 
     // Indicator dots: gold = Hijri event, green = fast day, red = forbidden to fast
     let dots = '';
-    const dot = c => `<span style="width:4px;height:4px;border-radius:50%;background:${isToday?'#000':c}"></span>`;
+    const dot = c => `<span style="width:4px;height:4px;border-radius:50%;background:${isToday?'#000':c};box-shadow:0 0 4px ${isToday?'transparent':c}"></span>`;
     if(event) dots += dot('var(--gold2)');
     if(isFast) dots += dot('#34d399');
     if(isForbiddenFast) dots += dot('#e07070');
 
     return `
-    <div data-cal-day="${day}" onclick="showCalendarDayEvent(${day})" style="aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;background:${bg};border:${border};cursor:pointer;position:relative">
+    <div data-cal-day="${day}" class="${cls}" onclick="showCalendarDayEvent(${day})">
       <div style="font-size:15.5px;font-weight:${isToday||event||isFast?'800':'600'};color:${textColor};line-height:1.15">${localizeNum(day)}</div>
-      <div style="font-size:10px;font-weight:700;color:${isToday?'rgba(0,0,0,.65)':'#e3c98a'};line-height:1.15">${localizeNum(hijri.day)}</div>
+      <div style="font-size:10px;font-weight:700;color:${isToday?'rgba(0,0,0,.65)':'#e3c98a'};line-height:1.15;opacity:${isToday||event||isFast?'1':'.75'}">${localizeNum(hijri.day)}</div>
       ${dots ? `<div style="display:flex;gap:2.5px;margin-top:2px">${dots}</div>` : ''}
     </div>`;
   }).join('');
@@ -7417,7 +7430,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v190';
+const APP_VERSION = 'v191';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
