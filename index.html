@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v193-calendar-weekday-names -->
+<!-- VERSION: v194-friday-standout -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -363,7 +363,7 @@ input:focus,textarea:focus,select:focus{border-color:rgba(16,185,129,.45)!import
 .cal-nav:hover{background:rgba(212,175,106,.18);transform:scale(1.06);box-shadow:0 0 12px rgba(212,175,106,.25)}
 .cal-cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;cursor:pointer;position:relative;background:linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.015));border:1px solid rgba(255,255,255,.09);box-shadow:0 1px 4px rgba(0,0,0,.18);transition:transform .15s,box-shadow .15s,border-color .15s}
 .cal-cell:hover{transform:translateY(-2px);border-color:rgba(16,185,129,.4);box-shadow:0 4px 12px rgba(0,0,0,.35)}
-.cal-cell.fri{background:repeating-linear-gradient(135deg,rgba(212,175,106,.07) 0 3px,rgba(212,175,106,.02) 3px 6px);border-color:rgba(212,175,106,.14)}
+.cal-cell.fri{background:linear-gradient(150deg,rgba(212,175,106,.2),rgba(212,175,106,.06));border-color:rgba(212,175,106,.5);box-shadow:0 1px 4px rgba(0,0,0,.18),0 0 10px rgba(212,175,106,.12)}
 .cal-cell.fast{background:rgba(16,185,129,.09);border-color:rgba(16,185,129,.25)}
 .cal-cell.ev{background:linear-gradient(150deg,rgba(212,175,106,.17),rgba(212,175,106,.04));border-color:rgba(212,175,106,.4)}
 .cal-cell.today{background:linear-gradient(135deg,var(--emerald3),var(--emerald));border-color:transparent;box-shadow:0 0 0 2px rgba(45,212,191,.6),0 0 18px rgba(16,185,129,.45)}
@@ -3557,9 +3557,10 @@ function renderCalendar(){
     const isToday = isCurrentMonth && day === today.getDate();
     const clickable = event || fast;
 
-    const textColor = isToday ? '#000' : event ? 'var(--gold2)' : isFast ? 'var(--emerald2)' : 'var(--text)';
+    const isFri = date.getDay() === 5;
+    const textColor = isToday ? '#000' : event ? 'var(--gold2)' : isFast ? 'var(--emerald2)' : isFri ? '#f0dfb2' : 'var(--text)';
     const cls = 'cal-cell'
-      + (isToday ? ' today' : event ? ' ev' : isFast ? ' fast' : date.getDay() === 5 ? ' fri' : '');
+      + (isToday ? ' today' : event ? ' ev' : isFast ? ' fast' : isFri ? ' fri' : '');
 
     // Indicator dots: gold = Hijri event, green = fast day, red = forbidden to fast
     let dots = '';
@@ -7438,7 +7439,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v193';
+const APP_VERSION = 'v194';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
