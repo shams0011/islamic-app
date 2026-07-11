@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v198-quick-access-merged -->
+<!-- VERSION: v199-premium-quick-buttons -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -361,10 +361,10 @@ input:focus,textarea:focus,select:focus{border-color:rgba(16,185,129,.45)!import
 .sheet .seg button{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:10px;padding:6px 12px;color:var(--text2);font-size:12px;cursor:pointer;font-family:'Hind Siliguri',sans-serif}
 .sheet .seg button.on{background:rgba(16,185,129,.14);border-color:rgba(16,185,129,.45);color:var(--emerald2);font-weight:700}
 /* home quick-access buttons — Quran + Hadith under the clock */
-.qa-btn{display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 12px;border-radius:16px;border:1px solid var(--border);background:linear-gradient(165deg,var(--card2),var(--card));cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:14.5px;font-weight:800;color:var(--text);box-shadow:0 4px 12px rgba(0,0,0,.22);transition:transform .15s,border-color .15s,box-shadow .15s}
-.qa-btn:hover{transform:translateY(-2px);border-color:rgba(16,185,129,.4);box-shadow:0 8px 18px rgba(16,185,129,.12)}
+.qa-btn{display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 12px;border-radius:16px;border:1px solid transparent;background:linear-gradient(165deg,#141f19,#0c110e) padding-box,linear-gradient(135deg,rgba(212,175,106,.55),rgba(16,185,129,.4) 50%,rgba(212,175,106,.3)) border-box;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:15px;font-weight:800;letter-spacing:.4px;color:#eef4f1;text-shadow:0 1px 3px rgba(0,0,0,.4);box-shadow:0 4px 14px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.05);transition:transform .15s,box-shadow .15s}
+.qa-btn:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(16,185,129,.18),inset 0 1px 0 rgba(255,255,255,.07)}
 .qa-btn:active{transform:translateY(0)}
-.qa-ic{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:11px;font-size:17px;flex-shrink:0}
+.qa-ic{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:12px;flex-shrink:0}
 /* islamic calendar — premium cells + nav */
 .cal-nav{width:36px;height:36px;border-radius:50%;border:1px solid rgba(212,175,106,.35);background:rgba(212,175,106,.08);color:var(--gold2);font-size:17px;font-weight:800;cursor:pointer;flex-shrink:0;transition:all .15s;line-height:1}
 .cal-nav:hover{background:rgba(212,175,106,.18);transform:scale(1.06);box-shadow:0 0 12px rgba(212,175,106,.25)}
@@ -758,11 +758,33 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
     <!-- quick access — Quran (1) + Hadith (2), merged into the clock card -->
     <div style="flex-basis:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-top:12px;border-top:1px solid rgba(212,175,106,.18);position:relative;z-index:1" role="navigation" aria-label="দ্রুত প্রবেশ">
       <button type="button" class="qa-btn" onclick="quickOpenTab('quran')" aria-label="কুরআন পড়ুন">
-        <span class="qa-ic" style="background:linear-gradient(135deg,rgba(16,185,129,.22),rgba(16,185,129,.06));box-shadow:0 0 0 1px rgba(16,185,129,.35) inset">📖</span>
+        <span class="qa-ic" style="background:radial-gradient(circle at 35% 30%,rgba(16,185,129,.28),rgba(16,185,129,.05));box-shadow:0 0 0 1px rgba(16,185,129,.4) inset,0 0 12px rgba(16,185,129,.2)">
+          <svg viewBox="0 0 24 24" width="21" height="21" fill="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="qaq1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7ee8cf"/><stop offset="1" stop-color="#10b981"/></linearGradient>
+              <linearGradient id="qaq2" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0d795"/><stop offset="1" stop-color="#c9a45c"/></linearGradient>
+            </defs>
+            <path d="M11.3 5.2C9.4 3.8 7 3.3 4.3 3.5c-.5 0-.8.4-.8.9v12.4c0 .6.5 1 1 1 2.5-.1 4.7.4 6.8 1.8V5.2z" fill="url(#qaq1)" opacity=".9"/>
+            <path d="M12.7 5.2c1.9-1.4 4.3-1.9 7-1.7.5 0 .8.4.8.9v12.4c0 .6-.5 1-1 1-2.5-.1-4.7.4-6.8 1.8V5.2z" fill="url(#qaq2)"/>
+            <path d="M12 5v14.6" stroke="#0b100d" stroke-width="1.1"/>
+            <path d="M15 8.2c1.4-.5 2.8-.7 4-.6M15 11c1.4-.5 2.8-.7 4-.6" stroke="#0b100d" stroke-width=".9" stroke-linecap="round" opacity=".55"/>
+          </svg>
+        </span>
         <span>কুরআন</span>
       </button>
       <button type="button" class="qa-btn" onclick="quickOpenTab('hadith')" aria-label="হাদিস পড়ুন">
-        <span class="qa-ic" style="background:linear-gradient(135deg,rgba(212,175,106,.22),rgba(212,175,106,.06));box-shadow:0 0 0 1px rgba(212,175,106,.35) inset">📚</span>
+        <span class="qa-ic" style="background:radial-gradient(circle at 35% 30%,rgba(212,175,106,.3),rgba(212,175,106,.05));box-shadow:0 0 0 1px rgba(212,175,106,.45) inset,0 0 12px rgba(212,175,106,.2)">
+          <svg viewBox="0 0 24 24" width="21" height="21" fill="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="qah1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5e3b8"/><stop offset="1" stop-color="#d4af6a"/></linearGradient>
+              <linearGradient id="qah2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7ee8cf"/><stop offset="1" stop-color="#0fb5a0"/></linearGradient>
+            </defs>
+            <rect x="4" y="15.2" width="16" height="3.6" rx="1.1" fill="url(#qah1)"/>
+            <rect x="5.4" y="10.6" width="13.2" height="3.6" rx="1.1" fill="url(#qah2)" opacity=".9"/>
+            <rect x="6.8" y="6" width="10.4" height="3.6" rx="1.1" fill="url(#qah1)" opacity=".8"/>
+            <path d="M7.2 17h2M8.4 12.4h2M9.8 7.8h2" stroke="#0b100d" stroke-width=".9" stroke-linecap="round" opacity=".5"/>
+          </svg>
+        </span>
         <span>হাদিস</span>
       </button>
     </div>
@@ -7502,7 +7524,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v198';
+const APP_VERSION = 'v199';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
