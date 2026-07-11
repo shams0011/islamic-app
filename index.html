@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v187-settings-sliders -->
+<!-- VERSION: v188-footer-ring -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -336,10 +336,13 @@ input:focus,textarea:focus,select:focus{border-color:rgba(16,185,129,.45)!import
 .v-note{margin-top:9px;font-size:12.5px;color:#e8dcc0;background:rgba(212,175,106,.07);border:1px dashed rgba(212,175,106,.3);border-radius:11px;padding:8px 12px;line-height:1.6}
 /* reader footer — floating progress + quick actions */
 #reader-footer{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;z-index:60;display:none;align-items:center;gap:9px;background:linear-gradient(160deg,#101a16f2,#0c1210f5);border:1px solid rgba(16,185,129,.35);border-radius:50px;padding:8px 14px;box-shadow:0 8px 24px rgba(0,0,0,.45);backdrop-filter:blur(6px);max-width:94vw}
-#reader-footer .rf-bar{width:74px;height:5px;background:rgba(255,255,255,.09);border-radius:6px;overflow:hidden;flex-shrink:0}
-#reader-footer .rf-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--emerald2),#f0d795);border-radius:6px;transition:width .3s}
+#reader-footer .rf-ring-svg{flex-shrink:0;filter:drop-shadow(0 0 5px rgba(16,185,129,.35))}
+#reader-footer #rf-ring{transition:stroke-dashoffset .4s ease}
+#reader-footer .rf-col{display:flex;flex-direction:column;line-height:1.2;margin-right:2px}
+#reader-footer .rf-pct{font-size:12.5px;font-weight:800;color:var(--emerald2);white-space:nowrap}
+#reader-footer .rf-eta{font-size:9.5px;font-weight:700;color:var(--text3);white-space:nowrap}
+#reader-footer .rf-top{color:var(--gold2);font-weight:800;font-size:19px;border:1px solid rgba(212,175,106,.35);border-radius:50%;background:rgba(212,175,106,.08);line-height:1}
 #reader-footer button{background:none;border:none;color:var(--text2);font-size:16px;cursor:pointer;padding:2px 4px}
-#reader-footer .rf-txt{font-size:10.5px;color:var(--text3);font-weight:700;white-space:nowrap}
 /* bottom sheets (settings / bookmarks) */
 .sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);z-index:70;display:none}
 /* bottom sheet — full-width on mobile, centered premium card capped at 560px on desktop */
@@ -422,6 +425,14 @@ mark{background:rgba(212,175,106,.4);color:#fff3d6;border-radius:3px;padding:0 2
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
 #reader-footer button,.sheet .seg button,.ae-btn{min-height:44px;min-width:44px}
+/* narrow phones: tighten so the ring + all 7 buttons fit inside 94vw
+   (must come after the 44px touch-target rule to win the cascade) */
+@media(max-width:480px){
+  #reader-footer{gap:2px;padding:8px 9px}
+  #reader-footer button{min-width:34px;font-size:15px;padding:2px}
+  #reader-footer .rf-top{border-radius:14px;font-size:17px}
+  #reader-footer .rf-col{margin-right:0}
+}
 /* verse action chips: 40px targets (WCAG 2.2 AA min is 24) so all 7 fit one line on 375px */
 .v-act{gap:4px}
 .v-act button{display:inline-flex;align-items:center;justify-content:center;min-height:40px;min-width:40px;padding:2px 8px;background:transparent;border-color:rgba(255,255,255,.08)}
@@ -1104,15 +1115,19 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
 
   <!-- reader footer: progress + quick actions (visible only while reading) -->
   <div id="reader-footer" role="toolbar" aria-label="পাঠ নিয়ন্ত্রণ">
-    <div class="rf-bar" aria-hidden="true"><div class="rf-fill" id="rf-fill"></div></div>
-    <span class="rf-txt" id="rf-txt">০%</span>
+    <svg class="rf-ring-svg" viewBox="0 0 30 30" width="28" height="28" aria-hidden="true">
+      <defs><linearGradient id="rfgrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#10b981"/><stop offset="1" stop-color="#f0d795"/></linearGradient></defs>
+      <circle cx="15" cy="15" r="12.5" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="3.5"/>
+      <circle id="rf-ring" cx="15" cy="15" r="12.5" fill="none" stroke="url(#rfgrad)" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="78.54" stroke-dashoffset="78.54" transform="rotate(-90 15 15)"/>
+    </svg>
+    <div class="rf-col" aria-hidden="true"><span class="rf-pct" id="rf-pct">০%</span><span class="rf-eta" id="rf-eta">—</span></div>
     <button onclick="rfBookmark()" aria-label="এই আয়াত বুকমার্ক করুন" title="বুকমার্ক">🔖</button>
     <button onclick="openAudioSheet()" aria-label="অডিও প্লেয়ার" title="অডিও">🎧</button>
     <button onclick="openStatsSheet()" aria-label="পাঠ পরিসংখ্যান" title="পরিসংখ্যান">📊</button>
     <button onclick="openHifzSheet()" aria-label="হিফজ-মোড: মুখস্থ অনুশীলন" title="হিফজ">🧠</button>
     <button onclick="openBookmarksSheet()" aria-label="বুকমার্ক তালিকা" title="তালিকা">🗂️</button>
     <button onclick="openReaderSettings()" aria-label="পাঠ সেটিংস" title="সেটিংস">⚙️</button>
-    <button onclick="window.scrollTo({top:0})" aria-label="উপরে যান" title="উপরে">⬆️</button>
+    <button class="rf-top" onclick="window.scrollTo({top:0})" aria-label="উপরে যান" title="উপরে">↑</button>
   </div>
 
   <!-- bottom sheets -->
@@ -7227,11 +7242,12 @@ function updateReaderFooter(){
   if(!foot || !currentOpenSurahNo || !VR.verses.length) return;
   const a = d.session.a || 1, total = VR.verses.length;
   const pct = Math.min(100, Math.round(a / total * 100));
-  const fill = document.getElementById('rf-fill');
-  if(fill) fill.style.width = pct + '%';
+  const ring = document.getElementById('rf-ring');
+  if(ring) ring.style.strokeDashoffset = String(Math.round(78.54 * (1 - pct / 100) * 100) / 100);
   // pace: today's seconds / verses read today, fallback 6s per ayah
   const remMin = Math.max(1, Math.round((total - a) * 6 / 60));
-  setTextIfExists('rf-txt', `${localizeNum(pct)}% • ~${localizeNum(remMin)}মি`);
+  setTextIfExists('rf-pct', localizeNum(pct) + '%');
+  setTextIfExists('rf-eta', '~' + localizeNum(remMin) + 'মি বাকি');
 }
 function setReaderFooterVisible(on){
   const foot = document.getElementById('reader-footer');
@@ -7395,7 +7411,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v187';
+const APP_VERSION = 'v188';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
