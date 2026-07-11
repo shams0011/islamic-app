@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v195-hijri-adjustment -->
+<!-- VERSION: v196-calendar-scroll-fix -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -6027,8 +6027,10 @@ function openHajjFromHome(){
 function openCalendarFromHome(){
   showTab('tools', document.getElementById('tabbtn-tools'));
   openTool('calendar');
-  const main = document.getElementById('main-content');
-  if(main) main.scrollIntoView({behavior:'smooth'});
+  // land exactly on the calendar — #main-content top sits far above it (home
+  // cards come first), which used to strand the user on the wrong section
+  const cal = document.getElementById('tool-calendar-view');
+  if(cal){ cal.scrollIntoView({block: 'start'}); window.scrollBy(0, -62); }
 }
 
 // there is exactly ONE zakat calculator DOM node — it lives on the home screen
@@ -7467,7 +7469,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v195';
+const APP_VERSION = 'v196';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
