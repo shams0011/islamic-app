@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v200-quick-buttons-polish -->
+<!-- VERSION: v201-narrow-screen-clipping -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -94,6 +94,16 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
 .cp-digital{display:flex;align-items:baseline;gap:8px;padding:8px 20px;border-radius:50px;border:1px solid transparent;background:linear-gradient(135deg,rgba(13,26,21,.92),rgba(9,16,13,.92)) padding-box,linear-gradient(135deg,rgba(94,234,212,.55),rgba(212,175,106,.45)) border-box;box-shadow:0 4px 14px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.05)}
 #clock{font-size:22px;font-weight:700;color:#5eead4;font-family:ui-monospace,monospace;letter-spacing:.5px;line-height:1;text-shadow:0 0 16px rgba(16,185,129,.5)}
 #clock-ampm{font-size:10px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;font-weight:600}
+/* narrow phones: the digital-clock pill and prayer time-chips must never poke
+   past their cards — shrink type/padding instead of clipping the text */
+@media(max-width:380px){
+  /* the right column gets only ~120px beside the analog clock — stack instead */
+  .cp-left{margin:0 auto}
+  .cp-right{flex-basis:100%}
+  .cp-digital{padding:7px 14px;gap:6px;max-width:100%}
+  #clock{font-size:20px;letter-spacing:.3px}
+  .np-time-chip{font-size:11.5px;padding:6px 9px;letter-spacing:0;max-width:100%}
+}
 html[dir="rtl"] .clock-panel{direction:rtl}
 .header-loc{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px;font-weight:500}
 .clock-panel .header-loc{padding:4px 13px;border-radius:50px;background:rgba(255,255,255,.035);border:1px solid var(--border2)}
@@ -7538,7 +7548,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v200';
+const APP_VERSION = 'v201';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
