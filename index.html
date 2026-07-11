@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v196-calendar-scroll-fix -->
+<!-- VERSION: v197-home-quick-access -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -134,7 +134,9 @@ html[dir="rtl"] .clock-panel{direction:rtl}
 .tabbar{display:flex;padding:10px 14px;gap:6px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--border);background:rgba(10,13,18,.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);position:sticky;top:0;z-index:30}
 .tabbar::-webkit-scrollbar{display:none}
 .section{display:none;padding:14px 16px 48px}
-.section.active{display:block}
+/* min-height guarantees scroll room so quick-access anchors can land any tab at the top
+   (full 100vh: the anchor overshoots -62px for the header, so anything less clamps short) */
+.section.active{display:block;min-height:100vh}
 .sec-title{display:flex;align-items:center;gap:10px;margin-bottom:16px;font-size:13px;font-weight:800;letter-spacing:3.5px;text-transform:uppercase;background:linear-gradient(180deg,#c8fff8 10%,#2dd4bf 62%,#0fb5a0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:#2dd4bf;filter:drop-shadow(0 0 8px rgba(45,212,191,.35))}
 .sec-title::before,.sec-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--border2),transparent)}
 .sec-gem{width:6px;height:6px;background:linear-gradient(135deg,#e3c98a,#b8934e);transform:rotate(45deg);border-radius:1px;flex-shrink:0;box-shadow:0 0 8px rgba(212,175,106,.5)}
@@ -358,6 +360,11 @@ input:focus,textarea:focus,select:focus{border-color:rgba(16,185,129,.45)!import
 .sheet .seg{display:flex;gap:6px;flex-wrap:wrap}
 .sheet .seg button{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:10px;padding:6px 12px;color:var(--text2);font-size:12px;cursor:pointer;font-family:'Hind Siliguri',sans-serif}
 .sheet .seg button.on{background:rgba(16,185,129,.14);border-color:rgba(16,185,129,.45);color:var(--emerald2);font-weight:700}
+/* home quick-access buttons — Quran + Hadith under the clock */
+.qa-btn{display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 12px;border-radius:16px;border:1px solid var(--border);background:linear-gradient(165deg,var(--card2),var(--card));cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:14.5px;font-weight:800;color:var(--text);box-shadow:0 4px 12px rgba(0,0,0,.22);transition:transform .15s,border-color .15s,box-shadow .15s}
+.qa-btn:hover{transform:translateY(-2px);border-color:rgba(16,185,129,.4);box-shadow:0 8px 18px rgba(16,185,129,.12)}
+.qa-btn:active{transform:translateY(0)}
+.qa-ic{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:11px;font-size:17px;flex-shrink:0}
 /* islamic calendar — premium cells + nav */
 .cal-nav{width:36px;height:36px;border-radius:50%;border:1px solid rgba(212,175,106,.35);background:rgba(212,175,106,.08);color:var(--gold2);font-size:17px;font-weight:800;cursor:pointer;flex-shrink:0;transition:all .15s;line-height:1}
 .cal-nav:hover{background:rgba(212,175,106,.18);transform:scale(1.06);box-shadow:0 0 12px rgba(212,175,106,.25)}
@@ -749,6 +756,18 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
       <div class="header-loc"><div class="live-dot" aria-hidden="true"></div><span class="sr-only">বর্তমান অবস্থান: </span><span id="loc-name">বগুড়া, বাংলাদেশ</span></div>
     </div>
   </div>
+</div>
+
+<!-- quick access — Quran (1) + Hadith (2) right under the clock panel -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px" role="navigation" aria-label="দ্রুত প্রবেশ">
+  <button type="button" class="qa-btn" onclick="quickOpenTab('quran')" aria-label="কুরআন পড়ুন">
+    <span class="qa-ic" style="background:linear-gradient(135deg,rgba(16,185,129,.22),rgba(16,185,129,.06));box-shadow:0 0 0 1px rgba(16,185,129,.35) inset">📖</span>
+    <span>কুরআন</span>
+  </button>
+  <button type="button" class="qa-btn" onclick="quickOpenTab('hadith')" aria-label="হাদিস পড়ুন">
+    <span class="qa-ic" style="background:linear-gradient(135deg,rgba(212,175,106,.22),rgba(212,175,106,.06));box-shadow:0 0 0 1px rgba(212,175,106,.35) inset">📚</span>
+    <span>হাদিস</span>
+  </button>
 </div>
 
 <div class="next-prayer" role="region" aria-label="নামাজের ওয়াক্তের তথ্য">
@@ -6024,6 +6043,21 @@ function openHajjFromHome(){
 }
 
 // Clock-panel date block: tap anywhere on it to land on the Islamic calendar
+// home quick-access buttons: switch tab AND land on its content (the tab
+// sections sit below the always-visible home cards — same trap as the calendar)
+function quickOpenTab(id){
+  showTab(id, document.getElementById('tabbtn-' + id));
+  const land = () => {
+    const el = document.getElementById('tab-' + id);
+    if(el){ el.scrollIntoView({block: 'start'}); window.scrollBy(0, -62); }
+  };
+  land();
+  // async content (quran verse fetch, daily-widget load) reshapes the page after
+  // the first scroll and the browser clamps scrollY — re-anchor as things settle
+  setTimeout(land, 500);
+  setTimeout(land, 1300);
+}
+
 function openCalendarFromHome(){
   showTab('tools', document.getElementById('tabbtn-tools'));
   openTool('calendar');
@@ -7469,7 +7503,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v196';
+const APP_VERSION = 'v197';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
