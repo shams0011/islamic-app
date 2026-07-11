@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v194-friday-standout -->
+<!-- VERSION: v195-hijri-adjustment -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -1669,6 +1669,18 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
       <button type="button" class="cal-nav" onclick="navigateCalendarMonth(1)" aria-label="পরের মাস">›</button>
     </div>
 
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;padding:10px 13px;border-radius:14px;background:rgba(212,175,106,.06);border:1px solid rgba(212,175,106,.22)">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:800;color:var(--gold2)">🌙 চাঁদ-দেখা সমন্বয়</div>
+        <div style="font-size:10px;color:var(--text3);line-height:1.55;margin-top:2px">ইসলামিক ফাউন্ডেশনের ঘোষণার সাথে না মিললে হিজরি তারিখ ±১ দিন ঠিক করে নিন</div>
+      </div>
+      <div style="display:flex;gap:7px;align-items:center;flex-shrink:0">
+        <button type="button" onclick="hijriAdjStep(-1)" aria-label="হিজরি তারিখ ১ দিন কমান" style="width:32px;height:32px;border-radius:50%;border:1px solid rgba(212,175,106,.35);background:rgba(212,175,106,.08);color:var(--gold2);font-size:15px;font-weight:800;cursor:pointer;line-height:1">−</button>
+        <span id="hijri-adj-val" style="min-width:48px;text-align:center;font-size:12px;font-weight:800;color:var(--emerald2)">০ দিন</span>
+        <button type="button" onclick="hijriAdjStep(1)" aria-label="হিজরি তারিখ ১ দিন বাড়ান" style="width:32px;height:32px;border-radius:50%;border:1px solid rgba(212,175,106,.35);background:rgba(212,175,106,.08);color:var(--gold2);font-size:15px;font-weight:800;cursor:pointer;line-height:1">+</button>
+      </div>
+    </div>
+
     <div style="background:linear-gradient(165deg,var(--card2),var(--card));border:1px solid rgba(212,175,106,.22);border-radius:18px;padding:14px 12px 12px;margin-bottom:16px;box-shadow:0 4px 16px rgba(0,0,0,.22)">
       <div id="calendar-weekday-header" style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:4px"></div>
       <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,106,.35),transparent);margin:0 4px 9px"></div>
@@ -2825,9 +2837,24 @@ const HIJRI_EVENT_NAMES = {
   fr: {'1-1':'Nouvel An Islamique','1-10':'Achoura','3-12':'Mawlid','7-27':"Isra et Mi'raj",'8-15':"Mi-Cha'ban",'9-1':'Début du Ramadan','9-27':'Laylat al-Qadr (estimé)','10-1':'Aïd al-Fitr','12-9':'Hajj (Arafa)','12-10':'Aïd al-Adha'},
 };
 
-// Kuwaiti algorithm — widely used astronomical approximation for Gregorian → Hijri
+// Kuwaiti algorithm — widely used astronomical approximation for Gregorian → Hijri.
+// HIJRI_ADJ: manual ±day correction so the app can match the Islamic Foundation
+// moon-sighting announcement (which lands within hours of each month's start).
+let HIJRI_ADJ = 0;
+try{ HIJRI_ADJ = Math.max(-2, Math.min(2, parseInt(localStorage.getItem('hijri_adj_v1')) || 0)); }catch(e){}
+function hijriAdjLabel(){
+  return HIJRI_ADJ === 0 ? '০ দিন' : (HIJRI_ADJ > 0 ? '+' : '−') + localizeNum(Math.abs(HIJRI_ADJ)) + ' দিন';
+}
+function hijriAdjStep(d){
+  HIJRI_ADJ = Math.max(-2, Math.min(2, HIJRI_ADJ + d));
+  try{ localStorage.setItem('hijri_adj_v1', String(HIJRI_ADJ)); }catch(e){}
+  setTextIfExists('hijri-adj-val', hijriAdjLabel());
+  if(typeof renderCalendar === 'function' && calendarViewDate) renderCalendar();
+  if(typeof updateDateDisplay === 'function') updateDateDisplay(typeof getLocationNow === 'function' ? getLocationNow() : new Date());
+  showToast('🌙 হিজরি সমন্বয়: ' + hijriAdjLabel() + (HIJRI_ADJ === 0 ? ' (অ্যালগরিদম অনুযায়ী)' : ''));
+}
 function gregorianToHijri(date){
-  const jd = Math.floor((date.getTime()/86400000) - (date.getTimezoneOffset()/1440) + 2440587.5 + 0.5);
+  const jd = Math.floor(((date.getTime() + HIJRI_ADJ * 86400000)/86400000) - (date.getTimezoneOffset()/1440) + 2440587.5 + 0.5);
   let l = jd - 1948440 + 10632;
   let n = Math.floor((l-1)/10631);
   l = l - 10631*n + 354;
@@ -3530,6 +3557,7 @@ function renderCalendar(){
     hijriLabel = `${hijriMo[hFirst.month-1]} ${localizeNum(hFirst.year)} – ${hijriMo[hLast.month-1]} ${localizeNum(hLast.year)} ${hijriLabelWord}`;
   }
   setTextIfExists('calendar-hijri-label', `🌙 ${hijriLabel}`);
+  setTextIfExists('hijri-adj-val', hijriAdjLabel()); // moon-sighting adjustment readout
 
   const headerEl = document.getElementById('calendar-weekday-header');
   // Friday (index 5) gets gold — the week's crown, matching the জুমা tint on its column
@@ -7439,7 +7467,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v194';
+const APP_VERSION = 'v195';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -8735,6 +8763,7 @@ function hifzMarkMem(){
    Feed is baked into the app: each release appends entries here. Unread = ts newer
    than the stored last-seen stamp; opening the sheet marks everything read. */
 const NOTIF_FEED = [
+  {id: 'hijriadj', ts: Date.parse('2026-07-11T07:30:00+06:00'), icon: '🌙', title: 'চাঁদ-দেখা সমন্বয়', body: 'ইসলামিক ফাউন্ডেশনের ঘোষণার সাথে হিজরি তারিখ না মিললে ক্যালেন্ডার থেকে ±১ দিন ঠিক করে নিন — পুরো অ্যাপ (রোজা, দিবস, হোম) একসাথে মিলে যাবে', act: 'calendar'},
   {id: 'hifz',    ts: Date.parse('2026-07-11T06:00:00+06:00'), icon: '🧠', title: 'নতুন: হিফজ-মোড', body: 'আয়াত রেঞ্জ বেছে রিপিট তিলাওয়াত + আয়াত ঢেকে মুখস্থ অনুশীলন — রিডার ফুটারের 🧠 বাটনে', act: 'hifz'},
   {id: 'goal',    ts: Date.parse('2026-07-11T05:30:00+06:00'), icon: '🎯', title: 'দৈনিক পাঠ-লক্ষ্য কার্ড', body: 'হোম স্ক্রিনে রিং-প্রগ্রেস, 🔥 স্ট্রিক আর লক্ষ্য-স্টেপার — প্রতিদিনের তিলাওয়াত ট্র্যাক করুন', act: 'goal'},
   {id: 'sliders', ts: Date.parse('2026-07-11T05:00:00+06:00'), icon: '⚙️', title: 'প্রিমিয়াম সেটিংস', body: 'আরবি সাইজ / অনুবাদ / লাইন-স্পেসিং এখন লাইভ-প্রিভিউ স্লাইডারে, শিটগুলোও নতুন ডিজাইনে', act: 'settings'},
@@ -8765,6 +8794,7 @@ function nfRun(i){
   else if(act === 'mushaf'){ goQuran(); setTimeout(() => typeof openMushafFromReader === 'function' && openMushafFromReader(), 500); }
   else if(act === 'quran'){ goQuran(); }
   else if(act === 'palette'){ if(window.commandPalette) window.commandPalette.open(); }
+  else if(act === 'calendar'){ showTab('tools', document.getElementById('tabbtn-tools')); openTool('calendar'); }
 }
 function openNotifSheet(){
   const seen = _nfSeen();
