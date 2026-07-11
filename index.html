@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v189-premium-hifz-sheet -->
+<!-- VERSION: v190-notification-center -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -678,6 +678,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
 <div class="header" role="banner">
   <div class="header-top-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;gap:6px">
     <div class="app-eyebrow" id="app-eyebrow" style="margin-bottom:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">☪ ইসলামিক AI • দ্বীন সঙ্গী</div>
+    <button type="button" id="notif-bell-btn" onclick="openNotifSheet()" aria-label="নোটিফিকেশন ও ঘোষণা" style="position:relative;display:flex;align-items:center;justify-content:center;width:34px;height:29px;background:rgba(212,175,106,.08);border:1px solid rgba(212,175,106,.2);border-radius:50px;cursor:pointer;flex-shrink:0;font-size:13px;padding:0">🔔<span id="notif-badge" style="display:none;position:absolute;top:-6px;right:-5px;min-width:16px;height:16px;border-radius:50px;background:linear-gradient(150deg,#ef4444,#b91c1c);color:#fff;font-size:9px;font-weight:800;line-height:16px;text-align:center;padding:0 4px;box-shadow:0 2px 6px rgba(239,68,68,.5);font-family:'Hind Siliguri',sans-serif"></span></button>
     <button type="button" id="profile-selector-btn" onclick="openProfileSelector()" aria-label="প্রোফাইল পরিবর্তন করুন" style="display:flex;align-items:center;gap:5px;padding:5px 10px;background:rgba(212,175,106,.08);border:1px solid rgba(212,175,106,.2);border-radius:50px;color:var(--gold2);font-size:11.5px;font-weight:600;cursor:pointer;font-family:'Hind Siliguri',sans-serif;flex-shrink:0">
       <span aria-hidden="true">👤</span><span id="profile-selector-label">আমি</span>
     </button>
@@ -1143,6 +1144,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
   <div class="sheet" id="health-sheet" role="dialog" aria-label="ডায়াগনস্টিকস"></div>
   <div class="sheet" id="ai-sheet" role="dialog" aria-label="AI ব্যাখ্যা"></div>
   <div class="sheet" id="hifz-sheet" role="dialog" aria-label="হিফজ-মোড"></div>
+  <div class="sheet" id="notif-sheet" role="dialog" aria-label="নোটিফিকেশন ও ঘোষণা"></div>
   <input type="file" id="qbk-file" accept="application/json" style="display:none" onchange="qbkImport(this.files[0])">
 </div>
 
@@ -7297,7 +7299,7 @@ function closeSheets(){
   document.getElementById('sheet-backdrop').style.display = 'none';
   document.getElementById('settings-sheet').style.display = 'none';
   document.getElementById('bookmarks-sheet').style.display = 'none';
-  ['audio-sheet', 'stats-sheet', 'health-sheet', 'ai-sheet', 'hifz-sheet'].forEach(id => {
+  ['audio-sheet', 'stats-sheet', 'health-sheet', 'ai-sheet', 'hifz-sheet', 'notif-sheet'].forEach(id => {
     const el = document.getElementById(id);
     if(el) el.style.display = 'none';
   });
@@ -7415,7 +7417,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v189';
+const APP_VERSION = 'v190';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -8707,6 +8709,70 @@ function hifzMarkMem(){
   ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => list.addEventListener(ev, end));
 })();
 
+/* ══ NOTIFICATION CENTER — header bell + announcement feed (offline, no spam) ══
+   Feed is baked into the app: each release appends entries here. Unread = ts newer
+   than the stored last-seen stamp; opening the sheet marks everything read. */
+const NOTIF_FEED = [
+  {id: 'hifz',    ts: Date.parse('2026-07-11T06:00:00+06:00'), icon: '🧠', title: 'নতুন: হিফজ-মোড', body: 'আয়াত রেঞ্জ বেছে রিপিট তিলাওয়াত + আয়াত ঢেকে মুখস্থ অনুশীলন — রিডার ফুটারের 🧠 বাটনে', act: 'hifz'},
+  {id: 'goal',    ts: Date.parse('2026-07-11T05:30:00+06:00'), icon: '🎯', title: 'দৈনিক পাঠ-লক্ষ্য কার্ড', body: 'হোম স্ক্রিনে রিং-প্রগ্রেস, 🔥 স্ট্রিক আর লক্ষ্য-স্টেপার — প্রতিদিনের তিলাওয়াত ট্র্যাক করুন', act: 'goal'},
+  {id: 'sliders', ts: Date.parse('2026-07-11T05:00:00+06:00'), icon: '⚙️', title: 'প্রিমিয়াম সেটিংস', body: 'আরবি সাইজ / অনুবাদ / লাইন-স্পেসিং এখন লাইভ-প্রিভিউ স্লাইডারে, শিটগুলোও নতুন ডিজাইনে', act: 'settings'},
+  {id: 'mushaf',  ts: Date.parse('2026-07-10T20:00:00+06:00'), icon: '📜', title: 'মুসহাফ-মোড', body: 'ছাপা মুসহাফের মতো পৃষ্ঠা-ভিত্তিক পাঠ (১–৬০৪), সোয়াইপে পাতা ওল্টান — রিডারের 📜 বাটনে', act: 'mushaf'},
+  {id: 'karaoke', ts: Date.parse('2026-07-10T12:00:00+06:00'), icon: '🎧', title: 'শব্দ-অনুসরণ তিলাওয়াত', body: 'অডিওর সাথে সাথে পঠিত শব্দের নিচে সোনালি মার্কার গ্লাইড করে — ছাপা মুসহাফে আঙুল রাখার মতো', act: 'quran'},
+  {id: 'palette', ts: Date.parse('2026-07-09T12:00:00+06:00'), icon: '✨', title: 'কমান্ড প্যালেট + AI', body: 'Ctrl+K (বা সার্চ-আইকন চেপে ধরুন): আয়াত/পৃষ্ঠা/টপিক খোঁজা, explain 2:255, হিফজ — সব এক বাক্সে', act: 'palette'},
+];
+function _nfSeen(){ try{ return parseInt(localStorage.getItem('notif_seen_v1')) || 0; }catch(e){ return 0; } }
+function nfUnread(){ const seen = _nfSeen(); return NOTIF_FEED.filter(n => n.ts > seen).length; }
+function updateNotifBadge(){
+  const b = document.getElementById('notif-badge');
+  if(!b) return;
+  const n = nfUnread();
+  b.style.display = n ? 'block' : 'none';
+  b.textContent = n > 9 ? '৯+' : localizeNum(n);
+}
+function nfTimeAgo(ts){
+  const d = Math.floor((Date.now() - ts) / 86400000);
+  return d <= 0 ? 'আজ' : d === 1 ? 'গতকাল' : localizeNum(d) + ' দিন আগে';
+}
+function nfRun(i){
+  const act = NOTIF_FEED[i] && NOTIF_FEED[i].act;
+  closeSheets();
+  const goQuran = () => showTab('quran', document.getElementById('tabbtn-quran'));
+  if(act === 'hifz'){ goQuran(); setTimeout(openHifzSheet, 400); }
+  else if(act === 'goal'){ const el = document.getElementById('home-goal-card'); if(el) el.scrollIntoView({block: 'center', behavior: 'smooth'}); }
+  else if(act === 'settings'){ goQuran(); setTimeout(openReaderSettings, 400); }
+  else if(act === 'mushaf'){ goQuran(); setTimeout(() => typeof openMushafFromReader === 'function' && openMushafFromReader(), 500); }
+  else if(act === 'quran'){ goQuran(); }
+  else if(act === 'palette'){ if(window.commandPalette) window.commandPalette.open(); }
+}
+function openNotifSheet(){
+  const seen = _nfSeen();
+  const items = NOTIF_FEED.map((n, i) => {
+    const unread = n.ts > seen;
+    return `
+    <div onclick="nfRun(${i})" role="button" tabindex="0" onkeydown="if(event.key==='Enter'){nfRun(${i})}"
+      style="display:flex;gap:11px;align-items:flex-start;padding:12px 11px;margin-bottom:8px;border-radius:14px;cursor:pointer;background:${unread ? 'linear-gradient(150deg,rgba(16,185,129,.09),rgba(16,185,129,.02))' : 'rgba(255,255,255,.025)'};border:1px solid ${unread ? 'rgba(16,185,129,.3)' : 'var(--border2)'}">
+      <span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:11px;background:rgba(212,175,106,.1);border:1px solid rgba(212,175,106,.25);font-size:16px;flex-shrink:0">${n.icon}</span>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px">
+          ${unread ? '<span style="width:7px;height:7px;border-radius:50%;background:var(--emerald2);box-shadow:0 0 6px rgba(16,185,129,.8);flex-shrink:0"></span>' : ''}
+          <span style="font-size:13px;font-weight:800;color:${unread ? 'var(--emerald2)' : 'var(--text2)'}">${n.title}</span>
+          <span style="margin-left:auto;font-size:10px;color:var(--text3);white-space:nowrap">${nfTimeAgo(n.ts)}</span>
+        </div>
+        <div style="font-size:11.5px;color:var(--text3);line-height:1.65;margin-top:3px">${n.body}</div>
+      </div>
+    </div>`;
+  }).join('');
+  const un = nfUnread();
+  document.getElementById('notif-sheet').innerHTML = `
+    <h4>🔔 নোটিফিকেশন${un ? `<span style="margin-left:auto;font-size:10.5px;font-weight:700;color:#fca5a5;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.35);border-radius:50px;padding:3px 10px">${localizeNum(un)}টি নতুন</span>` : ''}</h4>
+    <div style="margin-top:10px">${items}</div>
+    <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:4px">শুধু ফিচার-ঘোষণা — কোনো বিজ্ঞাপন বা স্প্যাম নেই</div>
+    <button onclick="closeSheets()" style="width:100%;margin-top:10px;padding:11px;border-radius:13px;border:1px solid rgba(16,185,129,.35);background:rgba(16,185,129,.12);color:var(--emerald2);font-weight:700;font-size:13px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">বন্ধ করুন</button>`;
+  _openSheet('notif-sheet');
+  try{ localStorage.setItem('notif_seen_v1', String(Date.now())); }catch(e){}
+  updateNotifBadge();
+}
+
 function show2(id){
   ['quran-surah-list-view','quran-verses-view','quran-mushaf-view'].forEach(v => {
     const el = document.getElementById(v);
@@ -8829,6 +8895,7 @@ renderTasbihPresets();
 selectTasbihZikir(0); // sync arabic/meaning/audio-button state for the default zikir
 placeTasbihBody('home'); // the tasbih starts on the home screen below the zakat card
 renderGoalCard(); // daily reading-goal ring below the tasbih card
+updateNotifBadge(); // header bell unread count
 applyQuranFont(); // restore the reader's saved mushaf font + size
 AE.init(); // audio engine: media element, media-session handlers
 initNotificationBanner();
