@@ -3,6 +3,7 @@
   "short_name": "Islamic AI",
   "description": "নামাজের সময়, কুরআন, হাদিস, দোয়া, কিবলা, তাসবিহ ও ইসলামিক AI সহায়ক — সব এক অ্যাপে",
   "lang": "bn",
+  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
