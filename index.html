@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v202-play-store-prep -->
+<!-- VERSION: v203-support-sheet -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -1219,6 +1219,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
   <div class="sheet" id="ai-sheet" role="dialog" aria-label="AI ব্যাখ্যা"></div>
   <div class="sheet" id="hifz-sheet" role="dialog" aria-label="হিফজ-মোড"></div>
   <div class="sheet" id="notif-sheet" role="dialog" aria-label="নোটিফিকেশন ও ঘোষণা"></div>
+  <div class="sheet" id="support-sheet" role="dialog" aria-label="অ্যাপ সাপোর্ট"></div>
   <input type="file" id="qbk-file" accept="application/json" style="display:none" onchange="qbkImport(this.files[0])">
 </div>
 
@@ -1396,6 +1397,11 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
         <div class="ai-card-icon" aria-hidden="true">📅</div>
         <div class="ai-card-title" id="tool-title-calendar">ইসলামিক ক্যালেন্ডার</div>
         <div class="ai-card-desc" id="tool-desc-calendar">হিজরি মাস ও গুরুত্বপূর্ণ দিনগুলো দেখুন</div>
+      </div>
+      <div class="ai-card" id="tool-card-support" onclick="openSupportSheet()" role="button" tabindex="0" aria-label="অ্যাপ সাপোর্ট" style="display:none" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openSupportSheet()}">
+        <div class="ai-card-icon" aria-hidden="true">💝</div>
+        <div class="ai-card-title">অ্যাপ সাপোর্ট করুন</div>
+        <div class="ai-card-desc">আপনার সদকা অ্যাপটিকে বিজ্ঞাপনমুক্ত রাখে</div>
       </div>
       <div class="ai-card" onclick="openTool('media')" role="button" tabindex="0" aria-label="মিডিয়া লাইব্রেরি" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTool('media')}">
         <div class="ai-card-icon" aria-hidden="true">🎬</div>
@@ -7433,7 +7439,7 @@ function closeSheets(){
   document.getElementById('sheet-backdrop').style.display = 'none';
   document.getElementById('settings-sheet').style.display = 'none';
   document.getElementById('bookmarks-sheet').style.display = 'none';
-  ['audio-sheet', 'stats-sheet', 'health-sheet', 'ai-sheet', 'hifz-sheet', 'notif-sheet'].forEach(id => {
+  ['audio-sheet', 'stats-sheet', 'health-sheet', 'ai-sheet', 'hifz-sheet', 'notif-sheet', 'support-sheet'].forEach(id => {
     const el = document.getElementById(id);
     if(el) el.style.display = 'none';
   });
@@ -7551,7 +7557,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v202';
+const APP_VERSION = 'v203';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -8909,6 +8915,40 @@ function openNotifSheet(){
   updateNotifBadge();
 }
 
+/* ══ APP SUPPORT (সদকা) — manual Send Money, no payment gateway ══
+   Fill in the numbers below to activate; the tools card stays hidden while
+   both are empty. NO ads ever — this is the only support channel. */
+const SUPPORT_PAY = {
+  bkash: '',  // e.g. '01XXXXXXXXX' (bKash Send Money / personal)
+  nagad: '',  // e.g. '01XXXXXXXXX'
+};
+function supportConfigured(){ return !!(SUPPORT_PAY.bkash || SUPPORT_PAY.nagad); }
+function spCopy(num, label){
+  if(navigator.clipboard) navigator.clipboard.writeText(num).then(() => showToast('📋 ' + label + ' নম্বর কপি হয়েছে')).catch(() => {});
+}
+function openSupportSheet(){
+  const payRow = (label, num, color, bg, icon) => num ? `
+    <div style="display:flex;align-items:center;gap:11px;padding:13px;margin-bottom:9px;border-radius:14px;background:${bg};border:1px solid ${color}44">
+      <span style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:12px;background:${color}22;border:1px solid ${color}55;font-size:17px;flex-shrink:0">${icon}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:800;color:${color}">${label} (Send Money)</div>
+        <div style="font-size:16.5px;font-weight:800;color:var(--text);font-family:ui-monospace,monospace;letter-spacing:1px">${num}</div>
+      </div>
+      <button onclick="spCopy('${num}','${label}')" style="padding:9px 14px;border-radius:11px;border:1px solid ${color}55;background:${color}18;color:${color};font-weight:800;font-size:12px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">কপি</button>
+    </div>` : '';
+  document.getElementById('support-sheet').innerHTML = `
+    <h4><span style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:10px;background:linear-gradient(135deg,rgba(239,68,68,.22),rgba(239,68,68,.05));box-shadow:0 0 0 1px rgba(239,68,68,.3) inset">💝</span>অ্যাপটি সাপোর্ট করুন</h4>
+    <div style="text-align:center;margin:12px 0 14px">
+      <div style="font-size:13px;color:var(--text2);line-height:1.8">এই অ্যাপ সম্পূর্ণ <b style="color:var(--emerald2)">বিজ্ঞাপনমুক্ত ও ফ্রি</b> — থাকবেও তাই।<br>আপনার সদকা সার্ভার-খরচ ও নতুন ফিচারে ব্যয় হয়।</div>
+      <div style="margin-top:10px;font-size:11px;color:var(--gold2);background:rgba(212,175,106,.08);border:1px solid rgba(212,175,106,.25);border-radius:12px;padding:9px 12px;line-height:1.8">"যে ব্যক্তি কোনো ভালো কাজের পথ দেখায়, সে তার আমলকারীর সমান সওয়াব পাবে" — সহিহ মুসলিম</div>
+    </div>
+    ${payRow('bKash', SUPPORT_PAY.bkash, '#e2136e', 'rgba(226,19,110,.07)', '📱')}
+    ${payRow('Nagad', SUPPORT_PAY.nagad, '#f6921e', 'rgba(246,146,30,.07)', '📱')}
+    <div style="font-size:10.5px;color:var(--text3);text-align:center;line-height:1.7;margin-top:6px">নম্বর কপি করে আপনার bKash/Nagad অ্যাপের <b>Send Money</b>-তে পেস্ট করুন • যেকোনো পরিমাণই মূল্যবান, জাযাকাল্লাহু খাইরান</div>
+    <button onclick="closeSheets()" style="width:100%;margin-top:12px;padding:11px;border-radius:13px;border:1px solid rgba(16,185,129,.35);background:rgba(16,185,129,.12);color:var(--emerald2);font-weight:700;font-size:13px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">বন্ধ করুন</button>`;
+  _openSheet('support-sheet');
+}
+
 function show2(id){
   ['quran-surah-list-view','quran-verses-view','quran-mushaf-view'].forEach(v => {
     const el = document.getElementById(v);
@@ -9032,6 +9072,7 @@ selectTasbihZikir(0); // sync arabic/meaning/audio-button state for the default 
 placeTasbihBody('home'); // the tasbih starts on the home screen below the zakat card
 renderGoalCard(); // daily reading-goal ring below the tasbih card
 updateNotifBadge(); // header bell unread count
+if(supportConfigured()){ const sc = document.getElementById('tool-card-support'); if(sc) sc.style.display = ''; }
 applyQuranFont(); // restore the reader's saved mushaf font + size
 AE.init(); // audio engine: media element, media-session handlers
 initNotificationBanner();
