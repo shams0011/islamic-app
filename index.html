@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v203-support-sheet -->
+<!-- VERSION: v204-support-live -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -7557,7 +7557,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v203';
+const APP_VERSION = 'v204';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -8919,10 +8919,11 @@ function openNotifSheet(){
    Fill in the numbers below to activate; the tools card stays hidden while
    both are empty. NO ads ever — this is the only support channel. */
 const SUPPORT_PAY = {
-  bkash: '',  // e.g. '01XXXXXXXXX' (bKash Send Money / personal)
-  nagad: '',  // e.g. '01XXXXXXXXX'
+  bkash: '01741084444',   // bKash Send Money (personal)
+  nagad: '01741084444',   // Nagad Send Money
+  cellfin: '01741084444', // CellFin (Islami Bank)
 };
-function supportConfigured(){ return !!(SUPPORT_PAY.bkash || SUPPORT_PAY.nagad); }
+function supportConfigured(){ return !!(SUPPORT_PAY.bkash || SUPPORT_PAY.nagad || SUPPORT_PAY.cellfin); }
 function spCopy(num, label){
   if(navigator.clipboard) navigator.clipboard.writeText(num).then(() => showToast('📋 ' + label + ' নম্বর কপি হয়েছে')).catch(() => {});
 }
@@ -8944,6 +8945,7 @@ function openSupportSheet(){
     </div>
     ${payRow('bKash', SUPPORT_PAY.bkash, '#e2136e', 'rgba(226,19,110,.07)', '📱')}
     ${payRow('Nagad', SUPPORT_PAY.nagad, '#f6921e', 'rgba(246,146,30,.07)', '📱')}
+    ${payRow('CellFin', SUPPORT_PAY.cellfin, '#2dd4bf', 'rgba(45,212,191,.06)', '🏦')}
     <div style="font-size:10.5px;color:var(--text3);text-align:center;line-height:1.7;margin-top:6px">নম্বর কপি করে আপনার bKash/Nagad অ্যাপের <b>Send Money</b>-তে পেস্ট করুন • যেকোনো পরিমাণই মূল্যবান, জাযাকাল্লাহু খাইরান</div>
     <button onclick="closeSheets()" style="width:100%;margin-top:12px;padding:11px;border-radius:13px;border:1px solid rgba(16,185,129,.35);background:rgba(16,185,129,.12);color:var(--emerald2);font-weight:700;font-size:13px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">বন্ধ করুন</button>`;
   _openSheet('support-sheet');
