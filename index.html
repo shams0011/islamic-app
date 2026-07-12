@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ইসলামিক AI — Deen Companion</title>
-<!-- VERSION: v204-support-live -->
+<!-- VERSION: v205-bank-transfer -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="ইসলামিক AI — Deen Companion">
@@ -7557,7 +7557,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v204';
+const APP_VERSION = 'v205';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -8922,7 +8922,20 @@ const SUPPORT_PAY = {
   bkash: '01741084444',   // bKash Send Money (personal)
   nagad: '01741084444',   // Nagad Send Money
   cellfin: '01741084444', // CellFin (Islami Bank)
+  bank: {
+    name: 'Islami Bank Bangladesh PLC',
+    title: 'SAMSUZZAMAN',
+    account: '20501730202872504',
+    branch: 'Highway Br, Sherpur, Bogra',
+    routing: '125101392',
+    swift: 'IBBLBDDH', // for international wire
+  },
 };
+function spCopyBank(){
+  const b = SUPPORT_PAY.bank;
+  const text = `Bank: ${b.name}\nA/C Title: ${b.title}\nA/C No: ${b.account}\nBranch: ${b.branch}\nRouting: ${b.routing}\nSWIFT: ${b.swift}`;
+  if(navigator.clipboard) navigator.clipboard.writeText(text).then(() => showToast('📋 ব্যাংকের সব তথ্য কপি হয়েছে')).catch(() => {});
+}
 function supportConfigured(){ return !!(SUPPORT_PAY.bkash || SUPPORT_PAY.nagad || SUPPORT_PAY.cellfin); }
 function spCopy(num, label){
   if(navigator.clipboard) navigator.clipboard.writeText(num).then(() => showToast('📋 ' + label + ' নম্বর কপি হয়েছে')).catch(() => {});
@@ -8946,7 +8959,25 @@ function openSupportSheet(){
     ${payRow('bKash', SUPPORT_PAY.bkash, '#e2136e', 'rgba(226,19,110,.07)', '📱')}
     ${payRow('Nagad', SUPPORT_PAY.nagad, '#f6921e', 'rgba(246,146,30,.07)', '📱')}
     ${payRow('CellFin', SUPPORT_PAY.cellfin, '#2dd4bf', 'rgba(45,212,191,.06)', '🏦')}
-    <div style="font-size:10.5px;color:var(--text3);text-align:center;line-height:1.7;margin-top:6px">নম্বর কপি করে আপনার bKash/Nagad অ্যাপের <b>Send Money</b>-তে পেস্ট করুন • যেকোনো পরিমাণই মূল্যবান, জাযাকাল্লাহু খাইরান</div>
+    ${SUPPORT_PAY.bank && SUPPORT_PAY.bank.account ? `
+    <div style="padding:13px;margin-bottom:9px;border-radius:14px;background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.28)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:9px">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:12px;background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.35);font-size:17px;flex-shrink:0">🏛️</span>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:800;color:var(--emerald2)">ব্যাংক ট্রান্সফার <span style="color:var(--text3);font-weight:700">(দেশ ও বিদেশ)</span></div>
+          <div style="font-size:12.5px;font-weight:700;color:var(--text)">${SUPPORT_PAY.bank.name}</div>
+        </div>
+        <button onclick="spCopyBank()" style="padding:9px 14px;border-radius:11px;border:1px solid rgba(16,185,129,.45);background:rgba(16,185,129,.12);color:var(--emerald2);font-weight:800;font-size:12px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;flex-shrink:0">সব কপি</button>
+      </div>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:11.5px;line-height:1.7">
+        <span style="color:var(--text3)">A/C Title</span><span style="color:var(--text);font-weight:700">${SUPPORT_PAY.bank.title}</span>
+        <span style="color:var(--text3)">A/C No</span><span style="color:var(--text);font-weight:800;font-family:ui-monospace,monospace;letter-spacing:.5px">${SUPPORT_PAY.bank.account}</span>
+        <span style="color:var(--text3)">Branch</span><span style="color:var(--text);font-weight:700">${SUPPORT_PAY.bank.branch}</span>
+        <span style="color:var(--text3)">Routing</span><span style="color:var(--text);font-weight:700;font-family:ui-monospace,monospace">${SUPPORT_PAY.bank.routing}</span>
+        <span style="color:var(--text3)">SWIFT 🌍</span><span style="color:var(--gold2);font-weight:800;font-family:ui-monospace,monospace">${SUPPORT_PAY.bank.swift}</span>
+      </div>
+    </div>` : ''}
+    <div style="font-size:10.5px;color:var(--text3);text-align:center;line-height:1.7;margin-top:6px">মোবাইল-নম্বর কপি করে <b>Send Money</b> করুন • বিদেশ থেকে SWIFT কোডসহ ব্যাংক-ওয়্যার • যেকোনো পরিমাণই মূল্যবান, জাযাকাল্লাহু খাইরান</div>
     <button onclick="closeSheets()" style="width:100%;margin-top:12px;padding:11px;border-radius:13px;border:1px solid rgba(16,185,129,.35);background:rgba(16,185,129,.12);color:var(--emerald2);font-weight:700;font-size:13px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">বন্ধ করুন</button>`;
   _openSheet('support-sheet');
 }
