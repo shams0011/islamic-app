@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v229-siyam-glyph-cleanup -->
+<!-- VERSION: v230-hadith-actions -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -351,6 +351,9 @@ input:focus,textarea:focus,select:focus{border-color:rgba(16,185,129,.45)!import
 .h-arabic.mushaf-ar{line-height:var(--quran-lh,2.05)}
 /* per-verse action chips */
 .v-act{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.hd-act{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.hd-act button{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:50px;padding:4px 11px;color:var(--text2);font-size:12px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .15s;min-height:36px}
+.hd-act button.on{background:rgba(212,175,106,.14);border-color:rgba(212,175,106,.45);color:var(--gold2)}
 .v-act button{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:50px;padding:4px 11px;color:var(--text2);font-size:12px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .15s}
 .v-act button.on{background:rgba(212,175,106,.14);border-color:rgba(212,175,106,.45);color:var(--gold2)}
 .v-note{margin-top:9px;font-size:12.5px;color:#e8dcc0;background:rgba(212,175,106,.07);border:1px dashed rgba(212,175,106,.3);border-radius:11px;padding:8px 12px;line-height:1.6}
@@ -4928,6 +4931,32 @@ function colorizeHadith(text){
   return t;
 }
 
+/* ══ HADITH READING STATE — bookmark/favorite/note/highlight per hadith ══ */
+const HS = {
+  data: null,
+  load(){
+    if(this.data) return this.data;
+    try{ this.data = JSON.parse(localStorage.getItem(profileKey('hadith_state_v1'))) || {}; }catch(e){ this.data = {}; }
+    this.data.items = this.data.items || {};
+    return this.data;
+  },
+  save(){
+    clearTimeout(this._t);
+    this._t = setTimeout(() => { try{ localStorage.setItem(profileKey('hadith_state_v1'), JSON.stringify(this.data)); }catch(e){} }, 250);
+  },
+  key(n){ return selBook + ':' + selChapter + ':' + n; },
+  get(n){ return this.load().items[this.key(n)] || {}; },
+  patch(n, patch){
+    const d = this.load(), k = this.key(n);
+    const cur = Object.assign({}, d.items[k] || {}, patch);
+    Object.keys(cur).forEach(x => { if(!cur[x]) delete cur[x]; });
+    if(Object.keys(cur).length) d.items[k] = cur; else delete d.items[k];
+    this.save();
+  },
+};
+const HD_HL = ['', 'rgba(240,215,149,.13)', 'rgba(16,185,129,.12)', 'rgba(96,165,250,.12)', 'rgba(244,114,182,.11)'];
+window._hdActOpen = new Set();
+
 function renderHadiths(list){
   const q=(document.getElementById('h-search').value||'').toLowerCase();
   let filtered=list;
@@ -4936,16 +4965,121 @@ function renderHadiths(list){
     document.getElementById('hadith-list').innerHTML=`<div style="text-align:center;padding:40px;color:var(--text3);font-size:14px">কোনো হাদিস পাওয়া যায়নি</div>`;
     return;
   }
-  document.getElementById('hadith-list').innerHTML=filtered.map((h)=>`
-    <div class="hadith-card" onclick="openModal(${list.indexOf(h)})" role="button" tabindex="0" aria-label="হাদিস নম্বর ${h.n||''}, বিস্তারিত দেখতে চাপুন" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openModal(${list.indexOf(h)})}">
-      <div class="h-text">${colorizeHadith(getHadithText(h))}</div>
-      <div class="h-meta">
+  document.getElementById('hadith-list').innerHTML=filtered.map((h)=>{
+    const i = list.indexOf(h);
+    const st = HS.get(h.n);
+    const open = window._hdActOpen.has(i);
+    return `
+    <div class="hadith-card" onclick="openModal(${i})" role="button" tabindex="0" aria-label="হাদিস নম্বর ${h.n||''}, বিস্তারিত দেখতে চাপুন" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openModal(${i})}">
+      <div class="h-text" ${st.hl ? `style="background:${HD_HL[st.hl]};border-radius:10px;padding:6px 8px"` : ''}>${colorizeHadith(getHadithText(h))}</div>
+      ${st.note ? `<div class="v-note">📝 ${escapeHtml(st.note)}</div>` : ''}
+      <div class="h-meta" style="align-items:center">
         <span class="badge bg">${selBookName}</span>
         <span class="badge bt">#${h.n||''}</span>
+        ${st.b || st.f || st.hl || st.note ? `<span style="font-size:11px;letter-spacing:1px" aria-hidden="true">${st.b?'🔖':''}${st.f?'❤️':''}${st.hl?'🖍️':''}${st.note?'📝':''}</span>` : ''}
+        <button onclick="hdActToggle(event,${i})" aria-expanded="${open}" aria-label="হাদিস অ্যাকশন" style="margin-left:auto;background:rgba(212,175,106,.08);border:1px solid rgba(212,175,106,.28);border-radius:50px;min-width:40px;min-height:32px;color:var(--gold2);font-size:13px;cursor:pointer;font-weight:800">⋯</button>
+      </div>
+      <div class="hd-act" id="hdact-${i}" style="display:${open ? 'flex' : 'none'}" role="group" aria-label="হাদিস ${h.n||''} অ্যাকশন" onclick="event.stopPropagation()">
+        <button onclick="hdAct(event,${i},'ai')" aria-label="AI ব্যাখ্যা">🤖 ব্যাখ্যা</button>
+        <button onclick="hdAct(event,${i},'b')" class="${st.b?'on':''}" aria-pressed="${!!st.b}" aria-label="বুকমার্ক">🔖${st.b?' ✓':''}</button>
+        <button onclick="hdAct(event,${i},'f')" class="${st.f?'on':''}" aria-pressed="${!!st.f}" aria-label="প্রিয়">${st.f?'❤️':'🤍'}</button>
+        <button onclick="hdAct(event,${i},'note')" class="${st.note?'on':''}" aria-label="নোট">📝</button>
+        <button onclick="hdAct(event,${i},'hl')" class="${st.hl?'on':''}" aria-label="হাইলাইট রঙ বদলান">🖍️</button>
+        <button onclick="hdAct(event,${i},'copy')" aria-label="কপি">📋</button>
+        <button onclick="hdAct(event,${i},'share')" aria-label="শেয়ার">📤</button>
+        <button onclick="hdAct(event,${i},'relh')" aria-label="সম্পর্কিত হাদিস">🔗 হাদিস</button>
+        <button onclick="hdAct(event,${i},'relq')" aria-label="সম্পর্কিত আয়াত">📖 কুরআন</button>
       </div>
       <div class="h-hint" aria-hidden="true">👆 বিস্তারিত দেখতে ট্যাপ করুন</div>
-    </div>`).join('');
+    </div>`;}).join('');
   document.getElementById('h-search').oninput=()=>renderHadiths(currentHadiths);
+}
+
+function hdActToggle(e, i){
+  e.stopPropagation();
+  const row = document.getElementById('hdact-' + i);
+  if(!row) return;
+  const open = row.style.display === 'none';
+  row.style.display = open ? 'flex' : 'none';
+  if(open) window._hdActOpen.add(i); else window._hdActOpen.delete(i);
+}
+
+function hdAct(e, i, act){
+  e.stopPropagation();
+  const h = currentHadiths[i];
+  if(!h) return;
+  const st = HS.get(h.n);
+  const ref = `${selBookName}, ${selChapterName}, হাদিস #${h.n || ''}`;
+  if(act === 'b'){ HS.patch(h.n, {b: st.b ? 0 : Date.now()}); showToast(st.b ? 'বুকমার্ক মুছে গেছে' : '🔖 বুকমার্ক হয়েছে'); }
+  else if(act === 'f'){ HS.patch(h.n, {f: st.f ? 0 : Date.now()}); showToast(st.f ? 'প্রিয় থেকে বাদ' : '❤️ প্রিয়তে যুক্ত'); }
+  else if(act === 'hl'){ HS.patch(h.n, {hl: ((st.hl || 0) + 1) % 5}); }
+  else if(act === 'note'){
+    const txt = prompt('এই হাদিসের নোট (খালি রেখে OK দিলে মুছে যাবে):', st.note || '');
+    if(txt === null) return;
+    HS.patch(h.n, {note: txt.trim()});
+    showToast(txt.trim() ? '📝 নোট সংরক্ষিত' : 'নোট মুছে গেছে');
+  }
+  else if(act === 'copy' || act === 'share'){
+    const text = `${getHadithText(h)}\n— ${ref}`;
+    if(act === 'share' && navigator.share){ navigator.share({text}).catch(() => {}); return; }
+    if(navigator.clipboard) navigator.clipboard.writeText(text).then(() => showToast('📋 কপি হয়েছে')).catch(() => {});
+    return;
+  }
+  else if(act === 'ai'){ hadithAI('explain', i); return; }
+  else if(act === 'relh'){ hadithAI('relatedH', i); return; }
+  else if(act === 'relq'){ hadithAI('relatedQ', i); return; }
+  renderHadiths(currentHadiths);
+}
+
+/* AI over hadith — same proxy + honesty rules as the Quran assistant */
+const HAI_SYSTEM = `তুমি একজন সতর্ক ইসলামিক সহকারী। উত্তর কেবল নির্ভরযোগ্য উৎসের ভিত্তিতে দেবে: কুরআন, সিহাহ সিত্তাহর হাদিস এবং প্রসিদ্ধ শরাহগ্রন্থ (ফাতহুল বারী, শরহে নববী, উমদাতুল কারী)। অনুমাননির্ভর বা বানোয়াট কিছু বলবে না; অনিশ্চিত হলে স্পষ্ট করে বলবে। ফিকহি মতভেদ থাকলে সংক্ষেপে উল্লেখ করবে। সহজ বাংলায় উত্তর দেবে। উত্তরের একদম শেষে দুটি আলাদা লাইনে লিখবে:
+[উৎস: <ব্যবহৃত উৎসগুলোর কমা-করা তালিকা>]
+[আস্থা: উচ্চ|মাঝারি]`;
+
+async function hadithAI(kind, i){
+  const h = currentHadiths[i];
+  if(!h) return;
+  const sheet = document.getElementById('ai-sheet');
+  const titles = {explain: '🤖 হাদিসের ব্যাখ্যা', relatedH: '🔗 সম্পর্কিত হাদিস', relatedQ: '📖 সম্পর্কিত আয়াত'};
+  const ref = `${selBookName}, ${selChapterName}, হাদিস #${h.n || ''}`;
+  const txt = getHadithText(h) || '';
+  const heading = `<div style="font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:10px;max-height:110px;overflow:hidden">${escapeHtml(txt.slice(0, 220))}${txt.length > 220 ? '…' : ''}<br><b style="color:var(--gold2)">— ${escapeHtml(ref)}</b></div>`;
+  const render = body => {
+    sheet.innerHTML = `<h4>${titles[kind]}</h4>${body}
+      <button onclick="closeSheets()" style="width:100%;margin-top:13px;padding:11px;border-radius:12px;border:1px solid rgba(16,185,129,.35);background:rgba(16,185,129,.12);color:var(--emerald2);font-weight:700;font-size:13.5px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">বন্ধ করুন</button>`;
+    _openSheet('ai-sheet');
+  };
+  render(`${heading}<div style="text-align:center;padding:22px;color:var(--text3);font-size:13px">🤖 উত্তর তৈরি হচ্ছে…</div>`);
+  const prompts = {
+    explain: `এই হাদিসটির ব্যাখ্যা করো — প্রেক্ষাপট, মূল শিক্ষা, আমাদের জীবনে প্রয়োগ:\n\n"${txt}"\n(${ref})`,
+    relatedH: `এই হাদিসের সাথে সম্পর্কিত সিহাহ সিত্তাহর অন্য প্রধান হাদিসগুলো তালিকা করো (গ্রন্থ + হাদিস-নম্বর রেফারেন্স + এক লাইনে সারমর্ম):\n\n"${txt}"\n(${ref})`,
+    relatedQ: `এই হাদিসের বিষয়বস্তুর সাথে সম্পর্কিত কুরআনের প্রধান আয়াতগুলো তালিকা করো (সূরা:আয়াত রেফারেন্স + সংক্ষিপ্ত অনুবাদ + প্রাসঙ্গিকতা):\n\n"${txt}"\n(${ref})`,
+  };
+  try{
+    if(!AI_PROXY_URL) throw new Error('no-proxy');
+    const r = await fetch(AI_PROXY_URL, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({max_tokens: 1100, system: HAI_SYSTEM, messages: [{role: 'user', content: prompts[kind]}]}),
+    });
+    const data = await r.json();
+    if(!r.ok || data.error) throw new Error((data.error && data.error.message) || 'proxy ' + r.status);
+    const reply = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n') || 'উত্তর পাওয়া যায়নি।';
+    const meta = qaiParseMeta(reply);
+    const confHigh = meta.confidence === 'উচ্চ';
+    render(`${heading}
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+        ${meta.sources.map(s => `<span style="font-size:10px;font-weight:700;color:var(--gold2);background:rgba(212,175,106,.1);border:1px solid rgba(212,175,106,.28);border-radius:50px;padding:2px 9px">📚 ${escapeHtml(s)}</span>`).join('')}
+        <span style="font-size:10px;font-weight:800;border-radius:50px;padding:2px 10px;${confHigh
+          ? 'color:var(--emerald2);background:rgba(16,185,129,.13);border:1px solid rgba(16,185,129,.4)'
+          : 'color:#e8c988;background:rgba(232,147,12,.1);border:1px solid rgba(232,147,12,.35)'}">আস্থা: ${meta.confidence} ${confHigh ? '●●' : '●○'}</span>
+      </div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.85;white-space:pre-wrap">${escapeHtml(meta.body)}</div>
+      <div style="font-size:10.5px;color:var(--text3);margin-top:10px;border-top:1px solid rgba(255,255,255,.06);padding-top:8px">⚠️ AI-উত্তর সহায়ক মাত্র — গুরুত্বপূর্ণ বিষয়ে বিজ্ঞ আলেমের শরণাপন্ন হোন।</div>`);
+  }catch(e){
+    render(`${heading}<div style="text-align:center;padding:18px;color:#e0a0a0;font-size:12.5px">${e.message === 'no-proxy'
+      ? '⚙️ AI সেবা এখনো চালু হয়নি।'
+      : 'AI সংযোগে সমস্যা (' + escapeHtml(e.message) + ') — ইন্টারনেট বা AI-ক্রেডিট পরীক্ষা করে আবার চেষ্টা করুন।'}</div>`);
+  }
 }
 
 let _lastFocusedBeforeModal = null;
@@ -7610,7 +7744,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v229';
+const APP_VERSION = 'v230';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -8906,6 +9040,7 @@ function hifzMarkMem(){
    Feed is baked into the app: each release appends entries here. Unread = ts newer
    than the stored last-seen stamp; opening the sheet marks everything read. */
 const NOTIF_FEED = [
+  {id: 'hdact',   ts: Date.parse('2026-07-13T09:00:00+06:00'), icon: '📚', title: 'হাদিসে নতুন সুবিধা', body: 'প্রতিটি হাদিসে এখন ⋯ মেনু: 🤖 AI ব্যাখ্যা, বুকমার্ক, প্রিয়, নোট, হাইলাইট, কপি, শেয়ার, সম্পর্কিত হাদিস ও আয়াত', act: 'hadith'},
   {id: 'ibadat',  ts: Date.parse('2026-07-13T04:30:00+06:00'), icon: '🕌', title: 'আমাদের নতুন নাম: Ibadat (ইবাদত)', body: 'নতুন লোগোসহ নতুন পরিচয় — ভাষা বদলালে নামের স্থানীয় রূপও বদলে যায় (ইবাদত / عبادة / Worship)', act: 'none'},
   {id: 'sadaqah', ts: Date.parse('2026-07-13T03:30:00+06:00'), icon: '💝', title: 'অ্যাপ সাপোর্ট (সদকা)', body: 'bKash / Nagad / CellFin বা ব্যাংক ট্রান্সফারে অ্যাপটি সাপোর্ট করুন — অ্যাপ চিরকাল বিজ্ঞাপনমুক্ত থাকবে', act: 'support'},
   {id: 'hijriadj', ts: Date.parse('2026-07-11T07:30:00+06:00'), icon: '🌙', title: 'চাঁদ-দেখা সমন্বয়', body: 'ইসলামিক ফাউন্ডেশনের ঘোষণার সাথে হিজরি তারিখ না মিললে ক্যালেন্ডার থেকে ±১ দিন ঠিক করে নিন — পুরো অ্যাপ (রোজা, দিবস, হোম) একসাথে মিলে যাবে', act: 'calendar'},
@@ -8941,6 +9076,7 @@ function nfRun(i){
   else if(act === 'palette'){ if(window.commandPalette) window.commandPalette.open(); }
   else if(act === 'calendar'){ showTab('tools', document.getElementById('tabbtn-tools')); openTool('calendar'); }
   else if(act === 'support'){ showTab('tools', document.getElementById('tabbtn-tools')); setTimeout(openSupportSheet, 350); }
+  else if(act === 'hadith'){ quickOpenTab('hadith'); }
 }
 function openNotifSheet(){
   const seen = _nfSeen();
