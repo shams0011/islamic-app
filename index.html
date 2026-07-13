@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v233-dual-audio-columns -->
+<!-- VERSION: v234-dataset-gap-handling -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -4868,9 +4868,13 @@ async function openChapter(no, name){
       chapterData = await r.json();
       chapterCache[cacheKey] = chapterData;
     }
-    currentHadiths = chapterData.hadiths || [];
+    const all = chapterData.hadiths || [];
+    currentHadiths = all.filter(h => !hadithEmpty(h)); // source dataset gaps — nothing to show
     renderHadiths(currentHadiths);
-    document.getElementById('pagination').innerHTML='';
+    const hidden = all.length - currentHadiths.length;
+    document.getElementById('pagination').innerHTML = hidden
+      ? `<div style="text-align:center;font-size:11px;color:var(--text3);padding:10px">${localizeNum(hidden)}টি এন্ট্রির পাঠ্য উৎস-ডেটাসেটে অনুপস্থিত — তালিকা থেকে বাদ রাখা হয়েছে</div>`
+      : '';
     hdAudioSetup(); // chapter audio bar (where a recording exists)
   }catch(e){
     document.getElementById('hadith-list').innerHTML=`<div style="color:#e07070;padding:16px;text-align:center;font-size:14px">লোড ব্যর্থ: ${e.message}</div>`;
@@ -4992,6 +4996,16 @@ function getHadithText(h){
   else result = h.bn || h.t || h.en || h.ar || '';
   return result || '(এই হাদিসের টেক্সট উপলব্ধ নেই / Text not available for this hadith)';
 }
+// true when the source dataset has no text in ANY language for this entry
+function hadithEmpty(h){
+  return !((h.bn || h.t || h.en || h.ar || h.ur || h.fr || '').trim());
+}
+// true when the shown text is a fallback (current language's translation missing)
+function hadithIsFallback(h){
+  if(hadithEmpty(h)) return false;
+  const own = {bn: h.bn || h.t, en: h.en, ar: h.ar, ur: h.ur, fr: h.fr, zh: ''}[currentLang];
+  return !(own || '').trim();
+}
 
 function colorizeHadith(text){
   if(!text) return '';
@@ -5072,6 +5086,7 @@ function renderHadiths(list){
     const open = window._hdActOpen.has(i);
     return `
     <div class="hadith-card" onclick="openModal(${i})" role="button" tabindex="0" aria-label="হাদিস নম্বর ${h.n||''}, বিস্তারিত দেখতে চাপুন" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openModal(${i})}">
+      ${hadithIsFallback(h) ? `<div style="display:inline-block;font-size:10px;font-weight:700;color:var(--gold2);background:rgba(212,175,106,.1);border:1px solid rgba(212,175,106,.28);border-radius:50px;padding:2px 10px;margin-bottom:7px">🌐 এই ভাষায় অনুবাদ নেই — বিকল্প ভাষায় দেখানো হচ্ছে</div>` : ''}
       <div class="h-text" ${st.hl ? `style="background:${HD_HL[st.hl]};border-radius:10px;padding:6px 8px"` : ''}>${colorizeHadith(getHadithText(h))}</div>
       ${st.note ? `<div class="v-note">📝 ${escapeHtml(st.note)}</div>` : ''}
       <div class="h-meta" style="align-items:center">
@@ -7845,7 +7860,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v233';
+const APP_VERSION = 'v234';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
