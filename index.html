@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v230-hadith-actions -->
+<!-- VERSION: v231-hadith-chapter-audio -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -1300,6 +1300,7 @@ html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
       <input class="search-input" id="h-search" placeholder="এই অধ্যায়ে সার্চ করুন..." aria-label="হাদিস সার্চ করুন">
     </div>
     <div class="sec-title" id="h-title"><div class="sec-gem"></div>হাদিস<div class="sec-gem"></div></div>
+    <div id="hd-audio-bar" style="display:none"></div>
     <div id="hadith-list"></div>
     <div class="pagination" id="pagination"></div>
   </div>
@@ -4867,9 +4868,53 @@ async function openChapter(no, name){
     currentHadiths = chapterData.hadiths || [];
     renderHadiths(currentHadiths);
     document.getElementById('pagination').innerHTML='';
+    hdAudioSetup(); // chapter audio bar (where a recording exists)
   }catch(e){
     document.getElementById('hadith-list').innerHTML=`<div style="color:#e07070;padding:16px;text-align:center;font-size:14px">লোড ব্যর্থ: ${e.message}</div>`;
   }
+}
+
+/* ══ CHAPTER AUDIO — real recorded recitation only (no TTS, per INC-003).
+   Currently: Sahih Bukhari English narration, one file per book/chapter
+   (QNS Academy, hosted on archive.org — chapter numbers match ours 1:1). ══ */
+const HAUDIO = {
+  item: 'sahih-bukhari-english-audio',
+  files: null, // chapter no -> mp3 filename
+  async manifest(){
+    if(this.files) return this.files;
+    const r = await fetch('https://archive.org/metadata/' + this.item);
+    if(!r.ok) throw new Error('metadata ' + r.status);
+    const data = await r.json();
+    const map = {};
+    for(const f of data.files || []){
+      const m = /^Sahih Bukhari Book (\d+)\b.*\.mp3$/i.exec(f.name || '');
+      if(m && f.source === 'original') map[parseInt(m[1], 10)] = f.name;
+    }
+    this.files = map;
+    return map;
+  },
+  url(name){ return 'https://archive.org/download/' + this.item + '/' + encodeURIComponent(name); },
+};
+
+async function hdAudioSetup(){
+  const bar = document.getElementById('hd-audio-bar');
+  if(!bar) return;
+  bar.style.display = 'none';
+  bar.innerHTML = '';
+  if(selBook !== 'bukhari' || !selChapter) return;
+  const ch = selChapter;
+  try{
+    const map = await HAUDIO.manifest();
+    if(selBook !== 'bukhari' || selChapter !== ch) return; // user moved on mid-fetch
+    const name = map[ch];
+    if(!name) return;
+    bar.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:7px;padding:12px 14px;margin-bottom:12px;border-radius:14px;background:linear-gradient(150deg,rgba(16,185,129,.08),var(--card));border:1px solid rgba(16,185,129,.3)">
+        <div style="display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:700;color:var(--emerald2)">🎧 এই অধ্যায়ের অডিও <span style="color:var(--text3);font-weight:600">• ইংরেজি পাঠ (QNS Academy • Archive.org)</span></div>
+        <audio controls preload="none" style="width:100%;height:36px" src="${HAUDIO.url(name)}" aria-label="${escapeHtml(selChapterName)} অধ্যায়ের অডিও"></audio>
+      </div>`;
+    bar.style.display = 'block';
+  }catch(e){ /* offline or archive unreachable — the bar simply stays hidden */ }
 }
 
 /* ══ COLORIZE HADITH TEXT ══ */
@@ -7744,7 +7789,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v230';
+const APP_VERSION = 'v231';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -9040,6 +9085,7 @@ function hifzMarkMem(){
    Feed is baked into the app: each release appends entries here. Unread = ts newer
    than the stored last-seen stamp; opening the sheet marks everything read. */
 const NOTIF_FEED = [
+  {id: 'hdaudio', ts: Date.parse('2026-07-13T10:00:00+06:00'), icon: '🎧', title: 'বুখারীর অধ্যায়-অডিও', body: 'সহিহ বুখারীর ৯৭টি অধ্যায়ের রেকর্ডেড পাঠ (ইংরেজি) — অধ্যায় খুললেই উপরে প্লেয়ার', act: 'hadith'},
   {id: 'hdact',   ts: Date.parse('2026-07-13T09:00:00+06:00'), icon: '📚', title: 'হাদিসে নতুন সুবিধা', body: 'প্রতিটি হাদিসে এখন ⋯ মেনু: 🤖 AI ব্যাখ্যা, বুকমার্ক, প্রিয়, নোট, হাইলাইট, কপি, শেয়ার, সম্পর্কিত হাদিস ও আয়াত', act: 'hadith'},
   {id: 'ibadat',  ts: Date.parse('2026-07-13T04:30:00+06:00'), icon: '🕌', title: 'আমাদের নতুন নাম: Ibadat (ইবাদত)', body: 'নতুন লোগোসহ নতুন পরিচয় — ভাষা বদলালে নামের স্থানীয় রূপও বদলে যায় (ইবাদত / عبادة / Worship)', act: 'none'},
   {id: 'sadaqah', ts: Date.parse('2026-07-13T03:30:00+06:00'), icon: '💝', title: 'অ্যাপ সাপোর্ট (সদকা)', body: 'bKash / Nagad / CellFin বা ব্যাংক ট্রান্সফারে অ্যাপটি সাপোর্ট করুন — অ্যাপ চিরকাল বিজ্ঞাপনমুক্ত থাকবে', act: 'support'},
