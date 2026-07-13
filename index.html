@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v231-hadith-chapter-audio -->
+<!-- VERSION: v232-bangla-hadith-audio -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -4874,6 +4874,9 @@ async function openChapter(no, name){
   }
 }
 
+/* Bukhari Bangla narration episodes (Muhammad Mohee Uddin podcast, hadith 1-1312, gap 342-370) */
+const HAUDIO_BN = [{"f":1,"t":6,"url":"https://anchor.fm/s/62948d08/podcast/play/36606596/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2021-6-3%2F202461737-44100-2-2e520fd502728.m4a"},{"f":7,"t":30,"url":"https://anchor.fm/s/62948d08/podcast/play/36606917/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2021-07-03%2Fae693af4e39a4847dc98fdced9f1dfb8.m4a"},{"f":31,"t":56,"url":"https://anchor.fm/s/62948d08/podcast/play/36607203/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2021-6-3%2F202465257-44100-2-93876e8ddcb12.m4a"},{"f":57,"t":80,"url":"https://anchor.fm/s/62948d08/podcast/play/36607640/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2021-6-3%2F202467447-44100-2-740af700c9956.m4a"},{"f":81,"t":110,"url":"https://anchor.fm/s/62948d08/podcast/play/36607962/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2021-6-3%2F202469575-44100-2-d0997ff315565.m4a"},{"f":111,"t":136,"url":"https://anchor.fm/s/62948d08/podcast/play/36840081/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2021-6-7%2F203540810-44100-2-b135d6bd92a08.m4a"},{"f":137,"t":185,"url":"https://anchor.fm/s/62948d08/podcast/play/37462027/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2021-6-18%2F206400327-44100-2-d6d7c96f7a045.m4a"},{"f":186,"t":245,"url":"https://anchor.fm/s/62948d08/podcast/play/37462161/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2021-6-18%2F206401405-44100-2-8620fc97ebb9.m4a"},{"f":246,"t":289,"url":"https://anchor.fm/s/62948d08/podcast/play/49944826/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-1%2F257264676-44100-2-38b57de93ff62.m4a"},{"f":290,"t":326,"url":"https://anchor.fm/s/62948d08/podcast/play/49944986/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-1%2F257265258-44100-2-e256dbeaa8ea3.m4a"},{"f":327,"t":341,"url":"https://anchor.fm/s/62948d08/podcast/play/49945133/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-1%2F257265747-44100-2-9f689c7139937.m4a"},{"f":371,"t":400,"url":"https://anchor.fm/s/62948d08/podcast/play/49945218/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-1%2F257266200-44100-2-0dbc194c5e6b9.m4a"},{"f":401,"t":430,"url":"https://anchor.fm/s/62948d08/podcast/play/49945301/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-1%2F257266525-44100-2-8cd63bcba44a5.m4a"},{"f":431,"t":460,"url":"https://anchor.fm/s/62948d08/podcast/play/49945342/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-1%2F257266703-44100-2-65b50395eb3f5.m4a"},{"f":461,"t":496,"url":"https://anchor.fm/s/62948d08/podcast/play/49945500/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-1%2F257267360-44100-2-f1ec3f3956cea.m4a"},{"f":497,"t":525,"url":"https://anchor.fm/s/62948d08/podcast/play/49945732/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-1%2F257268093-44100-2-818a8ded4c5b.m4a"},{"f":526,"t":550,"url":"https://anchor.fm/s/62948d08/podcast/play/49945883/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-1%2F257268699-44100-2-9c97e03949be9.m4a"},{"f":551,"t":575,"url":"https://anchor.fm/s/62948d08/podcast/play/49945968/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-1%2F257268968-44100-2-9edb81fa9f523.m4a"},{"f":576,"t":610,"url":"https://anchor.fm/s/62948d08/podcast/play/49946085/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-1%2F257269294-44100-2-bb94666a79fc8.m4a"},{"f":611,"t":645,"url":"https://anchor.fm/s/62948d08/podcast/play/49946123/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-1%2F257269658-44100-2-5dd2b920d91dd.m4a"},{"f":646,"t":680,"url":"https://anchor.fm/s/62948d08/podcast/play/49946282/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-1%2F257270139-44100-2-3221e687bfc5b.m4a"},{"f":681,"t":715,"url":"https://anchor.fm/s/62948d08/podcast/play/49946343/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-1%2F257270425-44100-2-4f8e6c3ad591d.m4a"},{"f":716,"t":750,"url":"https://anchor.fm/s/62948d08/podcast/play/49946407/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-1%2F257270884-44100-2-afb84f483d892.m4a"},{"f":751,"t":790,"url":"https://anchor.fm/s/62948d08/podcast/play/49946550/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-1%2F257271323-44100-2-16b63d9ef1e5.m4a"},{"f":791,"t":832,"url":"https://anchor.fm/s/62948d08/podcast/play/49946644/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-1%2F257271636-44100-2-0e212b73bff2a.m4a"},{"f":832,"t":865,"url":"https://anchor.fm/s/62948d08/podcast/play/49946721/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-1%2F257271990-44100-2-4cb50865b9545.m4a"},{"f":866,"t":900,"url":"https://anchor.fm/s/62948d08/podcast/play/49950447/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-1%2F257285673-44100-2-c6a6c1bc1564a.m4a"},{"f":901,"t":936,"url":"https://anchor.fm/s/62948d08/podcast/play/49950778/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-1%2F257286973-44100-2-d257fcc9ff534.m4a"},{"f":937,"t":950,"url":"https://anchor.fm/s/62948d08/podcast/play/49950864/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-1%2F257287439-44100-2-fda1a9be01fc1.m4a"},{"f":951,"t":964,"url":"https://anchor.fm/s/62948d08/podcast/play/49984403/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-2%2F257420221-44100-2-772f5edbf67c3.m4a"},{"f":965,"t":982,"url":"https://anchor.fm/s/62948d08/podcast/play/49984551/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-2%2F257420857-44100-2-19a08e5c65b8c.m4a"},{"f":983,"t":994,"url":"https://anchor.fm/s/62948d08/podcast/play/49984882/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-2%2F257421240-44100-2-075787cbc3096.m4a"},{"f":995,"t":1005,"url":"https://anchor.fm/s/62948d08/podcast/play/49984925/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-2%2F257421715-44100-2-d7f3e0ad033ef.m4a"},{"f":1006,"t":1018,"url":"https://anchor.fm/s/62948d08/podcast/play/50029069/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-3%2F257605500-44100-2-5ce3daed1676e.m4a"},{"f":1019,"t":1053,"url":"https://anchor.fm/s/62948d08/podcast/play/49985243/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-2%2F257422840-44100-2-8495800a91145.m4a"},{"f":1054,"t":1074,"url":"https://anchor.fm/s/62948d08/podcast/play/50029283/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-3%2F257606364-44100-2-e20c2e73d1743.m4a"},{"f":1075,"t":1090,"url":"https://anchor.fm/s/62948d08/podcast/play/50029359/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-3%2F257606630-44100-2-8d0e93bdb54bd.m4a"},{"f":1091,"t":1113,"url":"https://anchor.fm/s/62948d08/podcast/play/50029427/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-3%2F257606886-44100-2-42ce024916a9e.m4a"},{"f":1114,"t":1130,"url":"https://anchor.fm/s/62948d08/podcast/play/50029662/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-3%2F257608095-44100-2-bb9876214fced.m4a"},{"f":1131,"t":1147,"url":"https://anchor.fm/s/62948d08/podcast/play/50029537/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-3%2F257607346-44100-2-79c5569dce90c.m4a"},{"f":1148,"t":1164,"url":"https://anchor.fm/s/62948d08/podcast/play/50029814/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-3%2F257608861-44100-2-f54e1b27e5bf7.m4a"},{"f":1165,"t":1190,"url":"https://anchor.fm/s/62948d08/podcast/play/50029928/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-3%2F257609323-44100-2-cc4a4b020c484.m4a"},{"f":1191,"t":1215,"url":"https://anchor.fm/s/62948d08/podcast/play/50029996/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-3%2F257609633-44100-2-06517f09ccf0d.m4a"},{"f":1216,"t":1240,"url":"https://anchor.fm/s/62948d08/podcast/play/50030089/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-3%2F257609906-44100-2-9f340e0c0f827.m4a"},{"f":1241,"t":1265,"url":"https://anchor.fm/s/62948d08/podcast/play/50030528/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-3%2F257611644-44100-2-17ebf30dccea8.m4a"},{"f":1266,"t":1277,"url":"https://anchor.fm/s/62948d08/podcast/play/50030321/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-3%2F257610522-44100-2-61d30f625351.m4a"},{"f":1278,"t":1290,"url":"https://anchor.fm/s/62948d08/podcast/play/50030399/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-3%2F257611217-44100-2-01559057fa9bb.m4a"},{"f":1291,"t":1312,"url":"https://anchor.fm/s/62948d08/podcast/play/50030654/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fstaging%2F2022-3-3%2F257612198-44100-2-29ddb5e97dca4.m4a"}];
+
 /* ══ CHAPTER AUDIO — real recorded recitation only (no TTS, per INC-003).
    Currently: Sahih Bukhari English narration, one file per book/chapter
    (QNS Academy, hosted on archive.org — chapter numbers match ours 1:1). ══ */
@@ -4896,6 +4899,19 @@ const HAUDIO = {
   url(name){ return 'https://archive.org/download/' + this.item + '/' + encodeURIComponent(name); },
 };
 
+// episodes of the Bangla narration overlapping this chapter's hadith numbers
+function hdBnEpisodes(){
+  if(!currentHadiths || !currentHadiths.length) return [];
+  const nums = currentHadiths.map(h => parseInt(h.n)).filter(n => n > 0);
+  if(!nums.length) return [];
+  const lo = Math.min(...nums), hi = Math.max(...nums);
+  return HAUDIO_BN.filter(e => e.t >= lo && e.f <= hi);
+}
+function hdBnPlay(sel){
+  const audio = document.getElementById('hd-bn-audio');
+  if(audio && sel.value){ audio.src = sel.value; audio.style.display = 'block'; audio.play().catch(() => {}); }
+}
+
 async function hdAudioSetup(){
   const bar = document.getElementById('hd-audio-bar');
   if(!bar) return;
@@ -4903,18 +4919,40 @@ async function hdAudioSetup(){
   bar.innerHTML = '';
   if(selBook !== 'bukhari' || !selChapter) return;
   const ch = selChapter;
+  // ── বাংলা পাঠ (podcast episodes, hadith 1–1312) — offline map, instant ──
+  const eps = hdBnEpisodes();
+  let bnHtml = '';
+  if(eps.length){
+    bnHtml = `
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <div style="display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:700;color:var(--gold2)">🎧 বাংলা পাঠ <span style="color:var(--text3);font-weight:600">• মুহাম্মাদ মুহিউদ্দিন (পডকাস্ট)</span></div>
+        <select onchange="hdBnPlay(this)" style="width:100%;padding:9px 10px;border-radius:11px;border:1px solid rgba(212,175,106,.35);background:#131f18;color:var(--text);font-size:12.5px;font-family:'Hind Siliguri',sans-serif">
+          <option value="">পর্ব বেছে নিন (হাদীস-রেঞ্জ)…</option>
+          ${eps.map(e => `<option value="${e.url.replace(/"/g, '&quot;')}">হাদীস ${localizeNum(e.f)}–${localizeNum(e.t)}</option>`).join('')}
+        </select>
+        <audio id="hd-bn-audio" controls preload="none" style="width:100%;height:36px;display:none" aria-label="বাংলা হাদিস পাঠ"></audio>
+      </div>`;
+  }
+  const renderBar = enHtml => {
+    if(!bnHtml && !enHtml) return;
+    bar.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:11px;padding:12px 14px;margin-bottom:12px;border-radius:14px;background:linear-gradient(150deg,rgba(16,185,129,.08),var(--card));border:1px solid rgba(16,185,129,.3)">
+        ${bnHtml}${bnHtml && enHtml ? '<div style="height:1px;background:rgba(255,255,255,.06)"></div>' : ''}${enHtml}
+      </div>`;
+    bar.style.display = 'block';
+  };
+  renderBar(''); // Bangla shows instantly; English joins when the manifest arrives
   try{
     const map = await HAUDIO.manifest();
     if(selBook !== 'bukhari' || selChapter !== ch) return; // user moved on mid-fetch
     const name = map[ch];
     if(!name) return;
-    bar.innerHTML = `
-      <div style="display:flex;flex-direction:column;gap:7px;padding:12px 14px;margin-bottom:12px;border-radius:14px;background:linear-gradient(150deg,rgba(16,185,129,.08),var(--card));border:1px solid rgba(16,185,129,.3)">
-        <div style="display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:700;color:var(--emerald2)">🎧 এই অধ্যায়ের অডিও <span style="color:var(--text3);font-weight:600">• ইংরেজি পাঠ (QNS Academy • Archive.org)</span></div>
-        <audio controls preload="none" style="width:100%;height:36px" src="${HAUDIO.url(name)}" aria-label="${escapeHtml(selChapterName)} অধ্যায়ের অডিও"></audio>
-      </div>`;
-    bar.style.display = 'block';
-  }catch(e){ /* offline or archive unreachable — the bar simply stays hidden */ }
+    renderBar(`
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <div style="display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:700;color:var(--emerald2)">🎧 English Narration <span style="color:var(--text3);font-weight:600">• QNS Academy (Archive.org)</span></div>
+        <audio controls preload="none" style="width:100%;height:36px" src="${HAUDIO.url(name)}" aria-label="${escapeHtml(selChapterName)} chapter audio"></audio>
+      </div>`);
+  }catch(e){ /* offline or archive unreachable — English section simply stays hidden */ }
 }
 
 /* ══ COLORIZE HADITH TEXT ══ */
@@ -7789,7 +7827,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v231';
+const APP_VERSION = 'v232';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -9085,7 +9123,7 @@ function hifzMarkMem(){
    Feed is baked into the app: each release appends entries here. Unread = ts newer
    than the stored last-seen stamp; opening the sheet marks everything read. */
 const NOTIF_FEED = [
-  {id: 'hdaudio', ts: Date.parse('2026-07-13T10:00:00+06:00'), icon: '🎧', title: 'বুখারীর অধ্যায়-অডিও', body: 'সহিহ বুখারীর ৯৭টি অধ্যায়ের রেকর্ডেড পাঠ (ইংরেজি) — অধ্যায় খুললেই উপরে প্লেয়ার', act: 'hadith'},
+  {id: 'hdaudio', ts: Date.parse('2026-07-13T10:00:00+06:00'), icon: '🎧', title: 'বুখারীর অধ্যায়-অডিও (বাংলা + English)', body: 'বাংলা পাঠ: হাদীস ১–১৩১২ (পর্ব বেছে শুনুন) • ইংরেজি পাঠ: সব ৯৭ অধ্যায় — অধ্যায় খুললেই উপরে প্লেয়ার', act: 'hadith'},
   {id: 'hdact',   ts: Date.parse('2026-07-13T09:00:00+06:00'), icon: '📚', title: 'হাদিসে নতুন সুবিধা', body: 'প্রতিটি হাদিসে এখন ⋯ মেনু: 🤖 AI ব্যাখ্যা, বুকমার্ক, প্রিয়, নোট, হাইলাইট, কপি, শেয়ার, সম্পর্কিত হাদিস ও আয়াত', act: 'hadith'},
   {id: 'ibadat',  ts: Date.parse('2026-07-13T04:30:00+06:00'), icon: '🕌', title: 'আমাদের নতুন নাম: Ibadat (ইবাদত)', body: 'নতুন লোগোসহ নতুন পরিচয় — ভাষা বদলালে নামের স্থানীয় রূপও বদলে যায় (ইবাদত / عبادة / Worship)', act: 'none'},
   {id: 'sadaqah', ts: Date.parse('2026-07-13T03:30:00+06:00'), icon: '💝', title: 'অ্যাপ সাপোর্ট (সদকা)', body: 'bKash / Nagad / CellFin বা ব্যাংক ট্রান্সফারে অ্যাপটি সাপোর্ট করুন — অ্যাপ চিরকাল বিজ্ঞাপনমুক্ত থাকবে', act: 'support'},
