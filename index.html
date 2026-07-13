@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v234-dataset-gap-handling -->
+<!-- VERSION: v235-premium-audio-players -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -351,6 +351,24 @@ input:focus,textarea:focus,select:focus{border-color:rgba(16,185,129,.45)!import
 .h-arabic.mushaf-ar{line-height:var(--quran-lh,2.05)}
 /* per-verse action chips */
 .v-act{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+/* hadith chapter-audio: premium two-column bar + custom mini-players */
+.hda-col{display:flex;flex-direction:column;gap:8px;min-width:0;border-radius:12px;padding:10px 11px}
+.hda-en{background:linear-gradient(155deg,rgba(16,185,129,.1),rgba(16,185,129,.02));border:1px solid rgba(16,185,129,.28)}
+.hda-bn{background:linear-gradient(155deg,rgba(212,175,106,.1),rgba(212,175,106,.02));border:1px solid rgba(212,175,106,.3)}
+.hda-head{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hda-en .hda-head{color:var(--emerald2)}
+.hda-bn .hda-head{color:var(--gold2)}
+.hda-head small{color:var(--text3);font-weight:600;font-size:10px}
+.hd-player{display:flex;align-items:center;gap:9px}
+.hdp-btn{width:34px;height:34px;border-radius:50%;border:none;flex-shrink:0;cursor:pointer;font-size:13px;color:#08120d;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(0,0,0,.35)}
+.hda-en .hdp-btn{background:radial-gradient(circle at 35% 30%,#8ff0d8,#10b981)}
+.hda-bn .hdp-btn{background:radial-gradient(circle at 35% 30%,#f5e3b8,#d4af6a)}
+.hdp-bar{flex:1;height:5px;border-radius:6px;background:rgba(255,255,255,.09);cursor:pointer;position:relative;overflow:hidden}
+.hdp-fill{height:100%;width:0%;border-radius:6px;transition:width .25s linear}
+.hda-en .hdp-fill{background:linear-gradient(90deg,var(--emerald2),#7ee8cf)}
+.hda-bn .hdp-fill{background:linear-gradient(90deg,#d4af6a,#f0d795)}
+.hdp-time{font-size:9.5px;font-weight:700;color:var(--text3);font-family:ui-monospace,monospace;white-space:nowrap;flex-shrink:0}
+.hda-sel{width:100%;padding:8px 9px;border-radius:10px;border:1px solid rgba(212,175,106,.35);background:#131f18;color:var(--text);font-size:12px;font-family:'Hind Siliguri',sans-serif}
 .hd-act{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 .hd-act button{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:50px;padding:4px 11px;color:var(--text2);font-size:12px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .15s;min-height:36px}
 .hd-act button.on{background:rgba(212,175,106,.14);border-color:rgba(212,175,106,.45);color:var(--gold2)}
@@ -4914,9 +4932,67 @@ function hdBnEpisodes(){
   const lo = Math.min(...nums), hi = Math.max(...nums);
   return HAUDIO_BN.filter(e => e.t >= lo && e.f <= hi);
 }
+/* custom mini-player: gradient play button + slim progress bar + time.
+   One <audio> per column; starting one side pauses the other. */
+function hdpFmt(s){
+  if(!isFinite(s)) return '০:০০';
+  const m = Math.floor(s / 60), ss = Math.floor(s % 60);
+  return localizeNum(m) + ':' + localizeNum(String(ss).padStart(2, '0'));
+}
+function hdpAudio(id){
+  let a = document.getElementById('hdp-audio-' + id);
+  if(!a) return null;
+  if(!a._wired){
+    a._wired = true;
+    a.addEventListener('timeupdate', () => {
+      const f = document.getElementById('hdp-fill-' + id), t = document.getElementById('hdp-time-' + id);
+      if(f && a.duration) f.style.width = (a.currentTime / a.duration * 100) + '%';
+      if(t) t.textContent = hdpFmt(a.currentTime) + (a.duration ? ' / ' + hdpFmt(a.duration) : '');
+    });
+    a.addEventListener('ended', () => { const b = document.getElementById('hdp-btn-' + id); if(b) b.textContent = '▶'; });
+  }
+  return a;
+}
+function hdpToggle(id){
+  const a = hdpAudio(id);
+  const b = document.getElementById('hdp-btn-' + id);
+  if(!a || !a.src) { showToast(id === 'bn' ? 'আগে পর্ব বেছে নিন' : 'অডিও নেই'); return; }
+  if(a.paused){
+    // pause the other column
+    ['en', 'bn'].filter(x => x !== id).forEach(x => {
+      const o = document.getElementById('hdp-audio-' + x), ob = document.getElementById('hdp-btn-' + x);
+      if(o && !o.paused){ o.pause(); if(ob) ob.textContent = '▶'; }
+    });
+    a.play().then(() => { if(b) b.textContent = '⏸'; }).catch(() => showToast('অডিও চালানো যায়নি — ইন্টারনেট দেখুন'));
+  }else{
+    a.pause();
+    if(b) b.textContent = '▶';
+  }
+}
+function hdpSeek(id, ev){
+  const a = hdpAudio(id);
+  if(!a || !a.duration) return;
+  const r = ev.currentTarget.getBoundingClientRect();
+  a.currentTime = Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)) * a.duration;
+}
+function hdpMarkup(id){
+  return `
+    <div class="hd-player">
+      <button class="hdp-btn" id="hdp-btn-${id}" onclick="hdpToggle('${id}')" aria-label="চালান/থামান">▶</button>
+      <div class="hdp-bar" onclick="hdpSeek('${id}', event)"><div class="hdp-fill" id="hdp-fill-${id}"></div></div>
+      <span class="hdp-time" id="hdp-time-${id}">০:০০</span>
+    </div>
+    <audio id="hdp-audio-${id}" preload="none"></audio>`;
+}
 function hdBnPlay(sel){
-  const audio = document.getElementById('hd-bn-audio');
-  if(audio && sel.value){ audio.src = sel.value; audio.style.display = 'block'; audio.play().catch(() => {}); }
+  const a = hdpAudio('bn');
+  if(a && sel.value){
+    a.src = sel.value;
+    const f = document.getElementById('hdp-fill-bn'), t = document.getElementById('hdp-time-bn');
+    if(f) f.style.width = '0%';
+    if(t) t.textContent = '০:০০';
+    hdpToggle('bn');
+  }
 }
 
 /* language → narration source registry. English is FIXED on the left column;
@@ -4938,42 +5014,43 @@ async function hdAudioSetup(){
   // ── RIGHT column: current-language narration (falls back to Bangla) ──
   const loc = HAUDIO_L10N[currentLang] || HAUDIO_L10N.bn;
   const eps = loc.episodes();
-  const rightHtml = eps.length ? `
-      <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
-        <div style="font-size:11px;font-weight:700;color:var(--gold2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🎧 ${loc.label} <span style="color:var(--text3);font-weight:600">• ${loc.credit}</span></div>
-        <select onchange="hdBnPlay(this)" style="width:100%;padding:8px 8px;border-radius:11px;border:1px solid rgba(212,175,106,.35);background:#131f18;color:var(--text);font-size:12px;font-family:'Hind Siliguri',sans-serif">
+  const rightHtml = `
+      <div class="hda-col hda-bn">
+        <div class="hda-head">🎧 ${loc.label} <small>• ${loc.credit}</small></div>
+        ${eps.length ? `
+        <select class="hda-sel" onchange="hdBnPlay(this)">
           <option value="">পর্ব বাছুন…</option>
           ${eps.map(e => `<option value="${e.url.replace(/"/g, '&quot;')}">হাদীস ${localizeNum(e.f)}–${localizeNum(e.t)}</option>`).join('')}
         </select>
-        <audio id="hd-bn-audio" controls preload="none" style="width:100%;height:34px;display:none" aria-label="${loc.label}"></audio>
-      </div>` : `
-      <div style="display:flex;flex-direction:column;gap:6px;min-width:0;justify-content:center">
-        <div style="font-size:11px;font-weight:700;color:var(--gold2)">🎧 ${loc.label}</div>
-        <div style="font-size:11px;color:var(--text3)">এই অধ্যায়ের পাঠ এখনো নেই</div>
+        ${hdpMarkup('bn')}` : `<div style="font-size:11px;color:var(--text3);padding:6px 0">এই অধ্যায়ের পাঠ এখনো নেই</div>`}
       </div>`;
 
   const renderBar = enBody => {
     bar.innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 14px;margin-bottom:12px;border-radius:14px;background:linear-gradient(150deg,rgba(16,185,129,.08),var(--card));border:1px solid rgba(16,185,129,.3)">
-        <div style="display:flex;flex-direction:column;gap:6px;min-width:0;border-right:1px solid rgba(255,255,255,.07);padding-right:12px">
-          <div style="font-size:11px;font-weight:700;color:var(--emerald2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🎧 English <span style="color:var(--text3);font-weight:600">• QNS Academy</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:11px;margin-bottom:12px;border-radius:16px;background:linear-gradient(165deg,var(--card2),var(--card));border:1px solid rgba(212,175,106,.22);box-shadow:0 4px 14px rgba(0,0,0,.2)">
+        <div class="hda-col hda-en">
+          <div class="hda-head">🎧 English <small>• QNS Academy</small></div>
           ${enBody}
         </div>
         ${rightHtml}
       </div>`;
     bar.style.display = 'block';
   };
-  renderBar(`<div style="font-size:11px;color:var(--text3);align-self:flex-start;padding:8px 0">লোড হচ্ছে…</div>`);
+  renderBar(`<div style="font-size:11px;color:var(--text3);padding:6px 0">লোড হচ্ছে…</div>`);
   try{
     const map = await HAUDIO.manifest();
     if(selBook !== 'bukhari' || selChapter !== ch) return; // user moved on mid-fetch
     const name = map[ch];
-    renderBar(name
-      ? `<audio controls preload="none" style="width:100%;height:34px" src="${HAUDIO.url(name)}" aria-label="${escapeHtml(selChapterName)} chapter audio (English)"></audio>`
-      : `<div style="font-size:11px;color:var(--text3);padding:8px 0">এই অধ্যায়ের পাঠ নেই</div>`);
+    if(name){
+      renderBar(hdpMarkup('en'));
+      const a = hdpAudio('en');
+      if(a) a.src = HAUDIO.url(name);
+    }else{
+      renderBar(`<div style="font-size:11px;color:var(--text3);padding:6px 0">এই অধ্যায়ের পাঠ নেই</div>`);
+    }
   }catch(e){
     if(selBook !== 'bukhari' || selChapter !== ch) return;
-    renderBar(`<div style="font-size:11px;color:var(--text3);padding:8px 0">অফলাইনে অনুপলব্ধ</div>`);
+    renderBar(`<div style="font-size:11px;color:var(--text3);padding:6px 0">অফলাইনে অনুপলব্ধ</div>`);
   }
 }
 
@@ -7860,7 +7937,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v234';
+const APP_VERSION = 'v235';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
