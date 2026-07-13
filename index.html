@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v232-bangla-hadith-audio -->
+<!-- VERSION: v233-dual-audio-columns -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -2238,6 +2238,9 @@ function applyLanguage(){
   document.documentElement.setAttribute('dir', lang.dir);
   document.getElementById('lang-selector-label').textContent = lang.short;
   setTextIfExists('brand-local', IBADAT_LOCAL[currentLang] || 'Ibadat');
+  // hadith chapter-audio bar: the right column follows the UI language
+  const hab = document.getElementById('hd-audio-bar');
+  if(hab && hab.style.display === 'block' && typeof hdAudioSetup === 'function') hdAudioSetup();
 
   // Tab buttons
   const tabMap = {prayer:'tabPrayer', quran:'tabQuran', hadith:'tabHadith', qibla:'tabQibla', tasbih:'tabTasbih', dua:'tabDua', tools:'tabTools', aihub:'tabAihub'};
@@ -4912,6 +4915,14 @@ function hdBnPlay(sel){
   if(audio && sel.value){ audio.src = sel.value; audio.style.display = 'block'; audio.play().catch(() => {}); }
 }
 
+/* language → narration source registry. English is FIXED on the left column;
+   the right column follows the UI language. Add new languages here when a real
+   recorded source is found (never TTS). Missing language → falls back to bn. */
+const HAUDIO_L10N = {
+  bn: {label: 'বাংলা পাঠ', credit: 'মুহাম্মাদ মুহিউদ্দিন', episodes: () => hdBnEpisodes()},
+  // ar / ur / zh / fr: no verified recorded per-chapter source yet
+};
+
 async function hdAudioSetup(){
   const bar = document.getElementById('hd-audio-bar');
   if(!bar) return;
@@ -4919,40 +4930,47 @@ async function hdAudioSetup(){
   bar.innerHTML = '';
   if(selBook !== 'bukhari' || !selChapter) return;
   const ch = selChapter;
-  // ── বাংলা পাঠ (podcast episodes, hadith 1–1312) — offline map, instant ──
-  const eps = hdBnEpisodes();
-  let bnHtml = '';
-  if(eps.length){
-    bnHtml = `
-      <div style="display:flex;flex-direction:column;gap:7px">
-        <div style="display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:700;color:var(--gold2)">🎧 বাংলা পাঠ <span style="color:var(--text3);font-weight:600">• মুহাম্মাদ মুহিউদ্দিন (পডকাস্ট)</span></div>
-        <select onchange="hdBnPlay(this)" style="width:100%;padding:9px 10px;border-radius:11px;border:1px solid rgba(212,175,106,.35);background:#131f18;color:var(--text);font-size:12.5px;font-family:'Hind Siliguri',sans-serif">
-          <option value="">পর্ব বেছে নিন (হাদীস-রেঞ্জ)…</option>
+
+  // ── RIGHT column: current-language narration (falls back to Bangla) ──
+  const loc = HAUDIO_L10N[currentLang] || HAUDIO_L10N.bn;
+  const eps = loc.episodes();
+  const rightHtml = eps.length ? `
+      <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+        <div style="font-size:11px;font-weight:700;color:var(--gold2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🎧 ${loc.label} <span style="color:var(--text3);font-weight:600">• ${loc.credit}</span></div>
+        <select onchange="hdBnPlay(this)" style="width:100%;padding:8px 8px;border-radius:11px;border:1px solid rgba(212,175,106,.35);background:#131f18;color:var(--text);font-size:12px;font-family:'Hind Siliguri',sans-serif">
+          <option value="">পর্ব বাছুন…</option>
           ${eps.map(e => `<option value="${e.url.replace(/"/g, '&quot;')}">হাদীস ${localizeNum(e.f)}–${localizeNum(e.t)}</option>`).join('')}
         </select>
-        <audio id="hd-bn-audio" controls preload="none" style="width:100%;height:36px;display:none" aria-label="বাংলা হাদিস পাঠ"></audio>
+        <audio id="hd-bn-audio" controls preload="none" style="width:100%;height:34px;display:none" aria-label="${loc.label}"></audio>
+      </div>` : `
+      <div style="display:flex;flex-direction:column;gap:6px;min-width:0;justify-content:center">
+        <div style="font-size:11px;font-weight:700;color:var(--gold2)">🎧 ${loc.label}</div>
+        <div style="font-size:11px;color:var(--text3)">এই অধ্যায়ের পাঠ এখনো নেই</div>
       </div>`;
-  }
-  const renderBar = enHtml => {
-    if(!bnHtml && !enHtml) return;
+
+  const renderBar = enBody => {
     bar.innerHTML = `
-      <div style="display:flex;flex-direction:column;gap:11px;padding:12px 14px;margin-bottom:12px;border-radius:14px;background:linear-gradient(150deg,rgba(16,185,129,.08),var(--card));border:1px solid rgba(16,185,129,.3)">
-        ${bnHtml}${bnHtml && enHtml ? '<div style="height:1px;background:rgba(255,255,255,.06)"></div>' : ''}${enHtml}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 14px;margin-bottom:12px;border-radius:14px;background:linear-gradient(150deg,rgba(16,185,129,.08),var(--card));border:1px solid rgba(16,185,129,.3)">
+        <div style="display:flex;flex-direction:column;gap:6px;min-width:0;border-right:1px solid rgba(255,255,255,.07);padding-right:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--emerald2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🎧 English <span style="color:var(--text3);font-weight:600">• QNS Academy</span></div>
+          ${enBody}
+        </div>
+        ${rightHtml}
       </div>`;
     bar.style.display = 'block';
   };
-  renderBar(''); // Bangla shows instantly; English joins when the manifest arrives
+  renderBar(`<div style="font-size:11px;color:var(--text3);align-self:flex-start;padding:8px 0">লোড হচ্ছে…</div>`);
   try{
     const map = await HAUDIO.manifest();
     if(selBook !== 'bukhari' || selChapter !== ch) return; // user moved on mid-fetch
     const name = map[ch];
-    if(!name) return;
-    renderBar(`
-      <div style="display:flex;flex-direction:column;gap:7px">
-        <div style="display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:700;color:var(--emerald2)">🎧 English Narration <span style="color:var(--text3);font-weight:600">• QNS Academy (Archive.org)</span></div>
-        <audio controls preload="none" style="width:100%;height:36px" src="${HAUDIO.url(name)}" aria-label="${escapeHtml(selChapterName)} chapter audio"></audio>
-      </div>`);
-  }catch(e){ /* offline or archive unreachable — English section simply stays hidden */ }
+    renderBar(name
+      ? `<audio controls preload="none" style="width:100%;height:34px" src="${HAUDIO.url(name)}" aria-label="${escapeHtml(selChapterName)} chapter audio (English)"></audio>`
+      : `<div style="font-size:11px;color:var(--text3);padding:8px 0">এই অধ্যায়ের পাঠ নেই</div>`);
+  }catch(e){
+    if(selBook !== 'bukhari' || selChapter !== ch) return;
+    renderBar(`<div style="font-size:11px;color:var(--text3);padding:8px 0">অফলাইনে অনুপলব্ধ</div>`);
+  }
 }
 
 /* ══ COLORIZE HADITH TEXT ══ */
@@ -7827,7 +7845,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v232';
+const APP_VERSION = 'v233';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
