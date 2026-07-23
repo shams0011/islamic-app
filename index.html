@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v245-hide-empty-media -->
+<!-- VERSION: v246-recitation-follow -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -7999,7 +7999,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v245';
+const APP_VERSION = 'v246';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -8188,7 +8188,7 @@ function qbkImport(file){
       if(!confirm(`ব্যাকআপ পাওয়া গেছে (${obj.exportedAt ? obj.exportedAt.slice(0, 10) : 'তারিখহীন'}) — ${marks}টি চিহ্নিত আয়াত।\n\nবর্তমান পাঠ-ডেটা প্রতিস্থাপিত হবে। এগোবেন?`)) return;
       // schema migration: same defaults-merge path as a fresh load
       RS.data = Object.assign({session: {}, verses: {}, stats: {daily: {}, lifetime: 0}, settings: {}}, obj.data);
-      RS.data.settings = Object.assign({font: 0, size: 26, trSize: 14, lh: 2.05, tajweed: 1, showTr: 1, showNum: 1, hc: 0, autoScroll: 0}, RS.data.settings);
+      RS.data.settings = Object.assign({font: 0, size: 26, trSize: 14, lh: 2.05, tajweed: 1, showTr: 1, showNum: 1, hc: 0, autoScroll: 1}, RS.data.settings);
       RS.save();
       applyQuranFont();
       if(currentOpenSurahNo && VR.verses.length) renderVerses(VR.verses);
@@ -8396,7 +8396,7 @@ const RS = {
     let d = null;
     try{ d = JSON.parse(localStorage.getItem(profileKey('quran_state_v1')) || 'null'); }catch(e){}
     this.data = Object.assign({session:{}, verses:{}, stats:{daily:{}, lifetime:0}, settings:{}}, d || {});
-    this.data.settings = Object.assign({font:0, size:26, trSize:14, lh:2.05, tajweed:1, showTr:0, showNum:1, hc:0, autoScroll:0}, this.data.settings);
+    this.data.settings = Object.assign({font:0, size:26, trSize:14, lh:2.05, tajweed:1, showTr:0, showNum:1, hc:0, autoScroll:1}, this.data.settings);
     // one-time policy change: translation hidden by default, toolbar button toggles it
     if(!this.data.settings._trBtn){ this.data.settings.showTr = 0; this.data.settings._trBtn = 1; }
     // one-time migration of the old scattered keys
@@ -8826,6 +8826,10 @@ const AE = {
   init(){
     this.el = document.getElementById('surah-audio-player');
     if(!this.el) return;
+    // follow-mode yields to the listener's own scrolling for a few seconds
+    const usc = () => { this._uscTs = Date.now(); };
+    window.addEventListener('wheel', usc, {passive: true});
+    window.addEventListener('touchmove', usc, {passive: true});
     this.el.addEventListener('ended', () => { if(this.active) this._advance(); });
     this.el.addEventListener('playing', () => { if(this.active){ this.playing = true; this._notify(); } });
     this.el.addEventListener('pause', () => { if(this.active){ this.playing = false; this._notify(); } });
@@ -8945,11 +8949,27 @@ const AE = {
         });
       }catch(e){}
     }
-    if(it.s === currentOpenSurahNo && RS.load().settings.autoScroll){
-      const slot = document.getElementById('verse-card-' + it.a);
-      if(slot){ materializeVerse(it.a); slot.scrollIntoView({block: 'center', behavior: 'smooth'}); }
+    if(it.s === currentOpenSurahNo && RS.load().settings.autoScroll && Date.now() - (this._uscTs || 0) > 3500){
+      this._followAyah(it.a);
     }
     this._notify();
+  },
+  // keep the reciting verse in view: anchor its START in the upper part of the screen
+  // (block:'center' hid the beginning of long ayahs), with neighbors materialized first
+  // so virtualized heights are real, then a drift-correction pass once they settle
+  _followAyah(a){
+    const slot = document.getElementById('verse-card-' + a);
+    if(!slot) return;
+    for(let i = Math.max(1, a - 2); i <= Math.min(VR.verses.length, a + 2); i++) materializeVerse(i);
+    const anchor = smooth => {
+      const r = slot.getBoundingClientRect();
+      const target = Math.max(90, (window.innerHeight - r.height) * 0.38);
+      const d = r.top - target;
+      if(Math.abs(d) > 24) window.scrollBy({top: d, left: 0, behavior: smooth ? 'smooth' : 'auto'});
+    };
+    anchor(true);
+    clearTimeout(this._followT);
+    this._followT = setTimeout(() => anchor(false), 500);
   },
   _markPlaying(it){
     document.querySelectorAll('.verse-slot.playing').forEach(el => el.classList.remove('playing'));
@@ -9040,6 +9060,14 @@ const AE = {
     mk.style.left = w.offsetLeft + 'px';
     mk.style.top = (w.offsetTop + w.offsetHeight - 8) + 'px';
     mk.style.width = w.offsetWidth + 'px';
+    // long multi-line ayahs: when the active word drifts out of the comfortable
+    // band, nudge the page so recitation-following never loses the text
+    if(RS.load().settings.autoScroll && Date.now() - (this._uscTs || 0) > 3500){
+      const wr = w.getBoundingClientRect();
+      if(wr.top < 90 || wr.bottom > window.innerHeight * 0.78){
+        window.scrollBy({top: wr.top - window.innerHeight * 0.35, left: 0, behavior: 'smooth'});
+      }
+    }
   },
   _notify(){
     const label = document.getElementById('audio-play-label');
@@ -9295,6 +9323,7 @@ function hifzMarkMem(){
    Feed is baked into the app: each release appends entries here. Unread = ts newer
    than the stored last-seen stamp; opening the sheet marks everything read. */
 const NOTIF_FEED = [
+  {id: 'followscroll', ts: Date.parse('2026-07-23T09:00:00+06:00'), icon: '🎯', title: 'তিলাওয়াতের সাথে লেখা এখন নিখুঁতভাবে চলে', body: 'অডিও চলার সময় চলমান আয়াত (এমনকি লম্বা আয়াতের চলমান শব্দও) নিজে-নিজে পর্দার মাঝে থাকে — অটো-স্ক্রল এখন ডিফল্ট চালু', act: 'quran'},
   {id: 'hdaudio', ts: Date.parse('2026-07-13T10:00:00+06:00'), icon: '🎧', title: 'বুখারীর অধ্যায়-অডিও (বাংলা + English)', body: 'বাংলা পাঠ: হাদীস ১–১৩১২ (পর্ব বেছে শুনুন) • ইংরেজি পাঠ: সব ৯৭ অধ্যায় — অধ্যায় খুললেই উপরে প্লেয়ার', act: 'hadith'},
   {id: 'hdact',   ts: Date.parse('2026-07-13T09:00:00+06:00'), icon: '📚', title: 'হাদিসে নতুন সুবিধা', body: 'প্রতিটি হাদিসে এখন ⋯ মেনু: 🤖 AI ব্যাখ্যা, বুকমার্ক, প্রিয়, নোট, হাইলাইট, কপি, শেয়ার, সম্পর্কিত হাদিস ও আয়াত', act: 'hadith'},
   {id: 'ibadat',  ts: Date.parse('2026-07-13T04:30:00+06:00'), icon: '🕌', title: 'আমাদের নতুন নাম: Ibadat (ইবাদত)', body: 'নতুন লোগোসহ নতুন পরিচয় — ভাষা বদলালে নামের স্থানীয় রূপও বদলে যায় (ইবাদত / عبادة / Worship)', act: 'none'},
