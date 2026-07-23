@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v248-cross-surah-follow -->
+<!-- VERSION: v249-tap-ayah-play -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -755,6 +755,7 @@ html[dir="rtl"] .quick-grid,html[dir="rtl"] .tabbar{direction:rtl}
 html[dir="rtl"] .skip-link{left:auto;right:-9999px}
 html[dir="rtl"] .skip-link:focus{right:0;left:auto}
 html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
+#verse-list .h-arabic{cursor:pointer}
 /* hero play button in the reader toolbar */
 .qplay-ic{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;flex-shrink:0;background:linear-gradient(150deg,#fdf3d3,#f0d795 45%,#cfa75e);color:#0c1a12;font-size:10.5px;line-height:1;padding-left:1.5px;box-shadow:0 1px 5px rgba(0,0,0,.35),0 0 9px rgba(240,215,149,.5)}
 @keyframes qplayGlow{0%,100%{box-shadow:0 4px 16px rgba(16,185,129,.28),inset 0 1px 0 rgba(255,255,255,.07)}50%{box-shadow:0 4px 18px rgba(16,185,129,.4),0 0 20px rgba(240,215,149,.22),inset 0 1px 0 rgba(255,255,255,.09)}}
@@ -8004,7 +8005,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v248';
+const APP_VERSION = 'v249';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -9339,6 +9340,25 @@ function hifzMarkMem(){
     card.classList.add('hifz-peek');
   });
   ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => list.addEventListener(ev, end));
+})();
+
+// tap the ayah text itself to recite it — works like the 🔊 button (every tap
+// restarts that ayah). Buttons, text-selection and hifz-covered cards keep
+// their own behaviors untouched.
+(function(){
+  const list = document.getElementById('verse-list');
+  if(!list) return;
+  list.addEventListener('click', e => {
+    const ar = e.target.closest('.h-arabic');
+    if(!ar || !/^verse-arabic-\d+$/.test(ar.id)) return;
+    if(e.target.closest('button')) return;
+    const slot = ar.closest('.verse-slot');
+    if(slot && slot.classList.contains('hifz-blur')) return; // hifz peek, not play
+    const sel = window.getSelection && window.getSelection();
+    if(sel && sel.type === 'Range' && String(sel).trim()) return; // user is copying text
+    const n = parseInt(ar.id.slice('verse-arabic-'.length));
+    if(currentOpenSurahNo && n) playVerseAudio(currentOpenSurahNo, n);
+  });
 })();
 
 /* ══ NOTIFICATION CENTER — header bell + announcement feed (offline, no spam) ══
