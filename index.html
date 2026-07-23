@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v239-tool-deeplinks -->
+<!-- VERSION: v240-deeplink-anchor -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -7992,7 +7992,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v239';
+const APP_VERSION = 'v240';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -9563,15 +9563,21 @@ show('view-books');
     setTimeout(() => {
       try{
         const btnFor = id => document.getElementById('tabbtn-' + id) || document.querySelector(`.tabbar-card[onclick*="'${id}'"]`);
+        let target = null;
         if(tool){
           showTab('tools', btnFor('tools'));
           openTool(tool);
-          const v = document.getElementById('tool-' + tool + '-view');
-          if(v) window.scrollTo(0, v.getBoundingClientRect().top + window.scrollY - 14);
+          target = document.getElementById('tool-' + tool + '-view');
         }else if(document.getElementById('tab-' + tab)){
           showTab(tab, btnFor(tab));
-          const s = document.getElementById('tab-' + tab);
-          window.scrollTo(0, s.getBoundingClientRect().top + window.scrollY - 14);
+          target = document.getElementById('tab-' + tab);
+        }
+        if(target){
+          // fonts/async widgets above keep inflating the page after load — re-anchor
+          // until the layout settles (same trick as quickOpenTab)
+          const anchor = () => window.scrollTo(0, target.getBoundingClientRect().top + window.scrollY - 14);
+          anchor();
+          [300, 900, 1800, 3000].forEach(ms => setTimeout(anchor, ms));
         }
       }catch(e){}
     }, 120);
