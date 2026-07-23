@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v247-hero-play-btn -->
+<!-- VERSION: v248-cross-surah-follow -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -8004,7 +8004,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v247';
+const APP_VERSION = 'v248';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -8891,6 +8891,7 @@ const AE = {
     this.active = true;
     if(window._tasbihSpeaking && typeof stopTasbihAudio === 'function') stopTasbihAudio();
     this.el.src = await this.src(it.s, it.a);
+    try{ this.el.currentTime = 0; }catch(e){} // same-src retap must restart from the beginning
     this.el.playbackRate = this.cfg().speed;
     try{ await this.el.play(); }catch(e){ /* autoplay block — user will tap play */ }
     this._sync(it);
@@ -8954,8 +8955,18 @@ const AE = {
         });
       }catch(e){}
     }
-    if(it.s === currentOpenSurahNo && RS.load().settings.autoScroll && Date.now() - (this._uscTs || 0) > 3500){
-      this._followAyah(it.a);
+    if(RS.load().settings.autoScroll && Date.now() - (this._uscTs || 0) > 3500){
+      if(it.s === currentOpenSurahNo){
+        this._followAyah(it.a);
+      }else if(currentOpenSurahNo && !this._surahSwitching
+          && document.getElementById('tab-quran')?.classList.contains('active')
+          && document.getElementById('quran-verses-view')?.style.display !== 'none'){
+        // recitation crossed into the next surah (autoNext) — bring the reader along
+        this._surahSwitching = true;
+        openSurah(it.s)
+          .then(() => { this._markPlaying(it); this._followAyah(it.a); })
+          .finally(() => { this._surahSwitching = false; });
+      }
     }
     this._notify();
   },
