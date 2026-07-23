@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v240-deeplink-anchor -->
+<!-- VERSION: v241-shot-mode -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -753,9 +753,13 @@ html[dir="rtl"] .quick-grid,html[dir="rtl"] .tabbar{direction:rtl}
 html[dir="rtl"] .skip-link{left:auto;right:-9999px}
 html[dir="rtl"] .skip-link:focus{right:0;left:auto}
 html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
+/* shot-mode (?shot=1) — screenshot aid: only the main content renders, from first paint */
+html.shot-mode .app > :not(#main-content):not(.app-bg){display:none !important}
+html.shot-mode #main-content{padding-top:10px}
 </style>
 </head>
 <body>
+<script>if(/[?&]shot=1/.test(location.search)) document.documentElement.classList.add('shot-mode');</script>
 <a href="#main-content" class="skip-link">মূল কনটেন্টে যান</a>
 <div class="app">
 <div class="app-bg" aria-hidden="true"></div>
@@ -7992,7 +7996,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v240';
+const APP_VERSION = 'v241';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
