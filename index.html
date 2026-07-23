@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v243-deeplink-instant -->
+<!-- VERSION: v244-premium-backbtn -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -245,7 +245,9 @@ html[dir="rtl"] .clock-panel{direction:rtl}
 .b-count{display:inline-block;font-size:10.5px;color:var(--emerald2);background:rgba(16,185,129,.09);border:1px solid rgba(16,185,129,.18);border-radius:50px;padding:2px 9px;font-weight:600}
 .b-sel-tag{font-size:11px;color:var(--gold);margin-top:6px}
 
-.back-btn{display:flex;align-items:center;gap:6px;color:var(--emerald2);font-size:14px;cursor:pointer;margin-bottom:14px;font-weight:500;padding:8px 0;background:none;border:none;font-family:'Hind Siliguri',sans-serif;min-height:44px}
+.back-btn{display:inline-flex;align-items:center;gap:7px;color:var(--emerald2);font-size:13.5px;cursor:pointer;margin-bottom:14px;font-weight:600;padding:9px 18px 9px 14px;border:1px solid transparent;background:linear-gradient(160deg,rgba(16,26,22,.9),rgba(11,16,13,.9)) padding-box,linear-gradient(120deg,rgba(16,185,129,.45),rgba(255,255,255,.06) 55%,rgba(212,175,106,.35)) border-box;border-radius:50px;font-family:'Hind Siliguri',sans-serif;min-height:44px;box-shadow:0 4px 14px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.05);transition:all .2s}
+.back-btn:hover{color:#7ee8cf;box-shadow:0 4px 16px rgba(0,0,0,.3),0 0 14px rgba(16,185,129,.18),inset 0 1px 0 rgba(255,255,255,.07);transform:translateX(-2px)}
+.back-btn:active{transform:scale(.97)}
 
 .chapter-item{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:13px;margin-bottom:7px;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.12);position:relative;overflow:hidden}
 .chapter-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2.5px;background:linear-gradient(180deg,var(--emerald),var(--gold));opacity:0;transition:opacity .2s}
@@ -7997,7 +7999,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v243';
+const APP_VERSION = 'v244';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
