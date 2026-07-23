@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v237-hadith-fallback-fix -->
+<!-- VERSION: v238-trusted-time-sync -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -2927,7 +2927,31 @@ function getLocationNow(){
 }
 
 async function syncNetworkTime(){
-  // Both sources return true UTC epoch — works regardless of the device's timezone
+  // PRIMARY: our own origin's HTTP Date header (GitHub Pages/Fastly — NTP-disciplined).
+  // Same-origin so the header is readable, HEAD so the service worker passes it through,
+  // no-store so no cache can serve a stale Date. Two samples, keep the lowest-latency one.
+  try{
+    let best = null;
+    for(let i = 0; i < 2; i++){
+      const before = Date.now();
+      const r = await fetch(location.origin + location.pathname + '?ntp=' + before, {method: 'HEAD', cache: 'no-store'});
+      const after = Date.now();
+      const ds = r.headers.get('date');
+      if(!ds) throw new Error('no date header');
+      const realMs = new Date(ds).getTime() + 500; // Date truncates to the second — assume mid-second
+      const rtt = after - before;
+      const off = realMs - (before + after)/2;
+      if(!best || rtt < best.rtt) best = {off, rtt};
+    }
+    if(best && best.rtt < 15000){
+      // within the header's ±1.5s resolution the device clock is fine — don't jitter it
+      timeOffsetMs = Math.abs(best.off) > 3000 ? best.off : 0;
+      window._timeSynced = true;
+      return;
+    }
+  }catch(e){ /* offline or header unreadable — fall through */ }
+  // FALLBACK: third-party time APIs. A lone API cannot be trusted (2026-07-23:
+  // timeapi.io served time 11 minutes slow) — only apply when two sources agree.
   const sources = [
     async () => {
       const r = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
@@ -2940,18 +2964,22 @@ async function syncNetworkTime(){
       return new Date(d.dateTime.slice(0,19) + 'Z').getTime(); // dateTime lacks a zone suffix — append Z so it parses as UTC
     },
   ];
+  const offsets = [];
   for(const src of sources){
     try{
       const before = Date.now();
       const realMs = await src();
       const after = Date.now();
-      const localMs = (before+after)/2;
-      timeOffsetMs = realMs - localMs;
-      window._timeSynced = true;
-      return;
+      offsets.push(realMs - (before + after)/2);
     }catch(e){ continue; }
   }
-  // all sources failed — keep using system clock (offset 0)
+  if(offsets.length >= 2 && Math.abs(offsets[0] - offsets[1]) < 10000){
+    const off = (offsets[0] + offsets[1])/2;
+    timeOffsetMs = Math.abs(off) > 3000 ? off : 0;
+    window._timeSynced = true;
+    return;
+  }
+  // sources unavailable or disagreeing — the system clock is safer than a bad correction
 }
 
 /* ══ DATE & HIJRI CALENDAR ══ */
@@ -7964,7 +7992,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v237';
+const APP_VERSION = 'v238';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
