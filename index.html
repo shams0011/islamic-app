@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v244-premium-backbtn -->
+<!-- VERSION: v245-hide-empty-media -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -1499,7 +1499,7 @@ html.shot-mode #main-content{padding-top:10px}
         <div class="ai-card-title">অ্যাপ সাপোর্ট করুন</div>
         <div class="ai-card-desc">আপনার সদকা অ্যাপটিকে বিজ্ঞাপনমুক্ত রাখে</div>
       </div>
-      <div class="ai-card" onclick="openTool('media')" role="button" tabindex="0" aria-label="মিডিয়া লাইব্রেরি" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTool('media')}">
+      <div class="ai-card" id="tool-card-media" onclick="openTool('media')" role="button" tabindex="0" aria-label="মিডিয়া লাইব্রেরি" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTool('media')}">
         <div class="ai-card-icon" aria-hidden="true">🎬</div>
         <div class="ai-card-title" id="tool-title-media">মিডিয়া লাইব্রেরি</div>
         <div class="ai-card-desc" id="tool-desc-media">নাশীদ, লেকচার, পডকাস্ট ও আরও অনেক কিছু</div>
@@ -7999,7 +7999,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v244';
+const APP_VERSION = 'v245';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -9554,6 +9554,8 @@ placeTasbihBody('home'); // the tasbih starts on the home screen below the zakat
 renderGoalCard(); // daily reading-goal ring below the tasbih card
 updateNotifBadge(); // header bell unread count
 if(supportConfigured()){ const sc = document.getElementById('tool-card-support'); if(sc) sc.style.display = ''; }
+// hide the media-library card while every category is empty (deep link ?tool=media still works)
+if(MEDIA_CATEGORIES.every(c => !c.items.length)){ const mc = document.getElementById('tool-card-media'); if(mc) mc.style.display = 'none'; }
 applyQuranFont(); // restore the reader's saved mushaf font + size
 AE.init(); // audio engine: media element, media-session handlers
 initNotificationBanner();
