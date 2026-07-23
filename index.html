@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v238-trusted-time-sync -->
+<!-- VERSION: v239-tool-deeplinks -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -7992,7 +7992,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v238';
+const APP_VERSION = 'v239';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -9552,6 +9552,31 @@ AE.init(); // audio engine: media element, media-session handlers
 initNotificationBanner();
 renderBooks();
 show('view-books');
+
+// ── DEEP LINKS — ?tab=quran opens a tab, ?tool=zakat opens a tools-view directly.
+// Used by PWA shortcuts and store-listing screenshots; safe no-op without params.
+(function(){
+  try{
+    const p = new URLSearchParams(location.search);
+    const tool = p.get('tool'), tab = p.get('tab');
+    if(!tool && !tab) return;
+    setTimeout(() => {
+      try{
+        const btnFor = id => document.getElementById('tabbtn-' + id) || document.querySelector(`.tabbar-card[onclick*="'${id}'"]`);
+        if(tool){
+          showTab('tools', btnFor('tools'));
+          openTool(tool);
+          const v = document.getElementById('tool-' + tool + '-view');
+          if(v) window.scrollTo(0, v.getBoundingClientRect().top + window.scrollY - 14);
+        }else if(document.getElementById('tab-' + tab)){
+          showTab(tab, btnFor(tab));
+          const s = document.getElementById('tab-' + tab);
+          window.scrollTo(0, s.getBoundingClientRect().top + window.scrollY - 14);
+        }
+      }catch(e){}
+    }, 120);
+  }catch(e){}
+})();
 </script>
 </body>
 </html>
