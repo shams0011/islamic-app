@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v236-living-players -->
+<!-- VERSION: v237-hadith-fallback-fix -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -5092,12 +5092,12 @@ function getHadithText(h){
   // A tiny number of entries (~0.2%) have no text in any language in the source dataset.
   // Note: hadith body text is not yet available in Chinese (zh) — falls back to English with a note.
   let result;
-  if(currentLang === 'en') result = h.en || h.bn || h.ar || '';
-  else if(currentLang === 'ar') result = h.ar || h.bn || h.en || '';
-  else if(currentLang === 'ur') result = h.ur || h.en || h.bn || '';
-  else if(currentLang === 'fr') result = h.fr || h.en || h.bn || '';
-  else if(currentLang === 'zh') result = (h.en || h.bn || h.ar) ? '[英文 / English] ' + (h.en || h.bn || h.ar) : '';
-  else result = h.bn || h.t || h.en || h.ar || '';
+  if(currentLang === 'en') result = h.en || h.bn || h.ar || h.ur || h.fr || '';
+  else if(currentLang === 'ar') result = h.ar || h.bn || h.en || h.ur || h.fr || '';
+  else if(currentLang === 'ur') result = h.ur || h.en || h.bn || h.ar || h.fr || '';
+  else if(currentLang === 'fr') result = h.fr || h.en || h.bn || h.ar || h.ur || '';
+  else if(currentLang === 'zh') result = (h.en || h.bn || h.ar || h.ur || h.fr) ? '[英文 / English] ' + (h.en || h.bn || h.ar || h.ur || h.fr) : '';
+  else result = h.bn || h.t || h.en || h.ar || h.ur || h.fr || '';
   return result || '(এই হাদিসের টেক্সট উপলব্ধ নেই / Text not available for this hadith)';
 }
 // true when the source dataset has no text in ANY language for this entry
@@ -7964,7 +7964,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v236';
+const APP_VERSION = 'v237';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
