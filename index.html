@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v249-tap-ayah-play -->
+<!-- VERSION: v250-tap-word-play -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -8005,7 +8005,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v249';
+const APP_VERSION = 'v250';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -8864,6 +8864,48 @@ const AE = {
     if(s === currentOpenSurahNo && VR.verses.length) build(VR.verses);
     else fetch(`quran-data/surah${s}.json`).then(r => r.json()).then(d => build(d.verses)).catch(()=>{});
   },
+  // start recitation AT a specific word — uses the karaoke timeline when available,
+  // otherwise the same length-weighted estimate the glide-marker uses
+  playFromWord(s, a, wi){
+    this._wordSeekReq = {s, a, wi};
+    const cur = this.queue[this.idx];
+    if(this.active && cur && cur.s === s && cur.a === a){
+      this._applyWordSeek();
+      this.el.play().catch(()=>{});
+    }else{
+      this.playSurah(s, a); // _karaokeTick applies the pending word-seek once metadata+segments arrive
+    }
+  },
+  _applyWordSeek(){
+    const req = this._wordSeekReq;
+    if(!req) return true;
+    const cur = this.queue[this.idx];
+    if(!cur || cur.s !== req.s || cur.a !== req.a){ this._wordSeekReq = null; return true; } // stale request
+    if(!(this.el.duration && isFinite(this.el.duration))) return false; // metadata not ready yet
+    const durMs = this.el.duration * 1000;
+    let tMs = 0;
+    if(this._kSegs && this._kSegs.length){
+      const scale = durMs / this._kSegs[this._kSegs.length - 1].to;
+      const sg = this._kSegs.find(g => g.w === req.wi) || this._kSegs.find(g => g.w > req.wi) || this._kSegs[this._kSegs.length - 1];
+      tMs = sg.from * scale;
+    }else{
+      const ar = document.getElementById('verse-arabic-' + req.a);
+      const words = ar ? ar.querySelectorAll('.qw') : [];
+      if(words.length){
+        if(!ar._qwWeights){
+          let tot = 0;
+          ar._qwWeights = [...words].map(w => { tot += w.textContent.length + 2; return tot; });
+          ar._qwTotal = tot;
+        }
+        const i = Math.min(req.wi, ar._qwWeights.length - 1);
+        tMs = i === 0 ? 0 : (ar._qwWeights[i - 1] / ar._qwTotal) * durMs;
+      }
+    }
+    this._wordSeekReq = null;
+    try{ this.el.currentTime = Math.max(0, tMs / 1000 - 0.15); }catch(e){ return false; }
+    this._kWord = -1; // let the glide marker re-anchor at the new position
+    return true;
+  },
   playRange(s, from, to){
     this.queue = [];
     for(let a = from; a <= to; a++) this.queue.push({s, a});
@@ -9026,6 +9068,7 @@ const AE = {
     }catch(e){ /* offline — estimate fallback runs */ }
   },
   _karaokeTick(){
+    if(this._wordSeekReq && !this._applyWordSeek()) return; // word-tap seek waits for metadata/segments
     const it = this.queue[this.idx];
     if(!it || it.s !== currentOpenSurahNo) return;
     const ar = document.getElementById('verse-arabic-' + it.a);
@@ -9357,7 +9400,10 @@ function hifzMarkMem(){
     const sel = window.getSelection && window.getSelection();
     if(sel && sel.type === 'Range' && String(sel).trim()) return; // user is copying text
     const n = parseInt(ar.id.slice('verse-arabic-'.length));
-    if(currentOpenSurahNo && n) playVerseAudio(currentOpenSurahNo, n);
+    if(!currentOpenSurahNo || !n) return;
+    const qw = e.target.closest('.qw');
+    if(qw && qw.dataset.wi != null) AE.playFromWord(currentOpenSurahNo, n, parseInt(qw.dataset.wi));
+    else playVerseAudio(currentOpenSurahNo, n); // tap between words → whole ayah from the start
   });
 })();
 
