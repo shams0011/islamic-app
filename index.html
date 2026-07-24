@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v267-full-i18n -->
+<!-- VERSION: v268-lang-perfect -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -918,7 +918,7 @@ try{
       <div class="cp-date-g" id="date-gregorian">--</div>
       <div class="cp-date-h" id="date-hijri">--</div>
       <div class="cp-date-e" id="date-hijri-event"></div>
-      <div style="margin-top:4px;font-size:11.5px;font-weight:800;color:var(--gold2);background:rgba(212,175,106,.12);border:1px solid rgba(212,175,106,.38);border-radius:50px;padding:5px 14px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.2)">🗓️ ইসলামিক ক্যালেন্ডার</div>
+      <div style="margin-top:4px;font-size:11.5px;font-weight:800;color:var(--gold2);background:rgba(212,175,106,.12);border:1px solid rgba(212,175,106,.38);border-radius:50px;padding:5px 14px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.2)">🗓️ <span id="cal-chip-lb">ইসলামিক ক্যালেন্ডার</span></div>
     </div>
     </div>
     <div class="cp-right">
@@ -944,7 +944,7 @@ try{
             <path d="M15 8.2c1.4-.5 2.8-.7 4-.6M15 11c1.4-.5 2.8-.7 4-.6" stroke="#0b100d" stroke-width=".9" stroke-linecap="round" opacity=".55"/>
           </svg>
         </span>
-        <span class="qa-tx"><span class="qa-title">কুরআন</span><span class="qa-sub">১১৪ সূরা • অর্থসহ</span></span>
+        <span class="qa-tx"><span class="qa-title" id="qa-quran-title">কুরআন</span><span class="qa-sub" id="qa-quran-sub">১১৪ সূরা • অর্থসহ</span></span>
         <span class="qa-arrow" aria-hidden="true">›</span>
       </button>
       <button type="button" class="qa-btn" onclick="quickOpenTab('hadith')" aria-label="হাদিস পড়ুন">
@@ -960,7 +960,7 @@ try{
             <path d="M7.2 17h2M8.4 12.4h2M9.8 7.8h2" stroke="#0b100d" stroke-width=".9" stroke-linecap="round" opacity=".5"/>
           </svg>
         </span>
-        <span class="qa-tx"><span class="qa-title">হাদিস</span><span class="qa-sub">সিহাহ সিত্তাহ</span></span>
+        <span class="qa-tx"><span class="qa-title" id="qa-hadith-title">হাদিস</span><span class="qa-sub" id="qa-hadith-sub">সিহাহ সিত্তাহ</span></span>
         <span class="qa-arrow" aria-hidden="true">›</span>
       </button>
     </div>
@@ -2303,12 +2303,12 @@ function refreshAllProfileDependentUI(){
 }
 
 // keys for the newer home-corner / qibla / mosque-finder strings (all 6 languages)
-Object.assign(I18N.bn, {cornerMosque:'মসজিদ', cornerQibla:'কিবলা', dirNames:'উত্তর|উত্তর-পূর্ব|পূর্ব|দক্ষিণ-পূর্ব|দক্ষিণ|দক্ষিণ-পশ্চিম|পশ্চিম|উত্তর-পশ্চিম', qiblaMakkah:'মক্কা', unitKm:'কিমি', unitM:'মিটার', unitMin:'মিনিট', qiblaHoldNorth:'🧭 N (উত্তর) উপরের দিকে ধরুন — 🕋 যেদিকে, কিবলা সেদিকে', qiblaHint:'ফোন সমতল রেখে ধীরে ধীরে ঘুরান — কাবা আইকন উপরে আসলে আপনি কিবলামুখী', mosqueNearest3:'আপনার নিকটতম ৩টি মসজিদ', mosqueLocating:'📍 আপনার অবস্থান নেওয়া হচ্ছে — নিকটতম ৩টি মসজিদ খোঁজা হচ্ছে…', routeBtn:'পথ', homeBtn:'হোম'});
-Object.assign(I18N.en, {cornerMosque:'Mosque', cornerQibla:'Qibla', dirNames:'North|Northeast|East|Southeast|South|Southwest|West|Northwest', qiblaMakkah:'Makkah', unitKm:'km', unitM:'m', unitMin:'min', qiblaHoldNorth:'🧭 Hold N (north) upward — the Qibla is where 🕋 points', qiblaHint:'Hold the phone flat and turn slowly — when the Kaaba icon reaches the top you are facing the Qibla', mosqueNearest3:'Your 3 nearest mosques', mosqueLocating:'📍 Getting your location — finding the 3 nearest mosques…', routeBtn:'Route', homeBtn:'Home'});
-Object.assign(I18N.ar, {cornerMosque:'مسجد', cornerQibla:'القبلة', dirNames:'شمال|شمال شرق|شرق|جنوب شرق|جنوب|جنوب غرب|غرب|شمال غرب', qiblaMakkah:'مكة', unitKm:'كم', unitM:'م', unitMin:'دقيقة', qiblaHoldNorth:'🧭 اجعل N (الشمال) للأعلى — القبلة حيث يشير 🕋', qiblaHint:'أمسك الهاتف أفقياً ودُر ببطء — عندما يصل رمز الكعبة للأعلى فأنت باتجاه القبلة', mosqueNearest3:'أقرب ٣ مساجد إليك', mosqueLocating:'📍 جارٍ تحديد موقعك — البحث عن أقرب ٣ مساجد…', routeBtn:'الطريق', homeBtn:'الرئيسية'});
-Object.assign(I18N.ur, {cornerMosque:'مسجد', cornerQibla:'قبلہ', dirNames:'شمال|شمال مشرق|مشرق|جنوب مشرق|جنوب|جنوب مغرب|مغرب|شمال مغرب', qiblaMakkah:'مکہ', unitKm:'کم', unitM:'میٹر', unitMin:'منٹ', qiblaHoldNorth:'🧭 N (شمال) اوپر رکھیں — قبلہ اسی طرف ہے جدھر 🕋', qiblaHint:'فون کو فلیٹ رکھ کر آہستہ گھمائیں — کعبہ اوپر آجائے تو آپ قبلہ رخ ہیں', mosqueNearest3:'آپ کی قریب ترین ۳ مساجد', mosqueLocating:'📍 آپ کا مقام لیا جا رہا ہے — قریب ترین ۳ مساجد تلاش کی جا رہی ہیں…', routeBtn:'راستہ', homeBtn:'ہوم'});
-Object.assign(I18N.zh, {cornerMosque:'清真寺', cornerQibla:'朝向', dirNames:'北|东北|东|东南|南|西南|西|西北', qiblaMakkah:'麦加', unitKm:'公里', unitM:'米', unitMin:'分钟', qiblaHoldNorth:'🧭 将N(北)朝上 — 🕋 所指即朝向', qiblaHint:'手机放平慢慢转动 — 天房图标朝上即面向朝向', mosqueNearest3:'离您最近的3座清真寺', mosqueLocating:'📍 正在获取位置 — 寻找最近的3座清真寺…', routeBtn:'路线', homeBtn:'主页'});
-Object.assign(I18N.fr, {cornerMosque:'Mosquée', cornerQibla:'Qibla', dirNames:'Nord|Nord-Est|Est|Sud-Est|Sud|Sud-Ouest|Ouest|Nord-Ouest', qiblaMakkah:'La Mecque', unitKm:'km', unitM:'m', unitMin:'min', qiblaHoldNorth:'🧭 Tenez N (nord) vers le haut — la Qibla est vers 🕋', qiblaHint:'Tenez le téléphone à plat et tournez lentement — quand la Kaaba est en haut, vous faites face à la Qibla', mosqueNearest3:'Vos 3 mosquées les plus proches', mosqueLocating:'📍 Localisation en cours — recherche des 3 mosquées les plus proches…', routeBtn:'Itinéraire', homeBtn:'Accueil'});
+Object.assign(I18N.bn, {qaQuran:'কুরআন', qaQuranSub:'১১৪ সূরা • অর্থসহ', qaHadith:'হাদিস', qaHadithSub:'সিহাহ সিত্তাহ', islamicCalBtn:'ইসলামিক ক্যালেন্ডার', cornerMosque:'মসজিদ', cornerQibla:'কিবলা', dirNames:'উত্তর|উত্তর-পূর্ব|পূর্ব|দক্ষিণ-পূর্ব|দক্ষিণ|দক্ষিণ-পশ্চিম|পশ্চিম|উত্তর-পশ্চিম', qiblaMakkah:'মক্কা', unitKm:'কিমি', unitM:'মিটার', unitMin:'মিনিট', qiblaHoldNorth:'🧭 N (উত্তর) উপরের দিকে ধরুন — 🕋 যেদিকে, কিবলা সেদিকে', qiblaHint:'ফোন সমতল রেখে ধীরে ধীরে ঘুরান — কাবা আইকন উপরে আসলে আপনি কিবলামুখী', mosqueNearest3:'আপনার নিকটতম ৩টি মসজিদ', mosqueLocating:'📍 আপনার অবস্থান নেওয়া হচ্ছে — নিকটতম ৩টি মসজিদ খোঁজা হচ্ছে…', routeBtn:'পথ', homeBtn:'হোম'});
+Object.assign(I18N.en, {qaQuran:'Quran', qaQuranSub:'114 surahs • with meaning', qaHadith:'Hadith', qaHadithSub:'Sihah Sittah', islamicCalBtn:'Islamic Calendar', cornerMosque:'Mosque', cornerQibla:'Qibla', dirNames:'North|Northeast|East|Southeast|South|Southwest|West|Northwest', qiblaMakkah:'Makkah', unitKm:'km', unitM:'m', unitMin:'min', qiblaHoldNorth:'🧭 Hold N (north) upward — the Qibla is where 🕋 points', qiblaHint:'Hold the phone flat and turn slowly — when the Kaaba icon reaches the top you are facing the Qibla', mosqueNearest3:'Your 3 nearest mosques', mosqueLocating:'📍 Getting your location — finding the 3 nearest mosques…', routeBtn:'Route', homeBtn:'Home'});
+Object.assign(I18N.ar, {qaQuran:'القرآن', qaQuranSub:'١١٤ سورة • مع المعاني', qaHadith:'الحديث', qaHadithSub:'الصحاح الستة', islamicCalBtn:'التقويم الإسلامي', cornerMosque:'مسجد', cornerQibla:'القبلة', dirNames:'شمال|شمال شرق|شرق|جنوب شرق|جنوب|جنوب غرب|غرب|شمال غرب', qiblaMakkah:'مكة', unitKm:'كم', unitM:'م', unitMin:'دقيقة', qiblaHoldNorth:'🧭 اجعل N (الشمال) للأعلى — القبلة حيث يشير 🕋', qiblaHint:'أمسك الهاتف أفقياً ودُر ببطء — عندما يصل رمز الكعبة للأعلى فأنت باتجاه القبلة', mosqueNearest3:'أقرب ٣ مساجد إليك', mosqueLocating:'📍 جارٍ تحديد موقعك — البحث عن أقرب ٣ مساجد…', routeBtn:'الطريق', homeBtn:'الرئيسية'});
+Object.assign(I18N.ur, {qaQuran:'قرآن', qaQuranSub:'۱۱۴ سورتیں • ترجمہ کے ساتھ', qaHadith:'حدیث', qaHadithSub:'صحاح ستہ', islamicCalBtn:'اسلامی کیلنڈر', cornerMosque:'مسجد', cornerQibla:'قبلہ', dirNames:'شمال|شمال مشرق|مشرق|جنوب مشرق|جنوب|جنوب مغرب|مغرب|شمال مغرب', qiblaMakkah:'مکہ', unitKm:'کم', unitM:'میٹر', unitMin:'منٹ', qiblaHoldNorth:'🧭 N (شمال) اوپر رکھیں — قبلہ اسی طرف ہے جدھر 🕋', qiblaHint:'فون کو فلیٹ رکھ کر آہستہ گھمائیں — کعبہ اوپر آجائے تو آپ قبلہ رخ ہیں', mosqueNearest3:'آپ کی قریب ترین ۳ مساجد', mosqueLocating:'📍 آپ کا مقام لیا جا رہا ہے — قریب ترین ۳ مساجد تلاش کی جا رہی ہیں…', routeBtn:'راستہ', homeBtn:'ہوم'});
+Object.assign(I18N.zh, {qaQuran:'古兰经', qaQuranSub:'114章 • 含释义', qaHadith:'圣训', qaHadithSub:'六大圣训集', islamicCalBtn:'伊斯兰历', cornerMosque:'清真寺', cornerQibla:'朝向', dirNames:'北|东北|东|东南|南|西南|西|西北', qiblaMakkah:'麦加', unitKm:'公里', unitM:'米', unitMin:'分钟', qiblaHoldNorth:'🧭 将N(北)朝上 — 🕋 所指即朝向', qiblaHint:'手机放平慢慢转动 — 天房图标朝上即面向朝向', mosqueNearest3:'离您最近的3座清真寺', mosqueLocating:'📍 正在获取位置 — 寻找最近的3座清真寺…', routeBtn:'路线', homeBtn:'主页'});
+Object.assign(I18N.fr, {qaQuran:'Coran', qaQuranSub:'114 sourates • avec sens', qaHadith:'Hadith', qaHadithSub:'Sihah Sittah', islamicCalBtn:'Calendrier islamique', cornerMosque:'Mosquée', cornerQibla:'Qibla', dirNames:'Nord|Nord-Est|Est|Sud-Est|Sud|Sud-Ouest|Ouest|Nord-Ouest', qiblaMakkah:'La Mecque', unitKm:'km', unitM:'m', unitMin:'min', qiblaHoldNorth:'🧭 Tenez N (nord) vers le haut — la Qibla est vers 🕋', qiblaHint:'Tenez le téléphone à plat et tournez lentement — quand la Kaaba est en haut, vous faites face à la Qibla', mosqueNearest3:'Vos 3 mosquées les plus proches', mosqueLocating:'📍 Localisation en cours — recherche des 3 mosquées les plus proches…', routeBtn:'Itinéraire', homeBtn:'Accueil'});
 
 let currentLang = 'bn';
 
@@ -2553,6 +2553,11 @@ function applyLanguage(){
   if(audioLabel) audioLabel.textContent = surahAudioPlaying ? t('audioPause') : t('audioPlay');
   setTextIfExists('corner-mosque-lb', t('cornerMosque'));
   setTextIfExists('corner-qibla-lb', t('cornerQibla'));
+  setTextIfExists('qa-quran-title', t('qaQuran'));
+  setTextIfExists('qa-quran-sub', t('qaQuranSub'));
+  setTextIfExists('qa-hadith-title', t('qaHadith'));
+  setTextIfExists('qa-hadith-sub', t('qaHadithSub'));
+  setTextIfExists('cal-chip-lb', t('islamicCalBtn'));
   setTextIfExists('mosque-home-lb', t('homeBtn'));
   setTextIfExists('qibla-hint', t('qiblaHint'));
   // qibla screen regenerates its texts in the new language
@@ -8152,7 +8157,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v267';
+const APP_VERSION = 'v268';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
