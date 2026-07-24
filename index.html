@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v261-crisp-digits -->
+<!-- VERSION: v262-home-polish -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -83,12 +83,12 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
 .ac-cap{fill:url(#acgold);filter:drop-shadow(0 0 3px rgba(212,175,106,.75))}
 .ac-sheen{fill:rgba(255,255,255,.05)}
 .cp-left{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:9px;position:relative;z-index:1}
-.cp-date{text-align:center;display:flex;flex-direction:column;gap:3px;max-width:128px;align-items:center}
-.cp-date-w{font-size:10px;font-weight:700;color:var(--gold2);letter-spacing:1.5px;text-transform:uppercase;padding:3px 12px;border-radius:50px;background:rgba(212,175,106,.12);border:1px solid rgba(212,175,106,.3)}
-.cp-date-g{font-size:14px;font-weight:700;color:var(--text);letter-spacing:-.2px;margin-top:2px}
-.cp-date-h{font-size:11px;color:var(--emerald2);font-weight:600;line-height:1.4}
+.cp-date{text-align:center;display:flex;flex-direction:column;gap:4px;max-width:170px;align-items:center}
+.cp-date-w{font-size:12.5px;font-weight:800;color:var(--gold2);letter-spacing:2px;text-transform:uppercase;padding:4px 15px;border-radius:50px;border:1px solid transparent;background:linear-gradient(160deg,#1b1508,#120e06) padding-box,linear-gradient(120deg,rgba(212,175,106,.65),rgba(255,255,255,.08) 55%,rgba(212,175,106,.45)) border-box;box-shadow:0 3px 10px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.05)}
+.cp-date-g{font-size:17px;font-weight:800;color:var(--text);letter-spacing:-.2px;margin-top:3px;text-shadow:0 1px 3px rgba(0,0,0,.35)}
+.cp-date-h{font-size:12.5px;color:var(--emerald2);font-weight:700;line-height:1.4}
 .cp-date-h::before{content:'☾ ';color:var(--gold2)}
-.cp-date-e{font-size:10px;color:var(--gold2);font-weight:600}
+.cp-date-e{font-size:11px;color:var(--gold2);font-weight:600}
 .cp-date-e:empty{display:none}
 .cp-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:9px;align-items:center;text-align:center;position:relative;z-index:1}
 /* Kalima — the classic Thuluth Shahada calligraphy in its wide flag layout
@@ -99,9 +99,9 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
   0%,100%{filter:drop-shadow(0 0 8px rgba(45,212,191,.45)) drop-shadow(0 0 22px rgba(45,212,191,.22))}
   50%{filter:drop-shadow(0 0 14px rgba(45,212,191,.8)) drop-shadow(0 0 38px rgba(45,212,191,.42))}
 }
-.cp-digital{display:flex;align-items:baseline;gap:8px;padding:8px 20px;border-radius:50px;border:1px solid transparent;background:linear-gradient(135deg,rgba(13,26,21,.92),rgba(9,16,13,.92)) padding-box,linear-gradient(135deg,rgba(94,234,212,.55),rgba(212,175,106,.45)) border-box;box-shadow:0 4px 14px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.05)}
-#clock{font-size:22px;font-weight:700;color:#5eead4;font-family:ui-monospace,monospace;letter-spacing:.5px;line-height:1;text-shadow:0 0 16px rgba(16,185,129,.5)}
-#clock-ampm{font-size:10px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;font-weight:600}
+.cp-digital{display:flex;align-items:baseline;gap:7px;padding:8px 16px;border-radius:50px;border:1px solid transparent;background:linear-gradient(135deg,rgba(13,26,21,.92),rgba(9,16,13,.92)) padding-box,linear-gradient(135deg,rgba(94,234,212,.55),rgba(212,175,106,.45)) border-box;box-shadow:0 4px 14px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.05);max-width:100%}
+#clock{font-size:clamp(19px,5.6vw,22px);font-weight:700;color:#5eead4;font-family:ui-monospace,monospace;letter-spacing:.5px;line-height:1;text-shadow:0 0 16px rgba(16,185,129,.5);white-space:nowrap}
+#clock-ampm{font-size:10.5px;color:var(--text2);letter-spacing:.4px;font-weight:700;white-space:nowrap}
 /* narrow phones: the digital-clock pill and prayer time-chips must never poke
    past their cards — shrink type/padding instead of clipping the text */
 @media(max-width:380px){
@@ -121,7 +121,7 @@ html[dir="rtl"] .clock-panel{direction:rtl}
 .next-prayer::before{content:'';position:absolute;top:-40%;right:-15%;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(16,185,129,.18),transparent 70%);pointer-events:none}
 .next-prayer::after{content:'';position:absolute;bottom:-30%;left:-10%;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,106,.08),transparent 70%);pointer-events:none}
 /* Centered ornamental title on the prayer / fasting cards — bright teal */
-.card-title{position:absolute;top:9px;left:50%;transform:translateX(-50%);font-size:18px;font-weight:800;letter-spacing:5px;display:flex;align-items:center;gap:10px;z-index:2;white-space:nowrap;background:linear-gradient(180deg,#c8fff8 10%,#2dd4bf 62%,#0fb5a0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 10px rgba(45,212,191,.55)) drop-shadow(0 0 24px rgba(45,212,191,.3))}
+.card-title{position:absolute;top:8px;left:50%;transform:translateX(-50%);font-size:22px;font-weight:800;letter-spacing:6px;display:flex;align-items:center;gap:10px;z-index:2;white-space:nowrap;background:linear-gradient(180deg,#c8fff8 10%,#2dd4bf 62%,#0fb5a0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 10px rgba(45,212,191,.55)) drop-shadow(0 0 24px rgba(45,212,191,.3))}
 .card-title::before,.card-title::after{content:'✦';font-size:10px;-webkit-text-fill-color:#e3c98a;opacity:.9}
 .np-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;position:relative;z-index:1;align-items:stretch}
 .np-divider{width:1px;background:linear-gradient(180deg,transparent,rgba(255,255,255,.22),transparent)}
@@ -140,7 +140,7 @@ html[dir="rtl"] .clock-panel{direction:rtl}
 .np-col-next .np-time-chip{background:linear-gradient(160deg,#211a0d,#15100a) padding-box,linear-gradient(120deg,rgba(212,175,106,.7),rgba(255,255,255,.08) 55%,rgba(212,175,106,.5)) border-box;color:#f2ddab;align-self:flex-end;box-shadow:0 4px 14px rgba(0,0,0,.25),0 0 12px rgba(212,175,106,.14),inset 0 1px 0 rgba(255,255,255,.06)}
 .np-cd-cap{font-size:11px;letter-spacing:.6px;color:#9fc3b8;margin-top:9px;font-weight:600;white-space:nowrap}
 .np-col-next .np-cd-cap{color:#cfc09a}
-.np-countdown{font-size:24px;font-weight:800;font-family:ui-monospace,monospace;letter-spacing:1px;margin:1px 0 8px;line-height:1}
+.np-countdown{font-size:clamp(19px,5.8vw,24px);font-weight:800;font-family:ui-monospace,monospace;letter-spacing:.5px;margin:1px 0 8px;line-height:1;white-space:nowrap;max-width:100%}
 #countdown-cur{color:#7df5e0}
 #countdown{color:#f5dfa4}
 .progress-bar{margin-top:16px;height:6px;background:rgba(255,255,255,.07);border-radius:6px;position:relative;z-index:1;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}
@@ -420,20 +420,21 @@ input:focus,textarea:focus,select:focus{border-color:rgba(16,185,129,.45)!import
 .sheet .seg button{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:10px;padding:6px 12px;color:var(--text2);font-size:12px;cursor:pointer;font-family:'Hind Siliguri',sans-serif}
 .sheet .seg button.on{background:rgba(16,185,129,.14);border-color:rgba(16,185,129,.45);color:var(--emerald2);font-weight:700}
 /* home quick-access buttons — Quran + Hadith under the clock */
-.qa-btn{position:relative;overflow:hidden;display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:17px;border:1px solid transparent;background:linear-gradient(165deg,#141f19,#0c110e) padding-box,linear-gradient(135deg,rgba(212,175,106,.55),rgba(16,185,129,.4) 50%,rgba(212,175,106,.3)) border-box;cursor:pointer;font-family:'Hind Siliguri',sans-serif;text-align:left;color:#eef4f1;box-shadow:0 4px 14px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.05);transition:transform .15s,box-shadow .15s}
+.qa-btn{position:relative;overflow:hidden;display:flex;align-items:center;gap:12px;padding:14px 14px;border-radius:18px;border:1px solid transparent;background:linear-gradient(165deg,#141f19,#0c110e) padding-box,linear-gradient(135deg,rgba(212,175,106,.55),rgba(16,185,129,.4) 50%,rgba(212,175,106,.3)) border-box;cursor:pointer;font-family:'Hind Siliguri',sans-serif;text-align:left;color:#eef4f1;box-shadow:0 4px 14px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.05);transition:transform .15s,box-shadow .15s}
 .qa-btn::after{content:'';position:absolute;top:0;bottom:0;left:-70%;width:45%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.07) 45%,rgba(212,175,106,.12) 55%,transparent);transform:skewX(-18deg);transition:left .55s ease}
 .qa-btn:hover::after{left:125%}
 .qa-btn:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(16,185,129,.18),inset 0 1px 0 rgba(255,255,255,.07)}
 .qa-btn:active{transform:translateY(0)}
-.qa-ic{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;flex-shrink:0}
-.qa-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
-.qa-title{font-size:15px;font-weight:800;letter-spacing:.4px;line-height:1.25;text-shadow:0 1px 3px rgba(0,0,0,.4);white-space:nowrap}
-.qa-sub{font-size:9.5px;font-weight:700;color:var(--text3);letter-spacing:.2px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qa-ic{display:inline-flex;align-items:center;justify-content:center;width:47px;height:47px;border-radius:50%;flex-shrink:0}
+.qa-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.qa-title{font-size:17.5px;font-weight:800;letter-spacing:.4px;line-height:1.25;text-shadow:0 1px 3px rgba(0,0,0,.4);white-space:nowrap}
+.qa-sub{font-size:11px;font-weight:700;color:#b8cec6;letter-spacing:.2px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .qa-arrow{flex-shrink:0;color:var(--gold2);font-size:15px;font-weight:800;opacity:.75;transition:transform .15s,opacity .15s}
 .qa-btn:hover .qa-arrow{transform:translateX(3px);opacity:1}
 @media(max-width:430px){
-  .qa-btn{gap:8px;padding:10px}
-  .qa-ic{width:36px;height:36px}
+  .qa-btn{gap:9px;padding:12px 11px}
+  .qa-ic{width:42px;height:42px}
+  .qa-title{font-size:16px}
   .qa-arrow{display:none}
 }
 /* islamic calendar — premium cells + nav */
@@ -631,7 +632,7 @@ button:focus-visible,[tabindex]:focus-visible,.sw:focus-visible{outline:2.5px so
 .fc-cd-block{width:100%;text-align:right;padding:10px 14px;border-radius:14px;background:rgba(16,185,129,.09);border:1px solid rgba(16,185,129,.26);box-shadow:0 3px 10px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.04)}
 .fc-cd-block.iftar{background:rgba(212,175,106,.09);border-color:rgba(212,175,106,.28)}
 .fc-cd-cap{font-size:12px;letter-spacing:.4px;color:#c2d8cf;font-weight:700;margin-bottom:5px;white-space:nowrap}
-.fc-cd{font-size:23px;font-weight:800;font-family:ui-monospace,monospace;letter-spacing:1px;line-height:1;color:#7df5e0}
+.fc-cd{font-size:clamp(17px,5.4vw,23px);font-weight:800;font-family:ui-monospace,monospace;letter-spacing:.4px;line-height:1;color:#7df5e0;white-space:nowrap;max-width:100%}
 .fc-cd-iftar{color:#f5dfa4}
 /* countdown tile after its moment has passed — calm, checked-off look */
 .fc-cd-block.done{background:rgba(255,255,255,.03);border-color:var(--border2);box-shadow:none;opacity:.8}
@@ -904,7 +905,7 @@ try{
       <div class="cp-date-g" id="date-gregorian">--</div>
       <div class="cp-date-h" id="date-hijri">--</div>
       <div class="cp-date-e" id="date-hijri-event"></div>
-      <div style="margin-top:3px;font-size:9.5px;font-weight:700;color:var(--gold2);background:rgba(212,175,106,.1);border:1px solid rgba(212,175,106,.28);border-radius:50px;padding:3px 11px;white-space:nowrap">🗓️ ইসলামিক ক্যালেন্ডার</div>
+      <div style="margin-top:4px;font-size:11.5px;font-weight:800;color:var(--gold2);background:rgba(212,175,106,.12);border:1px solid rgba(212,175,106,.38);border-radius:50px;padding:5px 14px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.2)">🗓️ ইসলামিক ক্যালেন্ডার</div>
     </div>
     </div>
     <div class="cp-right">
@@ -8048,7 +8049,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v261';
+const APP_VERSION = 'v262';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
