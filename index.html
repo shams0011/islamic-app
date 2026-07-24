@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v274-high-latitude -->
+<!-- VERSION: v275-polar-proof -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -2768,7 +2768,13 @@ function getPrayerTimes(date){
     if(bad(fajr)) fajr = sunrise - night/7;
     if(bad(isha)) isha = maghrib + night/7;
   }
-  if(bad(asr)) asr = dhuhr + (maghrib - dhuhr)/2; // mid-afternoon approximation
+  // polar-night coherence: with an approximated solar day the real 18° crossings
+  // can land outside it — keep the canonical order whatever the fallbacks produced
+  if(!(fajr < sunrise)) fajr = sunrise - 1;
+  if(!(isha > maghrib)) isha = maghrib + 1;
+  // asr must sit strictly between dhuhr and maghrib — near the poles the shadow
+  // formula can land outside that window (or collapse onto dhuhr in polar night)
+  if(bad(asr) || asr <= dhuhr + 0.05 || asr >= maghrib - 0.05) asr = dhuhr + (maghrib - dhuhr)/2;
   return {fajr,sunrise,dhuhr,asr,maghrib,isha};
 }
 
@@ -4606,7 +4612,9 @@ function updateDateDisplay(now){
 function getPrayerSegments(pt){
   const F = 1/60; // one minute in decimal hours
   const nightEnd = pt.fajr + 24;                 // dawn of the next day
-  const tahajjudStart = nightEnd - (nightEnd - pt.maghrib)/3; // last third of the night
+  // last third of the night — but never before Isha ends its own start (short
+  // high-latitude nights push late Isha PAST the computed last-third point)
+  const tahajjudStart = Math.min(Math.max(nightEnd - (nightEnd - pt.maghrib)/3, pt.isha + 0.25), nightEnd - 0.25);
   // Ishraq → Chasht/Duha split: Ishraq runs until ONE HOUR after sunrise (its
   // first 15 minutes are the makruh window, so the prayable part is ~45 min);
   // from then until just before zawal it is Chasht/Duha — the common guidance
@@ -4625,7 +4633,7 @@ function getPrayerSegments(pt){
     {type:'fard',      key:'maghrib',                   start: pt.maghrib,         end: pt.isha},
     {type:'fard',      key:'isha',                      start: pt.isha,            end: tahajjudStart},
     {type:'nafl',      nameK:'segTahajjud', ar:'التهجد',  start: tahajjudStart,      end: nightEnd},
-  ];
+  ].filter(s => s.end > s.start + 1e-9); // polar days can squeeze a nafl window out of existence
 }
 
 // Which timeline segment is active at curHour (0–24). Segments run [fajr, fajr+24];
@@ -8350,7 +8358,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v274';
+const APP_VERSION = 'v275';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
