@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v275-polar-proof -->
+<!-- VERSION: v276-home-widgets-i18n -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -1076,7 +1076,7 @@ try{
   </div>
   <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,106,.35),transparent);margin:0 4px 8px" aria-hidden="true"></div>
   <div id="home-hajj-map" style="pointer-events:none" aria-hidden="true"></div>
-  <div style="text-align:center;padding:7px 0 4px;font-size:10.5px;color:#eed9a6;font-weight:600">👆 বিস্তারিত গাইড, চেকলিস্ট ও দোয়া দেখতে ট্যাপ করুন</div>
+  <div style="text-align:center;padding:7px 0 4px;font-size:10.5px;color:#eed9a6;font-weight:600"><span id="hajj-banner-hint">👆 বিস্তারিত গাইড, চেকলিস্ট ও দোয়া দেখতে ট্যাপ করুন</span></div>
 </div>
 
 <!-- Zakat calculator on the home screen — banner and calculator merged into ONE
@@ -1100,7 +1100,7 @@ try{
       <div style="background:#040806;border:1px solid rgba(16,185,129,.18);border-radius:14px;padding:9px 14px 8px;box-shadow:inset 0 2px 12px rgba(0,0,0,.6),inset 0 0 30px rgba(16,185,129,.04);margin-bottom:4px">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <span id="zakat-result-label" style="font-size:12px;font-weight:800;letter-spacing:1.2px;color:#b9cfc6;text-transform:uppercase">মোট প্রদেয় যাকাত</span>
-          <span style="font-size:10.5px;color:rgba(45,212,191,.8);font-weight:800;background:rgba(45,212,191,.08);border:1px solid rgba(45,212,191,.22);border-radius:50px;padding:1px 9px">হার ২.৫%</span>
+          <span style="font-size:10.5px;color:rgba(45,212,191,.8);font-weight:800;background:rgba(45,212,191,.08);border:1px solid rgba(45,212,191,.22);border-radius:50px;padding:1px 9px"><span id="zakat-rate-lb">হার ২.৫%</span></span>
         </div>
         <div id="zakat-result-amount" style="text-align:right;font-size:33px;font-weight:800;white-space:nowrap;overflow:hidden;background:linear-gradient(180deg,#c8fff8 10%,#2dd4bf 62%,#0fb5a0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--emerald2);font-family:ui-monospace,monospace;filter:drop-shadow(0 0 12px rgba(45,212,191,.35));line-height:1.2">০</div>
         <div id="zakat-nisab-status" style="text-align:right;font-size:10.5px;margin-top:2px"></div>
@@ -1109,12 +1109,12 @@ try{
       <div style="padding:2px 0 8px;border-bottom:1px solid rgba(212,175,106,.18);margin-bottom:7px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px">
           <div style="min-width:0;background:rgba(212,175,106,.07);border:1px solid rgba(212,175,106,.25);border-radius:12px;padding:7px 10px;box-shadow:0 0 14px rgba(212,175,106,.05)">
-            <div style="font-size:11px;font-weight:700;color:#dcd2b4;margin-bottom:2px">⚖️ নিসাব (রৌপ্যভিত্তিক)</div>
+            <div style="font-size:11px;font-weight:700;color:#dcd2b4;margin-bottom:2px">⚖️ <span id="zakat-nisab-t1">নিসাব (রৌপ্যভিত্তিক)</span></div>
             <div id="zakat-nisab-mark" style="font-size:16px;font-weight:800;color:#f0d795;font-family:ui-monospace,monospace;text-shadow:0 0 12px rgba(212,175,106,.3);overflow-wrap:anywhere">৳ --</div>
-            <div style="font-size:10px;color:#b8a878;font-weight:600;margin-top:1px">এর বেশি হলে যাকাত ফরজ</div>
+            <div style="font-size:10px;color:#b8a878;font-weight:600;margin-top:1px"><span id="zakat-nisab-t2">এর বেশি হলে যাকাত ফরজ</span></div>
           </div>
           <div style="min-width:0;background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.25);border-radius:12px;padding:7px 10px;box-shadow:0 0 14px rgba(16,185,129,.05)">
-            <div style="font-size:11px;font-weight:700;color:#c4ddd2;margin-bottom:2px">💼 মোট সম্পদ</div>
+            <div style="font-size:11px;font-weight:700;color:#c4ddd2;margin-bottom:2px">💼 <span id="zakat-wealth-lb">মোট সম্পদ</span></div>
             <div id="zakat-total-amount" style="font-size:16px;font-weight:800;color:#6ff2dd;font-family:ui-monospace,monospace;text-shadow:0 0 12px rgba(16,185,129,.3);overflow-wrap:anywhere">৳ ০</div>
           </div>
         </div>
@@ -1163,7 +1163,7 @@ try{
       <span id="daily-widget-label" class="dw-label">আজকের আয়াত</span>
     </div>
     <div style="display:flex;gap:6px;align-items:center">
-      <button type="button" onclick="shareDailyWidget()" class="dw-toggle" aria-label="ছবি হিসেবে শেয়ার করুন">📤 শেয়ার</button>
+      <button type="button" onclick="shareDailyWidget()" class="dw-toggle" aria-label="ছবি হিসেবে শেয়ার করুন">📤 <span id="dw-share-lb">শেয়ার</span></button>
       <button type="button" onclick="toggleDailyWidgetType()" id="daily-widget-toggle-btn" class="dw-toggle" aria-label="হাদিস/আয়াত পরিবর্তন করুন">🔄 হাদিস দেখুন</button>
     </div>
   </div>
@@ -1498,9 +1498,9 @@ try{
       <div id="tasbih-of-target" style="font-size:12px;color:var(--text3);font-weight:600;margin-top:-4px">/ ৩৩</div>
     </button>
     <div style="display:flex;gap:12px">
-      <button onclick="tasbihReset()" style="display:flex;align-items:center;gap:8px;padding:11px 28px;border-radius:50px;border:1px solid rgba(16,185,129,.35);background:linear-gradient(160deg,rgba(16,185,129,.14),rgba(16,185,129,.05));color:var(--emerald2);font-size:14px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.2),0 0 14px rgba(16,185,129,.08);transition:transform .15s"><span aria-hidden="true">🔄</span>রিসেট</button>
+      <button onclick="tasbihReset()" style="display:flex;align-items:center;gap:8px;padding:11px 28px;border-radius:50px;border:1px solid rgba(16,185,129,.35);background:linear-gradient(160deg,rgba(16,185,129,.14),rgba(16,185,129,.05));color:var(--emerald2);font-size:14px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.2),0 0 14px rgba(16,185,129,.08);transition:transform .15s"><span aria-hidden="true">🔄</span><span id="tasbih-reset-lb">রিসেট</span></button>
     </div>
-    <div style="margin-top:18px;display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:#dcd2b4;background:rgba(212,175,106,.08);border:1px solid rgba(212,175,106,.25);border-radius:50px;padding:7px 18px;box-shadow:0 0 14px rgba(212,175,106,.06)"><span aria-hidden="true">📿</span>মোট আজকের জিকির: <span id="tasbih-daily-total" style="color:var(--gold2);font-weight:800">০</span></div>
+    <div style="margin-top:18px;display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:#dcd2b4;background:rgba(212,175,106,.08);border:1px solid rgba(212,175,106,.25);border-radius:50px;padding:7px 18px;box-shadow:0 0 14px rgba(212,175,106,.06)"><span aria-hidden="true">📿</span><span id="tasbih-today-lb">মোট আজকের জিকির:</span> <span id="tasbih-daily-total" style="color:var(--gold2);font-weight:800">০</span></div>
   </div>
 </div>
 
@@ -2324,6 +2324,14 @@ Object.assign(I18N.ur, {tasbihTitle:'ڈیجیٹل تسبیح', tasbihWhen:'کب 
 Object.assign(I18N.zh, {tasbihTitle:'电子念珠', tasbihWhen:'何时诵读', tasbihPick:'选择齐克尔', tasbihListen:'听', tasbihPron:'发音', unitTimes:'次', twAll:'🕰️ 全部', twPrayer:'🕌 礼拜后', twMorning:'🌅 晨间赞念', twEvening:'🌆 晚间赞念', twAny:'♾️ 任何时间', twQuran:'📖 古兰经祈祷', mosqueTitle:'附近的清真寺', mosqueLegend:'🟢 绿点 = 您(实时GPS) · 🕌 = 清真寺 · 点🧭路线可绘制路径', mosqueNearestTag:'最近的清真寺', directDist:'直线距离', youAreHere:'您在这里'});
 Object.assign(I18N.fr, {tasbihTitle:'Tasbih numérique', tasbihWhen:'Quand réciter', tasbihPick:'Choisir le dhikr', tasbihListen:'Écouter', tasbihPron:'Prononciation', unitTimes:'fois', twAll:'🕰️ Tous les dhikr', twPrayer:'🕌 Après la prière', twMorning:'🌅 Dhikr du matin', twEvening:'🌆 Dhikr du soir', twAny:'♾️ À tout moment', twQuran:'📖 Douas coraniques', mosqueTitle:'Mosquées à proximité', mosqueLegend:'🟢 Point vert = vous (GPS en direct) · 🕌 = mosquée · touchez 🧭 pour tracer le chemin', mosqueNearestTag:'Mosquée la plus proche', directDist:'Distance directe', youAreHere:'Vous êtes ici'});
 
+// home-widget strings: hajj banner, zakat frame, goal card, daily-verse share
+Object.assign(I18N.bn, {hajjBannerSub:'ধাপে ধাপে চেকলিস্ট, দোয়া ও নির্দেশনা', hajjBannerHint:'👆 বিস্তারিত গাইড, চেকলিস্ট ও দোয়া দেখতে ট্যাপ করুন', zakatRate:'হার ২.৫%', zakatNisabSilver:'নিসাব (রৌপ্যভিত্তিক)', zakatNisabAbove:'এর বেশি হলে যাকাত ফরজ', zakatTotalWealth:'মোট সম্পদ', goalTitle:'🎯 আজকের পাঠ-লক্ষ্য', goalDone:'🎉 আজকের লক্ষ্য পূর্ণ, মাশাআল্লাহ!', goalRead:'তিলাওয়াত', goalStreak:'স্ট্রিক', unitDays:'দিন', goalGoRead:'পড়তে বসুন', share:'শেয়ার'});
+Object.assign(I18N.en, {hajjBannerSub:'Step-by-step checklist, duas & guidance', hajjBannerHint:'👆 Tap for the full guide, checklist & duas', zakatRate:'Rate 2.5%', zakatNisabSilver:'Nisab (silver-based)', zakatNisabAbove:'Zakat is due above this', zakatTotalWealth:'Total wealth', goalTitle:'🎯 Today\'s reading goal', goalDone:'🎉 Today\'s goal complete, MashaAllah!', goalRead:'Recitation', goalStreak:'streak', unitDays:'days', goalGoRead:'Start reading', share:'Share'});
+Object.assign(I18N.ar, {hajjBannerSub:'قائمة خطوة بخطوة، أدعية وإرشادات', hajjBannerHint:'👆 اضغط للدليل الكامل والأدعية', zakatRate:'النسبة ٢٫٥٪', zakatNisabSilver:'النصاب (بالفضة)', zakatNisabAbove:'تجب الزكاة فوق هذا', zakatTotalWealth:'إجمالي الثروة', goalTitle:'🎯 هدف القراءة اليوم', goalDone:'🎉 اكتمل هدف اليوم، ما شاء الله!', goalRead:'التلاوة', goalStreak:'التتابع', unitDays:'يوم', goalGoRead:'ابدأ القراءة', share:'مشاركة'});
+Object.assign(I18N.ur, {hajjBannerSub:'مرحلہ وار چیک لسٹ، دعائیں اور ہدایات', hajjBannerHint:'👆 مکمل گائیڈ کے لیے دبائیں', zakatRate:'شرح ۲.۵٪', zakatNisabSilver:'نصاب (چاندی کی بنیاد پر)', zakatNisabAbove:'اس سے زیادہ پر زکوٰۃ فرض', zakatTotalWealth:'کل مال', goalTitle:'🎯 آج کا مطالعہ ہدف', goalDone:'🎉 آج کا ہدف مکمل، ماشاءاللہ!', goalRead:'تلاوت', goalStreak:'اسٹریک', unitDays:'دن', goalGoRead:'پڑھنا شروع کریں', share:'شیئر'});
+Object.assign(I18N.zh, {hajjBannerSub:'分步清单、祈祷与指南', hajjBannerHint:'👆 点按查看完整指南与祈祷', zakatRate:'比率2.5%', zakatNisabSilver:'起征额(按白银)', zakatNisabAbove:'超过此数须缴天课', zakatTotalWealth:'总财产', goalTitle:'🎯 今日诵读目标', goalDone:'🎉 今日目标完成！', goalRead:'诵读', goalStreak:'连续', unitDays:'天', goalGoRead:'开始诵读', share:'分享'});
+Object.assign(I18N.fr, {hajjBannerSub:'Checklist pas à pas, douas et conseils', hajjBannerHint:'👆 Touchez pour le guide complet', zakatRate:'Taux 2,5%', zakatNisabSilver:'Nisab (base argent)', zakatNisabAbove:'Zakat due au-delà de ce seuil', zakatTotalWealth:'Richesse totale', goalTitle:'🎯 Objectif de lecture du jour', goalDone:'🎉 Objectif du jour atteint, MashaAllah !', goalRead:'Récitation', goalStreak:'série', unitDays:'jours', goalGoRead:'Commencer la lecture', share:'Partager'});
+
 let currentLang = 'bn';
 
 function getCurrentLang(){
@@ -2567,6 +2575,18 @@ function applyLanguage(){
   if(audioLabel) audioLabel.textContent = surahAudioPlaying ? t('audioPause') : t('audioPlay');
   setTextIfExists('corner-mosque-lb', t('cornerMosque'));
   setTextIfExists('corner-qibla-lb', t('cornerQibla'));
+  setTextIfExists('hajj-banner-title', t('hajjToolTitle'));
+  setTextIfExists('hajj-banner-sub', t('hajjBannerSub'));
+  setTextIfExists('hajj-banner-hint', t('hajjBannerHint'));
+  setTextIfExists('zakat-rate-lb', t('zakatRate'));
+  setTextIfExists('zakat-nisab-t1', t('zakatNisabSilver'));
+  setTextIfExists('zakat-nisab-t2', t('zakatNisabAbove'));
+  setTextIfExists('zakat-wealth-lb', t('zakatTotalWealth'));
+  setTextIfExists('home-zakat-title', t('zakatCalculator'));
+  setTextIfExists('tasbih-reset-lb', t('reset'));
+  setTextIfExists('tasbih-today-lb', t('totalToday') + ':');
+  setTextIfExists('dw-share-lb', t('share'));
+  if(typeof renderGoalCard === 'function'){ try{ renderGoalCard(); }catch(e){} }
   setTextIfExists('tasbih-sec-lb', t('tasbihTitle'));
   setTextIfExists('tasbih-when-lb', t('tasbihWhen'));
   setTextIfExists('tasbih-pick-lb', t('tasbihPick'));
@@ -8358,7 +8378,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v275';
+const APP_VERSION = 'v276';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -8462,12 +8482,12 @@ function renderGoalCard(){
       <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:${done ? 'var(--gold2)' : 'var(--emerald2)'}">${done ? '✓' : localizeNum(pct) + '%'}</div>
     </div>
     <div style="min-width:0;flex:1;position:relative">
-      <div style="font-size:13.5px;font-weight:800;color:${done ? 'var(--gold2)' : 'var(--emerald2)'}">${done ? '🎉 আজকের লক্ষ্য পূর্ণ, মাশাআল্লাহ!' : '🎯 আজকের পাঠ-লক্ষ্য'}</div>
-      <div style="font-size:11.5px;color:var(--text3);margin-top:3px">তিলাওয়াত ${localizeNum(Math.round(sec / 60))}/${localizeNum(goalMin)} মিনিট${streak ? ` • 🔥 স্ট্রিক ${localizeNum(streak)} দিন` : ''}</div>
+      <div style="font-size:13.5px;font-weight:800;color:${done ? 'var(--gold2)' : 'var(--emerald2)'}">${done ? t('goalDone') : t('goalTitle')}</div>
+      <div style="font-size:11.5px;color:var(--text3);margin-top:3px">${t('goalRead')} ${localizeNum(Math.round(sec / 60))}/${localizeNum(goalMin)} ${t('unitMin')}${streak ? ` • 🔥 ${t('goalStreak')} ${localizeNum(streak)} ${t('unitDays')}` : ''}</div>
       <div style="display:flex;gap:6px;margin-top:7px;align-items:center">
         <button onclick="goalStep(-5)" aria-label="লক্ষ্য কমান" style="min-width:34px;min-height:30px;border-radius:9px;border:1px solid var(--border2);background:rgba(255,255,255,.04);color:var(--text2);font-size:13px;cursor:pointer">−</button>
         <button onclick="goalStep(5)" aria-label="লক্ষ্য বাড়ান" style="min-width:34px;min-height:30px;border-radius:9px;border:1px solid var(--border2);background:rgba(255,255,255,.04);color:var(--text2);font-size:13px;cursor:pointer">+</button>
-        <button onclick="showTab('quran', document.getElementById('tabbtn-quran'))" style="flex:1;min-height:30px;border-radius:9px;border:1px solid rgba(16,185,129,.35);background:rgba(16,185,129,.12);color:var(--emerald2);font-size:11.5px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif">📖 পড়তে বসুন</button>
+        <button onclick="showTab('quran', document.getElementById('tabbtn-quran'))" style="flex:1;min-height:30px;border-radius:9px;border:1px solid rgba(16,185,129,.35);background:rgba(16,185,129,.12);color:var(--emerald2);font-size:11.5px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif">📖 ${t('goalGoRead')}</button>
       </div>
     </div>
   </div>`;
