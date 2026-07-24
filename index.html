@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v264-clock-corners -->
+<!-- VERSION: v265-mosque-clarity -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -112,6 +112,9 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
   #clock{font-size:20px;letter-spacing:.3px}
   .np-time-chip{font-size:11.5px;padding:6px 9px;letter-spacing:0;max-width:100%}
 }
+/* mosque map popup — bigger, clearer text on the dark tiles */
+#mosque-map .leaflet-popup-content{font-size:14.5px;line-height:1.65;font-family:'Hind Siliguri',sans-serif;margin:12px 16px}
+#mosque-map .leaflet-popup-content b{font-size:15px}
 /* clock-card corner shortcuts — mosque (left) + qibla (right) */
 .cp-corner{position:absolute;top:13px;z-index:3;width:50px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 4px 6px;border-radius:14px;border:1px solid transparent;background:linear-gradient(160deg,#121c16,#0b110d) padding-box,linear-gradient(135deg,rgba(212,175,106,.55),rgba(16,185,129,.4) 55%,rgba(212,175,106,.35)) border-box;cursor:pointer;font-family:'Hind Siliguri',sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.06);transition:transform .15s,box-shadow .15s}
 .cp-corner:hover{box-shadow:0 5px 15px rgba(0,0,0,.4),0 0 12px rgba(16,185,129,.18),inset 0 1px 0 rgba(255,255,255,.08)}
@@ -1578,7 +1581,10 @@ try{
 
   <!-- Mosque Finder -->
   <div id="tool-mosque-view" style="display:none">
-    <button type="button" class="back-btn" onclick="closeToolView()">← টুলসে ফিরুন</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+      <button type="button" class="back-btn" onclick="closeToolView()">← টুলসে ফিরুন</button>
+      <button type="button" class="back-btn" onclick="goHomeFromTool()" aria-label="হোম স্ক্রিনে যান">🏠 হোম</button>
+    </div>
     <div class="sec-title"><div class="sec-gem"></div><span id="mosque-sec-title">নিকটস্থ মসজিদ</span><div class="sec-gem"></div></div>
     <div id="mosque-permission" style="text-align:center;padding:28px 20px;background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:20px;box-shadow:0 6px 20px rgba(0,0,0,.18)">
       <div style="width:64px;height:64px;border-radius:50%;background:radial-gradient(circle,rgba(16,185,129,.16),transparent 70%);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 16px">🕌</div>
@@ -1587,8 +1593,8 @@ try{
     </div>
     <div id="mosque-map-wrap" style="display:none;margin:14px 0;border:1px solid transparent;background:linear-gradient(165deg,#101a16,#0c1210) padding-box,linear-gradient(140deg,rgba(16,185,129,.35),rgba(255,255,255,.06) 55%,rgba(212,175,106,.35)) border-box;border-radius:18px;padding:5px;box-shadow:0 8px 24px rgba(0,0,0,.3)">
       <div id="mosque-map" style="height:320px;border-radius:14px;overflow:hidden"></div>
-      <div style="text-align:center;padding:7px 4px 4px;font-size:10.5px;color:var(--text3)">
-        <span id="mosque-route-info" style="display:none;font-size:11.5px;font-weight:700;color:var(--emerald2);background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);border-radius:50px;padding:3px 12px;margin-bottom:5px"></span><br>
+      <div style="text-align:center;padding:9px 6px 6px;font-size:12.5px;color:var(--text2);line-height:1.7">
+        <span id="mosque-route-info" style="display:none;font-size:14px;font-weight:800;color:#7ff0dc;background:rgba(16,185,129,.13);border:1px solid rgba(16,185,129,.35);border-radius:50px;padding:6px 16px;margin-bottom:7px;box-shadow:0 2px 10px rgba(16,185,129,.15)"></span><br>
         🟢 সবুজ বিন্দু = আপনি (লাইভ GPS) · 🕌 = মসজিদ · 🧭 পথ বোতামে রাস্তা আঁকা হবে
       </div>
     </div>
@@ -6537,8 +6543,14 @@ async function drawRouteToMosque(i){
 
   [mosqueRouteLine, mosqueRouteGlow].forEach(l => { if(l) mosqueMap.removeLayer(l); });
   mosqueRouteLine = mosqueRouteGlow = null;
-  const straight = !coords;
-  if(straight) coords = [[from.lat, from.lng], [to.lat, to.lng]]; // offline fallback: direct line
+  let straight = !coords;
+  // sanity guard: the free router sometimes returns an absurd car detour
+  // (3 km route to a 300 m mosque) — a straight guide-line is more honest
+  const straightKm = haversineDistanceKm(from.lat, from.lng, to.lat, to.lng);
+  if(coords && meta && meta.distance / 1000 > straightKm * 3 + 0.3){
+    straight = true; meta = null;
+  }
+  if(straight) coords = [[from.lat, from.lng], [to.lat, to.lng]]; // direct guide line
 
   mosqueRouteGlow = L.polyline(coords, {color: '#34d399', weight: 10, opacity: .18, lineCap: 'round'}).addTo(mosqueMap);
   mosqueRouteLine = L.polyline(coords, {color: '#34d399', weight: 4.5, opacity: .95, lineCap: 'round', dashArray: straight ? '8 9' : null}).addTo(mosqueMap);
@@ -6620,6 +6632,11 @@ function renderMosqueResults(elements, myLat, myLon){
 }
 
 /* ══ TOOLS — Navigation ══ */
+// tool views → straight back to the home screen
+function goHomeFromTool(){
+  showTab('prayer', document.getElementById('tabbtn-prayer'));
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
 // clock-card corner shortcut: straight into the mosque finder (auto-locates)
 function openMosqueFromHome(){
   showTab('tools', document.getElementById('tabbtn-tools'));
@@ -8103,7 +8120,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v264';
+const APP_VERSION = 'v265';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
