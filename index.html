@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v265-mosque-clarity -->
+<!-- VERSION: v266-instant-qibla -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -1440,8 +1440,9 @@ try{
       </div>
       <div style="text-align:center" role="status">
         <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:4px">কিবলার দিক (উত্তর থেকে)</div>
-        <div id="qibla-degree" style="font-size:38px;font-weight:800;background:linear-gradient(180deg,#c8fff8 10%,#2dd4bf 62%,#0fb5a0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--emerald2);font-family:monospace;filter:drop-shadow(0 0 12px rgba(45,212,191,.4))">--°</div>
-        <div style="font-size:12px;color:var(--text3);margin-top:12px;max-width:260px;line-height:1.6">ফোন সমতল রেখে ধীরে ধীরে ঘুরান — কাবা আইকন উপরে আসলে আপনি কিবলামুখী</div>
+        <div id="qibla-degree" style="font-size:40px;font-weight:800;background:linear-gradient(180deg,#c8fff8 10%,#2dd4bf 62%,#0fb5a0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--emerald2);font-family:monospace;filter:drop-shadow(0 0 12px rgba(45,212,191,.4))">--°</div>
+        <div id="qibla-meta" style="font-size:14px;font-weight:700;color:var(--text2);margin-top:8px"></div>
+        <div id="qibla-hint" style="font-size:12.5px;color:var(--text3);margin-top:12px;max-width:280px;line-height:1.7">ফোন সমতল রেখে ধীরে ধীরে ঘুরান — কাবা আইকন উপরে আসলে আপনি কিবলামুখী</div>
       </div>
     </div>
   </div>
@@ -4687,6 +4688,8 @@ function showTab(id,btn){
   }
   // likewise the tasbih body: home area owns it unless the tasbih tab is active
   if(typeof placeTasbihBody === 'function') placeTasbihBody(id === 'tasbih' ? 'tab' : 'home');
+  // qibla: the direction shows itself the moment the tab opens — no start button
+  if(id === 'qibla' && typeof initCompass === 'function'){ try{ initCompass(); }catch(e){} } // sync: keeps the iOS sensor-permission gesture chain
   if(typeof renderGoalCard === 'function') renderGoalCard(); // fresh minutes/streak when home reappears
   // the quran tab opens the READER (Surah Al-Fatiha by default); the premium
   // card list lives behind the surah dropdown button at the top
@@ -5684,9 +5687,26 @@ function getScreenAngle(){
 
 function initCompass(){
   showStaticQiblaInfo();
-  if(_compassActive) return;
   const qDeg = qiblaBearing(LAT, LON);
-  document.getElementById('qibla-degree').textContent = Math.round(qDeg)+'°';
+  // the answer shows IMMEDIATELY, sensor or not: dial fixed north-up with the
+  // Kaaba needle at the true bearing — correct anywhere on earth (Saudi included,
+  // where the bearing simply points toward Makkah). Live rotation upgrades it
+  // the moment orientation events arrive.
+  const dirNames = ['উত্তর','উত্তর-পূর্ব','পূর্ব','দক্ষিণ-পূর্ব','দক্ষিণ','দক্ষিণ-পশ্চিম','পশ্চিম','উত্তর-পশ্চিম'];
+  const dirName = dirNames[Math.round(qDeg/45) % 8];
+  const distKm = Math.round(haversineDistanceKm(LAT, LON, 21.4225, 39.8262));
+  document.getElementById('qibla-degree').textContent = localizeNum(Math.round(qDeg)) + '°';
+  const metaEl = document.getElementById('qibla-meta');
+  if(metaEl) metaEl.innerHTML = `<span style="color:var(--gold2)">${dirName}</span> দিকে&nbsp;•&nbsp;🕋 মক্কা ${localizeNum(distKm.toLocaleString('en-US'))} কিমি`;
+  const dialEl = document.getElementById('compass-dial');
+  const needleEl = document.getElementById('qibla-needle');
+  if(dialEl) dialEl.style.transform = 'rotate(0deg)';
+  if(needleEl) needleEl.style.transform = `rotate(${qDeg}deg)`;
+  document.getElementById('qibla-permission').style.display = 'none';
+  document.getElementById('qibla-display').style.display = 'flex';
+  const badge0 = document.getElementById('qibla-align-badge');
+  if(badge0) badge0.textContent = '🧭 N (উত্তর) উপরের দিকে ধরুন — 🕋 যেদিকে, কিবলা সেদিকে';
+  if(_compassActive) return;
   _screenAngle = getScreenAngle();
 
   window.addEventListener('orientationchange', () => { _screenAngle = getScreenAngle(); });
@@ -5730,8 +5750,6 @@ function initCompass(){
 
   function startListening(){
     _compassActive = true;
-    document.getElementById('qibla-permission').style.display = 'none';
-    document.getElementById('qibla-display').style.display = 'flex';
     // Prefer absolute orientation when available; fall back to relative only if absolute never fires
     let usingAbsolute = false;
     window.addEventListener('deviceorientationabsolute', e => { usingAbsolute = true; handleOrientation(e); }, true);
@@ -5741,7 +5759,7 @@ function initCompass(){
   if(typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'){
     DeviceOrientationEvent.requestPermission().then(state => {
       if(state === 'granted') startListening();
-      else alert('কম্পাস ব্যবহারের অনুমতি দরকার। ব্রাউজার সেটিংসে গিয়ে অনুমতি দিন।');
+      // denied → the static north-up answer above keeps working; no nagging alert
     }).catch(()=> startListening());
   } else {
     startListening();
@@ -8120,7 +8138,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v265';
+const APP_VERSION = 'v266';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
