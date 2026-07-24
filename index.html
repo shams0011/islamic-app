@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v258-device-language -->
+<!-- VERSION: v259-ishraq-hour -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -4528,13 +4528,12 @@ function getPrayerSegments(pt){
   const F = 1/60; // one minute in decimal hours
   const nightEnd = pt.fajr + 24;                 // dawn of the next day
   const tahajjudStart = nightEnd - (nightEnd - pt.maghrib)/3; // last third of the night
-  // Ishraq → Chasht/Duha split. A fixed 9:00 clock time is wrong: forenoon
-  // length shifts with the season (short winter vs long summer days) and with
-  // the location's timezone/longitude. So split at the MIDPOINT of the solar
-  // forenoon — halfway between sunrise and true noon (Dhuhr) — which tracks both
-  // automatically. Clamp within the nafl window so neither half inverts.
-  const forenoonMid = (pt.sunrise + pt.dhuhr) / 2;
-  const duhaStart = Math.max(pt.sunrise + 15*F, Math.min(forenoonMid, pt.dhuhr - 5*F));
+  // Ishraq → Chasht/Duha split: Ishraq runs until ONE HOUR after sunrise (its
+  // first 15 minutes are the makruh window, so the prayable part is ~45 min);
+  // from then until just before zawal it is Chasht/Duha — the common guidance
+  // taught in Bengali fiqh texts. Clamped so the halves never invert at
+  // extreme latitudes.
+  const duhaStart = Math.max(pt.sunrise + 15*F, Math.min(pt.sunrise + 60*F, pt.dhuhr - 5*F));
   return [
     {type:'fard',      key:'fajr',                      start: pt.fajr,            end: pt.sunrise},
     {type:'forbidden', nameK:'segSunrise',  ar:'الشروق',  start: pt.sunrise,         end: pt.sunrise + 15*F},
@@ -8049,7 +8048,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v258';
+const APP_VERSION = 'v259';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
