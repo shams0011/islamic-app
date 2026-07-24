@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v255-mushaf-karaoke -->
+<!-- VERSION: v256-siyam-chip-fit -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -626,7 +626,7 @@ button:focus-visible,[tabindex]:focus-visible,.sw:focus-visible{outline:2.5px so
 .fc-badge.forbidden{background:rgba(224,112,112,.14);color:#e88a8a;border-color:rgba(224,112,112,.3)}
 .fc-badge:empty{display:none}
 .fc-sub{font-size:13.5px;color:#c9d6d0;min-height:14px;font-weight:600}
-.fc-window-chip{margin-top:auto;display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:11px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.16);font-size:14px;font-weight:700;color:#dce8e3;font-family:ui-monospace,monospace;align-self:flex-start;letter-spacing:.3px;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.2)}
+.fc-window-chip{margin-top:auto;display:inline-flex;align-items:center;gap:5px;padding:7px clamp(7px,2.2vw,13px);border-radius:11px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.16);font-size:clamp(10.5px,3.3vw,14px);font-weight:700;color:#dce8e3;font-family:ui-monospace,monospace;align-self:flex-start;letter-spacing:.2px;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.2);max-width:100%;overflow:hidden}
 .fc-right{gap:9px;justify-content:center}
 .fc-cd-block{width:100%;text-align:right;padding:10px 14px;border-radius:14px;background:rgba(16,185,129,.09);border:1px solid rgba(16,185,129,.26);box-shadow:0 3px 10px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.04)}
 .fc-cd-block.iftar{background:rgba(212,175,106,.09);border-color:rgba(212,175,106,.28)}
@@ -8024,7 +8024,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v255';
+const APP_VERSION = 'v256';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
