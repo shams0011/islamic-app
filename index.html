@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v254-mushaf-recitation -->
+<!-- VERSION: v255-mushaf-karaoke -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -7520,7 +7520,7 @@ async function openMushafPage(p){
         const v = d.verses[r.a - 1];
         const tj = taj && taj.verses && taj.verses[String(r.a)];
         const body = tj || escapeHtml(stripBasmala(v.ar, g.s, r.a));
-        html += `<span class="mv-ayah" role="button" tabindex="0" data-s="${g.s}" data-a="${r.a}" onclick="mvPlay(${g.s},${r.a})" onkeydown="if(event.key==='Enter'){mvPlay(${g.s},${r.a})}" aria-label="${surahDisplayName(su)} আয়াত ${localizeNum(r.a)} — শুনতে ট্যাপ করুন">${body}<span class="ayah-medallion" role="button" tabindex="0" title="রিডারে খুলুন" aria-label="আয়াত ${localizeNum(r.a)} রিডারে খুলুন" onclick="event.stopPropagation();mvJump(${g.s},${r.a})" style="min-width:26px;height:26px;font-size:11px;margin:0 5px;cursor:pointer">${localizeNum(r.a)}</span></span> `;
+        html += `<span class="mv-ayah" role="button" tabindex="0" data-s="${g.s}" data-a="${r.a}" onclick="mvPlay(${g.s},${r.a},event)" onkeydown="if(event.key==='Enter'){mvPlay(${g.s},${r.a},event)}" aria-label="${surahDisplayName(su)} আয়াত ${localizeNum(r.a)} — শুনতে ট্যাপ করুন">${wrapWords(body)}<span class="ayah-medallion" role="button" tabindex="0" title="রিডারে খুলুন" aria-label="আয়াত ${localizeNum(r.a)} রিডারে খুলুন" onclick="event.stopPropagation();mvJump(${g.s},${r.a})" style="min-width:26px;height:26px;font-size:11px;margin:0 5px;cursor:pointer">${localizeNum(r.a)}</span></span> `;
       }
       html += `</div>`;
     }
@@ -7537,10 +7537,12 @@ async function openMushafPage(p){
 }
 function mushafFlip(d){ openMushafPage(MV.page + d); }
 // tap an ayah on the mushaf page → recite from it (same replay semantics as the reader)
-function mvPlay(s, a){
+function mvPlay(s, a, ev){
   const sel = window.getSelection && window.getSelection();
   if(sel && sel.type === 'Range' && String(sel).trim()) return; // user is copying text
-  AE.playSurah(s, a);
+  const qw = ev && ev.target && ev.target.closest ? ev.target.closest('.qw') : null;
+  if(qw && qw.dataset.wi != null) AE.playFromWord(s, a, parseInt(qw.dataset.wi)); // word tap → recite from that word
+  else AE.playSurah(s, a);
 }
 function mvJump(s, a){
   closeMushaf();
@@ -8022,7 +8024,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v254';
+const APP_VERSION = 'v255';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -8905,7 +8907,7 @@ const AE = {
       const sg = this._kSegs.find(g => g.w === req.wi) || this._kSegs.find(g => g.w > req.wi) || this._kSegs[this._kSegs.length - 1];
       tMs = sg.from * scale;
     }else{
-      const ar = document.getElementById('verse-arabic-' + req.a);
+      const ar = this._arEl(req.s, req.a);
       const words = ar ? ar.querySelectorAll('.qw') : [];
       if(words.length){
         if(!ar._qwWeights){
@@ -9110,11 +9112,18 @@ const AE = {
       }
     }catch(e){ /* offline — estimate fallback runs */ }
   },
+  // the arabic container of an ayah in WHICHEVER view is showing:
+  // reader verse card, or the ayah span on the open mushaf page
+  _arEl(s, a){
+    const mv = document.getElementById('quran-mushaf-view');
+    if(mv && mv.style.display !== 'none') return document.querySelector(`.mv-ayah[data-s="${s}"][data-a="${a}"]`);
+    return s === currentOpenSurahNo ? document.getElementById('verse-arabic-' + a) : null;
+  },
   _karaokeTick(){
     if(this._wordSeekReq && !this._applyWordSeek()) return; // word-tap seek waits for metadata/segments
     const it = this.queue[this.idx];
-    if(!it || it.s !== currentOpenSurahNo) return;
-    const ar = document.getElementById('verse-arabic-' + it.a);
+    if(!it) return;
+    const ar = this._arEl(it.s, it.a);
     if(!ar) return;
     const words = ar.querySelectorAll('.qw');
     if(!words.length) return;
@@ -9143,8 +9152,10 @@ const AE = {
     const w = ar.querySelector(`.qw[data-wi="${target}"]`);
     if(!w) return;
     w.classList.add('qw-on');
+    if(!ar.classList.contains('mv-ayah')){
     // the glide marker: an underline bar that ANIMATES to the active word's
     // position (CSS transition carries it smoothly, even across line wraps)
+    // (mushaf ayat are inline flow — the word-tint alone highlights there)
     let mk = ar.querySelector('.qw-marker');
     if(!mk){
       mk = document.createElement('span');
@@ -9163,6 +9174,7 @@ const AE = {
     mk.style.left = w.offsetLeft + 'px';
     mk.style.top = (w.offsetTop + w.offsetHeight - 8) + 'px';
     mk.style.width = w.offsetWidth + 'px';
+    }
     // long multi-line ayahs: when the active word drifts out of the comfortable
     // band, nudge the page so recitation-following never loses the text
     if(RS.load().settings.autoScroll && Date.now() - (this._uscTs || 0) > 3500){
