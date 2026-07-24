@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v251-footer-play -->
+<!-- VERSION: v252-toolbar-toggles -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -757,10 +757,14 @@ html[dir="rtl"] .skip-link:focus{right:0;left:auto}
 html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
 #verse-list .h-arabic{cursor:pointer}
 #rf-play .qplay-ic{width:26px;height:26px;font-size:12px}
+/* premium reader-toolbar toggles (word-by-word / translation) */
+.qtgl{flex:1;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 8px;border-radius:14px;border:1px solid transparent;background:linear-gradient(160deg,#10231b,#0b1511) padding-box,linear-gradient(120deg,rgba(16,185,129,.4),rgba(255,255,255,.05) 55%,rgba(212,175,106,.3)) border-box;color:var(--text2);font-size:13px;font-weight:800;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 3px 12px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.05)}
+.qtgl:active{transform:scale(.97)}
+.qtgl.on{color:#7ee8cf;background:linear-gradient(160deg,#0f2f22,#0c1c15) padding-box,linear-gradient(120deg,rgba(16,185,129,.8),rgba(126,232,207,.5) 55%,rgba(16,185,129,.7)) border-box;box-shadow:0 3px 14px rgba(16,185,129,.25),0 0 14px rgba(16,185,129,.18),inset 0 1px 0 rgba(255,255,255,.07)}
 /* hero play button in the reader toolbar */
 .qplay-ic{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;flex-shrink:0;background:linear-gradient(150deg,#fdf3d3,#f0d795 45%,#cfa75e);color:#0c1a12;font-size:10.5px;line-height:1;padding-left:1.5px;box-shadow:0 1px 5px rgba(0,0,0,.35),0 0 9px rgba(240,215,149,.5)}
 @keyframes qplayGlow{0%,100%{box-shadow:0 4px 16px rgba(16,185,129,.28),inset 0 1px 0 rgba(255,255,255,.07)}50%{box-shadow:0 4px 18px rgba(16,185,129,.4),0 0 20px rgba(240,215,149,.22),inset 0 1px 0 rgba(255,255,255,.09)}}
-#audio-play-btn:active{transform:scale(.96)}
+#rf-play:active{transform:scale(.92)}
 
 /* shot-mode (?shot=1) — screenshot aid: only the main content renders, from first paint */
 html.shot-mode .app > :not(.wrap):not(.app-bg){display:none !important}
@@ -1272,9 +1276,8 @@ html.shot-mode #main-content{padding-top:10px}
 
     <!-- one compact toolbar — font/size/legend live in the ⚙️ settings sheet -->
     <div style="display:flex;gap:7px;margin-bottom:12px;align-items:stretch">
-      <button type="button" id="wbw-toggle-btn" onclick="toggleWordByWord()" style="flex:1;min-width:0;padding:9px 8px;border-radius:13px;border:1px solid rgba(16,185,129,.25);background:linear-gradient(160deg,rgba(16,185,129,.08),rgba(16,185,129,.02));color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🔤 <span id="wbw-toggle-label">শব্দার্থ</span></button>
-      <button type="button" id="tr-toggle-btn" onclick="toggleTranslation()" aria-pressed="false" style="flex:1;min-width:0;padding:9px 8px;border-radius:13px;border:1px solid rgba(16,185,129,.25);background:linear-gradient(160deg,rgba(16,185,129,.08),rgba(16,185,129,.02));color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📃 অনুবাদ</button>
-      <button type="button" id="audio-play-btn" onclick="toggleSurahAudio()" style="flex:1.35;min-width:0;padding:8px;border-radius:14px;border:1px solid transparent;background:linear-gradient(160deg,#0f2b20,#0a1611) padding-box,linear-gradient(120deg,rgba(16,185,129,.7),rgba(240,215,149,.6) 55%,rgba(16,185,129,.55)) border-box;color:#d9f8ec;font-size:13px;font-weight:800;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:inline-flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 4px 16px rgba(16,185,129,.28),inset 0 1px 0 rgba(255,255,255,.07);animation:qplayGlow 3.2s ease-in-out infinite"><span id="audio-play-ic" class="qplay-ic" aria-hidden="true">▶</span><span id="audio-play-label">তিলাওয়াত</span></button>
+      <button type="button" id="wbw-toggle-btn" class="qtgl" onclick="toggleWordByWord()" aria-pressed="false">🔤 <span id="wbw-toggle-label">শব্দার্থ</span></button>
+      <button type="button" id="tr-toggle-btn" class="qtgl" onclick="toggleTranslation()" aria-pressed="false">📃 অনুবাদ</button>
       <button type="button" id="qfont-btn" onclick="cycleQuranFont()" aria-label="আরবি ফন্ট বদলান" title="ফন্ট" style="width:46px;flex-shrink:0;border-radius:13px;border:1px solid rgba(212,175,106,.3);background:rgba(212,175,106,.07);color:var(--gold2);font-size:15px;cursor:pointer">🖋️<span id="qfont-label" style="display:none"></span></button>
       <button type="button" onclick="openReaderSettings()" aria-label="পাঠ সেটিংস" title="সেটিংস" style="width:46px;flex-shrink:0;border-radius:13px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:15px;cursor:pointer">⚙️</button>
     </div>
@@ -7776,9 +7779,7 @@ function updateTrBtn(){
   if(!b) return;
   const on = !!RS.load().settings.showTr;
   b.setAttribute('aria-pressed', String(on));
-  b.style.background = on ? 'rgba(16,185,129,.18)' : 'linear-gradient(160deg,rgba(16,185,129,.08),rgba(16,185,129,.02))';
-  b.style.borderColor = on ? 'rgba(16,185,129,.55)' : 'rgba(16,185,129,.25)';
-  b.style.color = on ? 'var(--emerald2)' : 'var(--text2)';
+  b.classList.toggle('on', on);
 }
 function toggleTranslation(){
   const s = RS.load().settings;
@@ -8007,7 +8008,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v251';
+const APP_VERSION = 'v252';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -8712,9 +8713,8 @@ function toggleWordByWord(){
   const btn = document.getElementById('wbw-toggle-btn');
   const label = document.getElementById('wbw-toggle-label');
   if(btn){
-    btn.style.background = wordByWordEnabled ? 'rgba(16,185,129,.14)' : 'rgba(255,255,255,.03)';
-    btn.style.borderColor = wordByWordEnabled ? 'rgba(16,185,129,.4)' : 'var(--border2)';
-    btn.style.color = wordByWordEnabled ? 'var(--emerald2)' : 'var(--text2)';
+    btn.classList.toggle('on', wordByWordEnabled);
+    btn.setAttribute('aria-pressed', String(wordByWordEnabled));
   }
   if(label) label.textContent = wordByWordEnabled ? t('wbwHide') : t('wbwShow');
 
