@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v253-footer-mushaf -->
+<!-- VERSION: v254-mushaf-recitation -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -761,6 +761,9 @@ html[dir="rtl"] .skip-link:focus{right:0;left:auto}
 html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
 #verse-list .h-arabic{cursor:pointer}
 #rf-play .qplay-ic{width:26px;height:26px;font-size:12px}
+/* mushaf-mode recitation: tappable ayat + glowing highlight for the playing one */
+.mv-ayah{cursor:pointer;border-radius:9px;transition:background .35s ease,box-shadow .35s ease;-webkit-tap-highlight-color:rgba(212,175,106,.2)}
+.mv-ayah.mv-playing{background:rgba(212,175,106,.22);box-shadow:0 0 0 3px rgba(212,175,106,.22)}
 /* premium reader-toolbar toggles (word-by-word / translation) */
 .qtgl{flex:1;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 8px;border-radius:14px;border:1px solid transparent;background:linear-gradient(160deg,#10231b,#0b1511) padding-box,linear-gradient(120deg,rgba(16,185,129,.4),rgba(255,255,255,.05) 55%,rgba(212,175,106,.3)) border-box;color:var(--text2);font-size:13px;font-weight:800;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 3px 12px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.05)}
 .qtgl:active{transform:scale(.97)}
@@ -7473,7 +7476,7 @@ async function openMushafPage(p){
   p = Math.min(604, Math.max(1, p));
   MV.page = p;
   show2('quran-mushaf-view');
-  setReaderFooterVisible(false);
+  setReaderFooterVisible(true); // playback + tools stay reachable in mushaf mode too
   const host = document.getElementById('mushaf-page');
   host.innerHTML = loading('পৃষ্ঠা সাজানো হচ্ছে…');
   try{
@@ -7517,7 +7520,7 @@ async function openMushafPage(p){
         const v = d.verses[r.a - 1];
         const tj = taj && taj.verses && taj.verses[String(r.a)];
         const body = tj || escapeHtml(stripBasmala(v.ar, g.s, r.a));
-        html += `<span class="mv-ayah" role="button" tabindex="0" data-s="${g.s}" data-a="${r.a}" onclick="mvJump(${g.s},${r.a})" onkeydown="if(event.key==='Enter'){mvJump(${g.s},${r.a})}" aria-label="${surahDisplayName(su)} আয়াত ${localizeNum(r.a)}">${body}<span class="ayah-medallion" style="min-width:26px;height:26px;font-size:11px;margin:0 5px">${localizeNum(r.a)}</span></span> `;
+        html += `<span class="mv-ayah" role="button" tabindex="0" data-s="${g.s}" data-a="${r.a}" onclick="mvPlay(${g.s},${r.a})" onkeydown="if(event.key==='Enter'){mvPlay(${g.s},${r.a})}" aria-label="${surahDisplayName(su)} আয়াত ${localizeNum(r.a)} — শুনতে ট্যাপ করুন">${body}<span class="ayah-medallion" role="button" tabindex="0" title="রিডারে খুলুন" aria-label="আয়াত ${localizeNum(r.a)} রিডারে খুলুন" onclick="event.stopPropagation();mvJump(${g.s},${r.a})" style="min-width:26px;height:26px;font-size:11px;margin:0 5px;cursor:pointer">${localizeNum(r.a)}</span></span> `;
       }
       html += `</div>`;
     }
@@ -7533,6 +7536,12 @@ async function openMushafPage(p){
   }
 }
 function mushafFlip(d){ openMushafPage(MV.page + d); }
+// tap an ayah on the mushaf page → recite from it (same replay semantics as the reader)
+function mvPlay(s, a){
+  const sel = window.getSelection && window.getSelection();
+  if(sel && sel.type === 'Range' && String(sel).trim()) return; // user is copying text
+  AE.playSurah(s, a);
+}
 function mvJump(s, a){
   closeMushaf();
   if(currentOpenSurahNo === s && VR.verses.length) scrollToAyah(a);
@@ -8013,7 +8022,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v253';
+const APP_VERSION = 'v254';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -9006,7 +9015,10 @@ const AE = {
       }catch(e){}
     }
     if(RS.load().settings.autoScroll && Date.now() - (this._uscTs || 0) > 3500){
-      if(it.s === currentOpenSurahNo){
+      const mv = document.getElementById('quran-mushaf-view');
+      if(mv && mv.style.display !== 'none'){
+        this._followMushaf(it); // mushaf mode: keep the ayah in view, flip pages as recitation moves on
+      }else if(it.s === currentOpenSurahNo){
         this._followAyah(it.a);
       }else if(currentOpenSurahNo && !this._surahSwitching
           && document.getElementById('tab-quran')?.classList.contains('active')
@@ -9019,6 +9031,25 @@ const AE = {
       }
     }
     this._notify();
+  },
+  // mushaf follow: scroll the reciting ayah into the comfortable band; when it
+  // lives on another page, flip there automatically (page number from QSE.meta)
+  _followMushaf(it){
+    const el = document.querySelector(`.mv-ayah[data-s="${it.s}"][data-a="${it.a}"]`);
+    if(el){
+      const r = el.getBoundingClientRect();
+      if(r.top < 90 || r.bottom > window.innerHeight * 0.85){
+        window.scrollBy({top: r.top - window.innerHeight * 0.3, left: 0, behavior: 'smooth'});
+      }
+      return;
+    }
+    if(this._mvFlipping || typeof QSE === 'undefined' || !QSE.meta) return;
+    const m = QSE.meta.find(x => x[0] === it.s && x[1] === it.a);
+    if(!m) return;
+    this._mvFlipping = true;
+    openMushafPage(m[3])
+      .then(() => this._markPlaying(it))
+      .finally(() => { this._mvFlipping = false; });
   },
   // keep the reciting verse in view: anchor its START in the upper part of the screen
   // (block:'center' hid the beginning of long ayahs), with neighbors materialized first
@@ -9041,10 +9072,15 @@ const AE = {
     document.querySelectorAll('.verse-slot.playing').forEach(el => el.classList.remove('playing'));
     document.querySelectorAll('.qw.qw-on').forEach(el => el.classList.remove('qw-on'));
     document.querySelectorAll('.qw-marker').forEach(el => el.remove());
+    document.querySelectorAll('.mv-ayah.mv-playing').forEach(el => el.classList.remove('mv-playing'));
     this._kSegs = null; this._kWord = -1;
     if(it && it.s === currentOpenSurahNo){
       const slot = document.getElementById('verse-card-' + it.a);
       if(slot) slot.classList.add('playing');
+    }
+    if(it){
+      const mvEl = document.querySelector(`.mv-ayah[data-s="${it.s}"][data-a="${it.a}"]`);
+      if(mvEl) mvEl.classList.add('mv-playing');
     }
     if(it) this._loadSegments(it.s, it.a);
   },
@@ -9208,9 +9244,15 @@ const ADL = {
 
 /* back-compat wrappers — old buttons keep working through the engine */
 function toggleSurahAudio(){
-  if(!currentOpenSurahNo) return;
   if(AE.active && AE.playing){ AE.pause(); return; }
   if(AE.active){ AE.resume(); return; }
+  // mushaf mode: start from the first ayah of the open page
+  const mv = document.getElementById('quran-mushaf-view');
+  if(mv && mv.style.display !== 'none'){
+    const first = document.querySelector('#mushaf-page .mv-ayah');
+    if(first){ AE.playSurah(parseInt(first.dataset.s), parseInt(first.dataset.a)); return; }
+  }
+  if(!currentOpenSurahNo) return;
   AE.playSurah(currentOpenSurahNo, (RS.load().session.a || 1));
 }
 function playVerseAudio(surahNo, verseNo){
@@ -9420,6 +9462,7 @@ function hifzMarkMem(){
    Feed is baked into the app: each release appends entries here. Unread = ts newer
    than the stored last-seen stamp; opening the sheet marks everything read. */
 const NOTIF_FEED = [
+  {id: 'mushafaudio', ts: Date.parse('2026-07-24T07:00:00+06:00'), icon: '📜', title: 'মুসহাফ-মোডেও এখন পূর্ণ তিলাওয়াত', body: 'পাতার যেকোনো আয়াতে ট্যাপ করলেই সেখান থেকে তিলাওয়াত, চলমান আয়াতে সোনালি হাইলাইট, তিলাওয়াত এগোলে পাতা নিজে-নিজে ওল্টায় — নিচের বার থেকে ▶ নিয়ন্ত্রণ', act: 'mushaf'},
   {id: 'followscroll', ts: Date.parse('2026-07-23T09:00:00+06:00'), icon: '🎯', title: 'তিলাওয়াতের সাথে লেখা এখন নিখুঁতভাবে চলে', body: 'অডিও চলার সময় চলমান আয়াত (এমনকি লম্বা আয়াতের চলমান শব্দও) নিজে-নিজে পর্দার মাঝে থাকে — অটো-স্ক্রল এখন ডিফল্ট চালু', act: 'quran'},
   {id: 'hdaudio', ts: Date.parse('2026-07-13T10:00:00+06:00'), icon: '🎧', title: 'বুখারীর অধ্যায়-অডিও (বাংলা + English)', body: 'বাংলা পাঠ: হাদীস ১–১৩১২ (পর্ব বেছে শুনুন) • ইংরেজি পাঠ: সব ৯৭ অধ্যায় — অধ্যায় খুললেই উপরে প্লেয়ার', act: 'hadith'},
   {id: 'hdact',   ts: Date.parse('2026-07-13T09:00:00+06:00'), icon: '📚', title: 'হাদিসে নতুন সুবিধা', body: 'প্রতিটি হাদিসে এখন ⋯ মেনু: 🤖 AI ব্যাখ্যা, বুকমার্ক, প্রিয়, নোট, হাইলাইট, কপি, শেয়ার, সম্পর্কিত হাদিস ও আয়াত', act: 'hadith'},
