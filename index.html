@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v270-live-fullscreen -->
+<!-- VERSION: v271-tab-home-pills -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -6707,6 +6707,24 @@ function goHomeFromTool(){
 // every back-button row gets a 🏠 companion — idempotent, so it can run on
 // each navigation and pick up views rendered later
 function ensureHomeButtons(){
+  // tab roots (qibla, dua, tasbih, AI hub, hadith, quran, tools) have no back
+  // button — give each section a 🏠 pill at its top-right
+  ['qibla','dua','tasbih','aihub','hadith','quran','tools'].forEach(id => {
+    const sec = document.getElementById('tab-' + id);
+    if(!sec || sec.querySelector(':scope > .tab-home-row')) return;
+    const row = document.createElement('div');
+    row.className = 'tab-home-row';
+    row.style.cssText = 'display:flex;justify-content:flex-end;margin:0 0 4px';
+    const h = document.createElement('button');
+    h.type = 'button';
+    h.className = 'back-btn home-jump';
+    h.style.marginBottom = '4px';
+    h.setAttribute('aria-label', 'হোম স্ক্রিনে যান');
+    h.innerHTML = '🏠 <span class="home-jump-lb">' + t('homeBtn') + '</span>';
+    h.onclick = goHomeFromTool;
+    row.appendChild(h);
+    sec.insertBefore(row, sec.firstChild);
+  });
   document.querySelectorAll('button.back-btn').forEach(b => {
     if(b.classList.contains('home-jump')) return;          // it IS a home button
     if(b.parentElement && b.parentElement.dataset.hw) return; // already wrapped
@@ -8208,7 +8226,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v270';
+const APP_VERSION = 'v271';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
