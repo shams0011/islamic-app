@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v281-location-hardened -->
+<!-- VERSION: v282-central-hijri -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -3247,6 +3247,28 @@ const HIJRI_EVENT_NAMES = {
 // moon-sighting announcement (which lands within hours of each month's start).
 let HIJRI_ADJ = 0;
 try{ HIJRI_ADJ = Math.max(-2, Math.min(2, parseInt(localStorage.getItem('hijri_adj_v1')) || 0)); }catch(e){}
+// CENTRAL moon-sighting default: most users never touch the ±1 control, so a
+// tiny owner-updated file (hijri-adj.json) carries the Islamic Foundation
+// announcement to everyone. A user's OWN saved ± always wins over it.
+(function(){
+  try{
+    if(localStorage.getItem('hijri_adj_v1') !== null) return; // user decided — never override
+    fetch('hijri-adj.json?t=' + Date.now(), {cache: 'no-store'})
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if(!d || typeof d.default !== 'number') return;
+        const v = Math.max(-2, Math.min(2, Math.round(d.default)));
+        if(v === HIJRI_ADJ) return;
+        HIJRI_ADJ = v;
+        try{
+          if(typeof updateDateDisplay === 'function') updateDateDisplay(getLocationNow());
+          if(typeof renderCalendar === 'function' && document.getElementById('cal-grid')) renderCalendar();
+          if(typeof renderFastingCard === 'function') renderFastingCard();
+        }catch(e){}
+      })
+      .catch(() => {}); // offline — algorithmic date stands
+  }catch(e){}
+})();
 function hijriAdjLabel(){
   return HIJRI_ADJ === 0 ? '০ দিন' : (HIJRI_ADJ > 0 ? '+' : '−') + localizeNum(Math.abs(HIJRI_ADJ)) + ' দিন';
 }
@@ -8480,7 +8502,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v281';
+const APP_VERSION = 'v282';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
