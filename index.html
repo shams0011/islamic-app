@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v262-home-polish -->
+<!-- VERSION: v263-mosque-top3 -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -6360,15 +6360,29 @@ function calculateZakat(){
 }
 
 /* ══ TOOLS — Mosque Finder (uses OpenStreetMap Overpass API — no key required) ══ */
+// opening the tool starts the search by itself — the permission card only
+// reappears if location was denied, as the manual retry path
+function mosqueAutoFind(){
+  const resultsDiv = document.getElementById('mosque-results');
+  if(resultsDiv && resultsDiv.style.display === 'block' && resultsDiv.textContent.trim()) return; // already showing
+  findNearbyMosques();
+}
 async function findNearbyMosques(){
   const btn = document.getElementById('mosque-find-btn');
   const permDiv = document.getElementById('mosque-permission');
-  const resultsDiv = document.getElementById('mosque-results');
+  const permText = document.getElementById('mosque-permission-text');
   if(btn) btn.disabled = true;
+  if(permDiv) permDiv.style.display = '';
+  if(permText) permText.innerHTML = '📍 আপনার অবস্থান নেওয়া হচ্ছে — নিকটতম ৩টি মসজিদ খোঁজা হচ্ছে…';
+  if(btn) btn.style.display = 'none';
+
+  const showPermRetry = msg => {
+    if(permText) permText.textContent = msg;
+    if(btn){ btn.style.display = ''; btn.disabled = false; }
+  };
 
   if(!navigator.geolocation){
-    showMosqueError(t('mosqueLocationUnavailable'));
-    if(btn) btn.disabled = false;
+    showPermRetry(t('mosqueLocationUnavailable'));
     return;
   }
 
@@ -6382,15 +6396,15 @@ async function findNearbyMosques(){
         const r = await fetch(url);
         if(!r.ok) throw new Error('fetch failed');
         const data = await r.json();
+        if(permDiv) permDiv.style.display = 'none';
         renderMosqueResults(data.elements || [], latitude, longitude);
       }catch(e){
-        showMosqueError(t('mosqueSearchFailed'));
+        showPermRetry(t('mosqueSearchFailed'));
       }
       if(btn) btn.disabled = false;
     },
     () => {
-      showMosqueError(t('mosqueLocationDenied'));
-      if(btn) btn.disabled = false;
+      showPermRetry(t('mosqueLocationDenied'));
     },
     {timeout:10000}
   );
@@ -6532,6 +6546,18 @@ async function drawRouteToMosque(i){
   setTimeout(() => mk.openPopup(), 500);
 }
 
+// compass direction from the user to a point — bengali name + arrow glyph
+function bearingInfo(lat1, lon1, lat2, lon2){
+  const toR = d => d * Math.PI / 180;
+  const y = Math.sin(toR(lon2 - lon1)) * Math.cos(toR(lat2));
+  const x = Math.cos(toR(lat1)) * Math.sin(toR(lat2)) - Math.sin(toR(lat1)) * Math.cos(toR(lat2)) * Math.cos(toR(lon2 - lon1));
+  const deg = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+  const names = ['উত্তরে','উত্তর-পূর্বে','পূর্বে','দক্ষিণ-পূর্বে','দক্ষিণে','দক্ষিণ-পশ্চিমে','পশ্চিমে','উত্তর-পশ্চিমে'];
+  const arrows = ['↑','↗','→','↘','↓','↙','←','↖'];
+  const i = Math.round(deg / 45) % 8;
+  return {name: names[i], arrow: arrows[i]};
+}
+
 function renderMosqueResults(elements, myLat, myLon){
   const resultsDiv = document.getElementById('mosque-results');
   resultsDiv.style.display = 'block';
@@ -6541,36 +6567,46 @@ function renderMosqueResults(elements, myLat, myLon){
     return;
   }
 
-  const withDistance = elements.map(el => {
+  // ONLY the three nearest — one tap, three answers, no clutter
+  const top3 = elements.map(el => {
     const dist = haversineDistanceKm(myLat, myLon, el.lat, el.lon);
     const name = (el.tags && el.tags.name) || t('mosqueUnnamed');
     return {name, dist, lat: el.lat, lon: el.lon};
-  }).sort((a,b) => a.dist - b.dist);
+  }).sort((a,b) => a.dist - b.dist).slice(0, 3);
 
-  // list rows focus the in-app map; the small compass link is the only exit
-  const countChip = `<div style="text-align:center;margin-bottom:12px"><span style="display:inline-block;font-size:12px;font-weight:700;color:var(--emerald2);background:rgba(16,185,129,.09);border:1px solid rgba(16,185,129,.22);border-radius:50px;padding:5px 15px">🕌 ${localizeNum(withDistance.length)}টি মসজিদ পাওয়া গেছে (৩ কিমির মধ্যে)</span></div>`;
-  resultsDiv.innerHTML = countChip + withDistance.map((m, i) => {
+  const distLabel = d => d < 1 ? `${localizeNum(Math.round(d*1000))} মিটার` : `${localizeNum(d.toFixed(1))} কিমি`;
+  const header = `<div class="sec-title" style="margin:2px 0 12px"><div class="sec-gem"></div>আপনার নিকটতম ${localizeNum(top3.length)}টি মসজিদ<div class="sec-gem"></div></div>`;
+  resultsDiv.innerHTML = header + top3.map((m, i) => {
     const nearest = i === 0;
     const walkMin = Math.max(1, Math.round(m.dist * 12));
+    const br = bearingInfo(myLat, myLon, m.lat, m.lon);
     const medal = nearest
-      ? 'background:linear-gradient(135deg,#f0d795,#c9a45c);color:#1a1206;box-shadow:0 0 10px rgba(212,175,106,.4);'
-      : 'background:rgba(16,185,129,.12);color:var(--emerald2);box-shadow:0 0 0 1px rgba(16,185,129,.2) inset;';
+      ? 'background:linear-gradient(135deg,#f0d795,#c9a45c);color:#1a1206;box-shadow:0 0 12px rgba(212,175,106,.45);'
+      : 'background:rgba(16,185,129,.14);color:var(--emerald2);box-shadow:0 0 0 1px rgba(16,185,129,.25) inset;';
+    const frame = nearest
+      ? 'background:linear-gradient(160deg,#1b1608,#110d05) padding-box,linear-gradient(120deg,rgba(212,175,106,.7),rgba(255,255,255,.08) 55%,rgba(212,175,106,.5)) border-box'
+      : 'background:linear-gradient(160deg,#101a16,#0b100d) padding-box,linear-gradient(120deg,rgba(16,185,129,.45),rgba(255,255,255,.06) 55%,rgba(16,185,129,.3)) border-box';
     return `
-    <div class="chapter-item" onclick="focusMosqueOnMap(${i})" role="button" tabindex="0" style="cursor:pointer${nearest ? ';background:linear-gradient(160deg,rgba(212,175,106,.08),var(--card));border-color:rgba(212,175,106,.3)' : ''}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();focusMosqueOnMap(${i})}">
+    <div onclick="focusMosqueOnMap(${i})" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();focusMosqueOnMap(${i})}"
+      style="cursor:pointer;border:1px solid transparent;${frame};border-radius:17px;padding:13px 14px;margin-bottom:9px;box-shadow:0 5px 16px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.05)">
       <div style="display:flex;align-items:center;gap:12px;min-width:0">
-        <span style="width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0;${medal}" aria-hidden="true">${localizeNum(i+1)}</span>
-        <div style="min-width:0">
-          <div class="ch-name">${nearest ? '⭐ ' : ''}${escapeHtml(m.name)}</div>
-          <div class="ch-count">📏 ${localizeNum(m.dist.toFixed(1))} কিমি · 🚶 ~${localizeNum(walkMin)} মিনিট${nearest ? ' · <span style="color:#eed9a6;font-weight:700">সবচেয়ে কাছের</span>' : ''}</div>
+        <span style="width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;flex-shrink:0;${medal}" aria-hidden="true">${localizeNum(i+1)}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:15px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${nearest ? '⭐ ' : ''}${escapeHtml(m.name)}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px">
+            <span style="font-size:11.5px;font-weight:800;color:#7ff0dc;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);border-radius:50px;padding:3px 10px">${br.arrow} ${br.name} ${distLabel(m.dist)}</span>
+            <span style="font-size:11.5px;font-weight:700;color:var(--text2);background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:50px;padding:3px 10px">🚶 ~${localizeNum(walkMin)} মিনিট</span>
+          </div>
         </div>
+        <button type="button" onclick="event.stopPropagation();drawRouteToMosque(${i})" aria-label="ম্যাপে পথ দেখুন"
+          style="flex-shrink:0;display:flex;align-items:center;gap:5px;padding:10px 14px;background:linear-gradient(135deg,var(--emerald3),var(--emerald));border:none;border-radius:13px;color:#022018;font-size:13px;font-weight:800;cursor:pointer;font-family:'Hind Siliguri',sans-serif;box-shadow:0 4px 12px rgba(16,185,129,.3)">🧭 পথ</button>
       </div>
-      <button type="button" onclick="event.stopPropagation();drawRouteToMosque(${i})" aria-label="অ্যাপের ম্যাপে পথ দেখুন" style="flex-shrink:0;display:flex;align-items:center;gap:4px;padding:6px 11px;background:rgba(212,175,106,.1);border:1px solid rgba(212,175,106,.28);border-radius:50px;color:#eed9a6;font-size:11.5px;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif">🧭 পথ</button>
     </div>`;
   }).join('');
 
-  initMosqueMap(myLat, myLon, withDistance).catch(() => {
-    showToast('ম্যাপ লোড করা যায়নি — তালিকা থেকে নেভিগেশন ব্যবহার করুন');
-  });
+  initMosqueMap(myLat, myLon, top3)
+    .then(() => drawRouteToMosque(0)) // the nearest mosque's street route draws itself
+    .catch(() => { showToast('ম্যাপ লোড করা যায়নি — তালিকা থেকে দিক অনুসরণ করুন'); });
 }
 
 /* ══ TOOLS — Navigation ══ */
@@ -6630,6 +6666,7 @@ function openTool(toolId){
     if(el) el.style.display = id === toolId ? 'block' : 'none';
   });
   if(toolId === 'zakat'){ placeZakatCalc('tool'); renderZakatForm(); }
+  if(toolId === 'mosque') mosqueAutoFind();
   if(toolId === 'hafz') renderHafzList();
   if(toolId === 'streak') renderStreakView();
   if(toolId === 'hajj'){ setHajjSubtab('checklist'); renderHajjChecklist(); }
@@ -8049,7 +8086,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v262';
+const APP_VERSION = 'v263';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
