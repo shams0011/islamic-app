@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v283-moon-eve-banner -->
+<!-- VERSION: v284-country-hijri -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -2740,7 +2740,7 @@ async function detectLocationByIP(){
         const t = sign * (parseInt(off.slice(1, 3), 10) + parseInt(off.slice(3, 5), 10) / 60);
         if(isFinite(t) && Math.abs(t) <= 14) tz = t;
       }
-      return {lat: d.latitude, lon: d.longitude, tz, name: [d.city, d.country_name].filter(Boolean).join(', ')};
+      return {lat: d.latitude, lon: d.longitude, tz, cc: d.country_code || d.country || null, name: [d.city, d.country_name].filter(Boolean).join(', ')};
     },
     async () => {
       const r = await fetch('https://ipwho.is/');
@@ -2748,7 +2748,7 @@ async function detectLocationByIP(){
       const d = await r.json();
       if(!(d.success !== false && d.latitude && d.longitude)) throw new Error();
       const t = d.timezone && typeof d.timezone.offset === 'number' ? d.timezone.offset / 3600 : null;
-      return {lat: d.latitude, lon: d.longitude, tz: (t !== null && isFinite(t) && Math.abs(t) <= 14) ? t : null, name: [d.city, d.country].filter(Boolean).join(', ')};
+      return {lat: d.latitude, lon: d.longitude, tz: (t !== null && isFinite(t) && Math.abs(t) <= 14) ? t : null, cc: d.country_code || null, name: [d.city, d.country].filter(Boolean).join(', ')};
     },
   ];
   for(const p of providers){
@@ -2756,6 +2756,7 @@ async function detectLocationByIP(){
       const got = await p();
       LAT = got.lat; LON = got.lon;
       if(got.tz !== null) TZ = got.tz;
+      if(got.cc && typeof setGeoCountry === 'function') setGeoCountry(got.cc);
       PRAYER_TIMES_TODAY = getPrayerTimes(getNow());
       updatePrayerDisplay();
       if(typeof updateDateDisplay==='function') updateDateDisplay(getLocationNow());
@@ -2777,6 +2778,7 @@ async function updateLocationName(lat, lon){
     const addr = d.address || {};
     const city = addr.city || addr.town || addr.village || addr.county || '';
     const country = addr.country || '';
+    if(addr.country_code && typeof setGeoCountry === 'function') setGeoCountry(addr.country_code); // GPS path learns the country too
     const locEl = document.getElementById('loc-name');
     if(locEl && (city||country)) locEl.textContent = [city, country].filter(Boolean).join(', ');
   }catch(e){ /* keep whatever was there */ }
@@ -3272,24 +3274,38 @@ function moonEveAdjust(){
   if(typeof openCalendarFromHome === 'function') openCalendarFromHome(); // the ± control lives on the calendar
 }
 // CENTRAL moon-sighting default: most users never touch the ±1 control, so a
-// tiny owner-updated file (hijri-adj.json) carries the Islamic Foundation
-// announcement to everyone. A user's OWN saved ± always wins over it.
+// tiny owner-updated file (hijri-adj.json) carries official announcements to
+// everyone — PER COUNTRY (byCountry:{"BD":1,...}), since each country follows
+// its own sighting authority. A user's OWN saved ± always wins over all of it.
+window._geoCC = null;
+try{ window._geoCC = localStorage.getItem('geo_cc') || null; }catch(e){}
+function applyRemoteHijri(){
+  try{
+    const d = window._hijriRemote;
+    if(!d) return;
+    if(localStorage.getItem('hijri_adj_v1') !== null) return; // user decided — never override
+    let v = (typeof d.default === 'number') ? d.default : 0;
+    const cc = (window._geoCC || '').toUpperCase();
+    if(d.byCountry && cc && typeof d.byCountry[cc] === 'number') v = d.byCountry[cc];
+    v = Math.max(-2, Math.min(2, Math.round(v)));
+    if(v === HIJRI_ADJ) return;
+    HIJRI_ADJ = v;
+    if(typeof updateDateDisplay === 'function') updateDateDisplay(getLocationNow());
+    if(typeof renderCalendar === 'function' && document.getElementById('cal-grid')) renderCalendar();
+    if(typeof renderFastingCard === 'function') renderFastingCard();
+  }catch(e){}
+}
+function setGeoCountry(cc){
+  if(!cc) return;
+  window._geoCC = String(cc).toUpperCase();
+  try{ localStorage.setItem('geo_cc', window._geoCC); }catch(e){}
+  applyRemoteHijri(); // country may change which adjustment applies
+}
 (function(){
   try{
-    if(localStorage.getItem('hijri_adj_v1') !== null) return; // user decided — never override
     fetch('hijri-adj.json?t=' + Date.now(), {cache: 'no-store'})
       .then(r => r.ok ? r.json() : null)
-      .then(d => {
-        if(!d || typeof d.default !== 'number') return;
-        const v = Math.max(-2, Math.min(2, Math.round(d.default)));
-        if(v === HIJRI_ADJ) return;
-        HIJRI_ADJ = v;
-        try{
-          if(typeof updateDateDisplay === 'function') updateDateDisplay(getLocationNow());
-          if(typeof renderCalendar === 'function' && document.getElementById('cal-grid')) renderCalendar();
-          if(typeof renderFastingCard === 'function') renderFastingCard();
-        }catch(e){}
-      })
+      .then(d => { if(d){ window._hijriRemote = d; applyRemoteHijri(); } })
       .catch(() => {}); // offline — algorithmic date stands
   }catch(e){}
 })();
@@ -8545,7 +8561,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v283';
+const APP_VERSION = 'v284';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
