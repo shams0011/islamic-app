@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v252-toolbar-toggles -->
+<!-- VERSION: v253-footer-mushaf -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -517,13 +517,17 @@ mark{background:rgba(212,175,106,.4);color:#fff3d6;border-radius:3px;padding:0 2
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
 #reader-footer button,.sheet .seg button,.ae-btn{min-height:44px;min-width:44px}
-/* narrow phones: tighten so the ring + all 7 buttons fit inside 94vw
+/* narrow phones: tighten so the ring + all 8 buttons fit inside 94vw
    (must come after the 44px touch-target rule to win the cascade) */
 @media(max-width:480px){
   #reader-footer{gap:2px;padding:8px 9px}
   #reader-footer button{min-width:34px;font-size:15px;padding:2px}
   #reader-footer .rf-top{border-radius:14px;font-size:17px}
   #reader-footer .rf-col{margin-right:0}
+}
+@media(max-width:390px){
+  #reader-footer .rf-eta{display:none} /* the ▶ + 📜 pair needs the room */
+  #reader-footer button{min-width:31px}
 }
 /* verse action chips: 40px targets (WCAG 2.2 AA min is 24) so all 7 fit one line on 375px */
 .v-act{gap:4px}
@@ -1305,12 +1309,13 @@ html.shot-mode #main-content{padding-top:10px}
       <circle id="rf-ring" cx="15" cy="15" r="12.5" fill="none" stroke="url(#rfgrad)" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="78.54" stroke-dashoffset="78.54" transform="rotate(-90 15 15)"/>
     </svg>
     <div class="rf-col" aria-hidden="true"><span class="rf-pct" id="rf-pct">০%</span><span class="rf-eta" id="rf-eta">—</span></div>
-    <button id="rf-play" onclick="toggleSurahAudio()" aria-label="তিলাওয়াত চালান বা থামান" title="তিলাওয়াত"><span class="qplay-ic" id="rf-play-ic" aria-hidden="true">▶</span></button>
     <button onclick="rfBookmark()" aria-label="এই আয়াত বুকমার্ক করুন" title="বুকমার্ক">🔖</button>
     <button onclick="openAudioSheet()" aria-label="অডিও প্লেয়ার" title="অডিও">🎧</button>
     <button onclick="openStatsSheet()" aria-label="পাঠ পরিসংখ্যান" title="পরিসংখ্যান">📊</button>
     <button onclick="openHifzSheet()" aria-label="হিফজ-মোড: মুখস্থ অনুশীলন" title="হিফজ">🧠</button>
     <button onclick="openBookmarksSheet()" aria-label="বুকমার্ক তালিকা" title="তালিকা">🗂️</button>
+    <button onclick="openMushafFromReader()" aria-label="মুসহাফ-মোড (পৃষ্ঠা-ভিত্তিক)" title="মুসহাফ-মোড">📜</button>
+    <button id="rf-play" onclick="toggleSurahAudio()" aria-label="তিলাওয়াত চালান বা থামান" title="তিলাওয়াত"><span class="qplay-ic" id="rf-play-ic" aria-hidden="true">▶</span></button>
     <button onclick="openReaderSettings()" aria-label="পাঠ সেটিংস" title="সেটিংস">⚙️</button>
     <button class="rf-top" onclick="window.scrollTo({top:0})" aria-label="উপরে যান" title="উপরে">↑</button>
   </div>
@@ -8008,7 +8013,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v252';
+const APP_VERSION = 'v253';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
