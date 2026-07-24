@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v279-qibla-glow -->
+<!-- VERSION: v280-compass-stable -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -5819,6 +5819,21 @@ function showStaticQiblaInfo(){
 
 let _compassActive = false;
 let _screenAngle = 0;
+// ── compass stabilisation ──
+// raw magnetometer headings jitter ±3-8°, and naive rotate() takes the LONG way
+// round when crossing 0°/360° — both made the needle wander left-right at a
+// fixed physical orientation. Circular EMA + shortest-path continuous angles.
+let _hSin = null, _hCos = null, _dialRot = null, _needleRot = null;
+function _smoothHeading(h){
+  const r = h * Math.PI / 180, k = 0.85;
+  if(_hSin === null){ _hSin = Math.sin(r); _hCos = Math.cos(r); }
+  else { _hSin = k * _hSin + (1 - k) * Math.sin(r); _hCos = k * _hCos + (1 - k) * Math.cos(r); }
+  return (Math.atan2(_hSin, _hCos) * 180 / Math.PI + 360) % 360;
+}
+function _turnTo(cur, target){
+  if(cur === null || !isFinite(cur)) return target;
+  return cur + (((target - cur) % 360 + 540) % 360) - 180; // shortest arc, never the long way
+}
 
 function getScreenAngle(){
   if(screen.orientation && typeof screen.orientation.angle === 'number') return screen.orientation.angle;
@@ -5842,6 +5857,7 @@ function initCompass(){
   const needleEl = document.getElementById('qibla-needle');
   if(dialEl) dialEl.style.transform = 'rotate(0deg)';
   if(needleEl) needleEl.style.transform = `rotate(${qDeg}deg)`;
+  _hSin = _hCos = null; _dialRot = 0; _needleRot = qDeg; // stabiliser starts from the static pose
   document.getElementById('qibla-permission').style.display = 'none';
   document.getElementById('qibla-display').style.display = 'flex';
   const badge0 = document.getElementById('qibla-align-badge');
@@ -5866,14 +5882,24 @@ function initCompass(){
     }
     heading = ((heading % 360) + 360) % 360;
     if(typeof heading !== 'number' || isNaN(heading)) return;
+    heading = _smoothHeading(heading); // circular EMA kills magnetometer jitter
     lastHeading = heading;
 
     const dial = document.getElementById('compass-dial');
     const needle = document.getElementById('qibla-needle');
     const badge = document.getElementById('qibla-align-badge');
     const centerDot = document.getElementById('qibla-center-dot');
-    if(dial) dial.style.transform = `rotate(${-heading}deg)`;
-    if(needle) needle.style.transform = `rotate(${qDeg - heading}deg)`;
+    const dialTarget = _turnTo(_dialRot, ((-heading % 360) + 360) % 360);
+    const needleTarget = _turnTo(_needleRot, ((qDeg - heading) % 360 + 360) % 360);
+    // dead-band: sub-half-degree twitches don't move the UI at all
+    if(_dialRot === null || Math.abs(dialTarget - _dialRot) > 0.6){
+      _dialRot = dialTarget;
+      if(dial) dial.style.transform = `rotate(${_dialRot}deg)`;
+    }
+    if(_needleRot === null || Math.abs(needleTarget - _needleRot) > 0.6){
+      _needleRot = needleTarget;
+      if(needle) needle.style.transform = `rotate(${_needleRot}deg)`;
+    }
 
     // Alignment feedback: how close is the user's facing direction to the Qibla direction
     let diff = Math.abs(((qDeg - heading + 540) % 360) - 180);
@@ -8430,7 +8456,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v279';
+const APP_VERSION = 'v280';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
