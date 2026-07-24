@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v263-mosque-top3 -->
+<!-- VERSION: v264-clock-corners -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -112,6 +112,14 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
   #clock{font-size:20px;letter-spacing:.3px}
   .np-time-chip{font-size:11.5px;padding:6px 9px;letter-spacing:0;max-width:100%}
 }
+/* clock-card corner shortcuts — mosque (left) + qibla (right) */
+.cp-corner{position:absolute;top:13px;z-index:3;width:50px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 4px 6px;border-radius:14px;border:1px solid transparent;background:linear-gradient(160deg,#121c16,#0b110d) padding-box,linear-gradient(135deg,rgba(212,175,106,.55),rgba(16,185,129,.4) 55%,rgba(212,175,106,.35)) border-box;cursor:pointer;font-family:'Hind Siliguri',sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.06);transition:transform .15s,box-shadow .15s}
+.cp-corner:hover{box-shadow:0 5px 15px rgba(0,0,0,.4),0 0 12px rgba(16,185,129,.18),inset 0 1px 0 rgba(255,255,255,.08)}
+.cp-corner:active{transform:scale(.92)}
+.cp-corner .ic{font-size:19px;line-height:1;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
+.cp-corner .lb{font-size:9px;font-weight:800;color:var(--gold2);letter-spacing:.3px;line-height:1}
+.cp-corner-l{left:13px}
+.cp-corner-r{right:13px}
 html[dir="rtl"] .clock-panel{direction:rtl}
 .header-loc{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px;font-weight:500}
 .clock-panel .header-loc{padding:4px 13px;border-radius:50px;background:rgba(255,255,255,.035);border:1px solid var(--border2)}
@@ -865,6 +873,8 @@ try{
   </div>
   <!-- Clock panel — analog clock + date (left) | Kalima + digital clock (right) -->
   <div class="clock-panel">
+    <button type="button" class="cp-corner cp-corner-l" onclick="openMosqueFromHome()" aria-label="নিকটস্থ মসজিদ খুঁজুন" title="নিকটস্থ মসজিদ"><span class="ic" aria-hidden="true">🕌</span><span class="lb">মসজিদ</span></button>
+    <button type="button" class="cp-corner cp-corner-r" onclick="quickOpenTab('qibla')" aria-label="কিবলার দিক দেখুন" title="কিবলা"><span class="ic" aria-hidden="true">🕋</span><span class="lb">কিবলা</span></button>
     <div class="cp-left">
     <div class="ac-wrap" aria-hidden="true">
       <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -6610,6 +6620,13 @@ function renderMosqueResults(elements, myLat, myLon){
 }
 
 /* ══ TOOLS — Navigation ══ */
+// clock-card corner shortcut: straight into the mosque finder (auto-locates)
+function openMosqueFromHome(){
+  showTab('tools', document.getElementById('tabbtn-tools'));
+  openTool('mosque');
+  const v = document.getElementById('tool-mosque-view');
+  if(v){ v.scrollIntoView({block: 'start'}); window.scrollBy(0, -62); }
+}
 // Home-screen Hajj banner: jump to the Tools tab with the guide already open
 function openHajjFromHome(){
   showTab('tools', document.getElementById('tabbtn-tools'));
@@ -8086,7 +8103,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v263';
+const APP_VERSION = 'v264';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
