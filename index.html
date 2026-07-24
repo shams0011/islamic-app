@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v260-premium-chips -->
+<!-- VERSION: v261-crisp-digits -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -136,13 +136,13 @@ html[dir="rtl"] .clock-panel{direction:rtl}
 .np-col-next .np-name-row{justify-content:flex-end}
 .np-arabic{font-size:16px;color:var(--emerald2);font-family:serif;direction:rtl;font-weight:600;opacity:.95}
 .np-col-next .np-arabic{color:var(--gold2)}
-.np-time-chip{margin-top:auto;padding:8px 14px;border-radius:12px;border:1px solid transparent;background:linear-gradient(160deg,#0d211a,#0a1512) padding-box,linear-gradient(120deg,rgba(16,185,129,.65),rgba(255,255,255,.08) 55%,rgba(16,185,129,.45)) border-box;font-size:14px;font-weight:800;color:#7ff0dc;font-family:ui-monospace,monospace;align-self:flex-start;letter-spacing:.5px;box-shadow:0 4px 14px rgba(0,0,0,.25),0 0 12px rgba(16,185,129,.14),inset 0 1px 0 rgba(255,255,255,.06);white-space:nowrap;text-shadow:0 0 10px rgba(16,185,129,.35)}
-.np-col-next .np-time-chip{background:linear-gradient(160deg,#211a0d,#15100a) padding-box,linear-gradient(120deg,rgba(212,175,106,.7),rgba(255,255,255,.08) 55%,rgba(212,175,106,.5)) border-box;color:#f2ddab;align-self:flex-end;box-shadow:0 4px 14px rgba(0,0,0,.25),0 0 12px rgba(212,175,106,.14),inset 0 1px 0 rgba(255,255,255,.06);text-shadow:0 0 10px rgba(212,175,106,.35)}
+.np-time-chip{margin-top:auto;padding:8px 14px;border-radius:12px;border:1px solid transparent;background:linear-gradient(160deg,#0d211a,#0a1512) padding-box,linear-gradient(120deg,rgba(16,185,129,.65),rgba(255,255,255,.08) 55%,rgba(16,185,129,.45)) border-box;font-size:14px;font-weight:800;color:#7ff0dc;font-family:ui-monospace,monospace;align-self:flex-start;letter-spacing:.5px;box-shadow:0 4px 14px rgba(0,0,0,.25),0 0 12px rgba(16,185,129,.14),inset 0 1px 0 rgba(255,255,255,.06);white-space:nowrap}
+.np-col-next .np-time-chip{background:linear-gradient(160deg,#211a0d,#15100a) padding-box,linear-gradient(120deg,rgba(212,175,106,.7),rgba(255,255,255,.08) 55%,rgba(212,175,106,.5)) border-box;color:#f2ddab;align-self:flex-end;box-shadow:0 4px 14px rgba(0,0,0,.25),0 0 12px rgba(212,175,106,.14),inset 0 1px 0 rgba(255,255,255,.06)}
 .np-cd-cap{font-size:11px;letter-spacing:.6px;color:#9fc3b8;margin-top:9px;font-weight:600;white-space:nowrap}
 .np-col-next .np-cd-cap{color:#cfc09a}
-.np-countdown{font-size:24px;font-weight:800;font-family:ui-monospace,monospace;letter-spacing:.5px;margin:1px 0 8px;line-height:1}
-#countdown-cur{background:linear-gradient(180deg,#eafffa 12%,#5eead4 55%,#14b8a6 95%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 12px rgba(16,185,129,.35))}
-#countdown{background:linear-gradient(180deg,#fdf6e3 12%,#f0d795 55%,#cfa75e 95%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 12px rgba(212,175,106,.35))}
+.np-countdown{font-size:24px;font-weight:800;font-family:ui-monospace,monospace;letter-spacing:1px;margin:1px 0 8px;line-height:1}
+#countdown-cur{color:#7df5e0}
+#countdown{color:#f5dfa4}
 .progress-bar{margin-top:16px;height:6px;background:rgba(255,255,255,.07);border-radius:6px;position:relative;z-index:1;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}
 .progress-fill{height:100%;width:35%;background:linear-gradient(90deg,var(--emerald3),var(--emerald2),var(--gold2));border-radius:6px;position:relative;overflow:hidden;transition:width 1s linear;box-shadow:0 0 10px rgba(16,185,129,.55)}
 .progress-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);animation:shimmer 2.2s ease-in-out infinite}
@@ -626,16 +626,16 @@ button:focus-visible,[tabindex]:focus-visible,.sw:focus-visible{outline:2.5px so
 .fc-badge.forbidden{background:rgba(224,112,112,.14);color:#e88a8a;border-color:rgba(224,112,112,.3)}
 .fc-badge:empty{display:none}
 .fc-sub{font-size:13.5px;color:#c9d6d0;min-height:14px;font-weight:600}
-.fc-window-chip{margin-top:auto;display:inline-flex;align-items:center;gap:5px;padding:7px clamp(7px,2.2vw,13px);border-radius:12px;border:1px solid transparent;background:linear-gradient(160deg,#141a20,#0d1216) padding-box,linear-gradient(120deg,rgba(126,232,207,.5),rgba(255,255,255,.08) 55%,rgba(212,175,106,.5)) border-box;font-size:clamp(10.5px,3.3vw,14px);font-weight:800;color:#e6f2ec;font-family:ui-monospace,monospace;align-self:flex-start;letter-spacing:.2px;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.06);max-width:100%;overflow:hidden;text-shadow:0 0 9px rgba(126,232,207,.25)}
+.fc-window-chip{margin-top:auto;display:inline-flex;align-items:center;gap:5px;padding:7px clamp(7px,2.2vw,13px);border-radius:12px;border:1px solid transparent;background:linear-gradient(160deg,#141a20,#0d1216) padding-box,linear-gradient(120deg,rgba(126,232,207,.5),rgba(255,255,255,.08) 55%,rgba(212,175,106,.5)) border-box;font-size:clamp(10.5px,3.3vw,14px);font-weight:800;color:#e6f2ec;font-family:ui-monospace,monospace;align-self:flex-start;letter-spacing:.2px;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.06);max-width:100%;overflow:hidden}
 .fc-right{gap:9px;justify-content:center}
 .fc-cd-block{width:100%;text-align:right;padding:10px 14px;border-radius:14px;background:rgba(16,185,129,.09);border:1px solid rgba(16,185,129,.26);box-shadow:0 3px 10px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.04)}
 .fc-cd-block.iftar{background:rgba(212,175,106,.09);border-color:rgba(212,175,106,.28)}
 .fc-cd-cap{font-size:12px;letter-spacing:.4px;color:#c2d8cf;font-weight:700;margin-bottom:5px;white-space:nowrap}
-.fc-cd{font-size:23px;font-weight:800;font-family:ui-monospace,monospace;letter-spacing:.5px;line-height:1;background:linear-gradient(180deg,#eafffa 12%,#5eead4 60%,#14b8a6 95%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 11px rgba(16,185,129,.35))}
-.fc-cd-iftar{background:linear-gradient(180deg,#fdf6e3 12%,#f0d795 60%,#cfa75e 95%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 11px rgba(212,175,106,.4))}
+.fc-cd{font-size:23px;font-weight:800;font-family:ui-monospace,monospace;letter-spacing:1px;line-height:1;color:#7df5e0}
+.fc-cd-iftar{color:#f5dfa4}
 /* countdown tile after its moment has passed — calm, checked-off look */
 .fc-cd-block.done{background:rgba(255,255,255,.03);border-color:var(--border2);box-shadow:none;opacity:.8}
-.fc-cd-block.done .fc-cd{font-size:17px;background:none;-webkit-text-fill-color:var(--text2);color:var(--text2);filter:none}
+.fc-cd-block.done .fc-cd{font-size:17px;color:var(--text2)}
 .fc-cd-block.done .fc-cd-cap{color:var(--emerald2)}
 .fc-cd-block.iftar.done .fc-cd-cap{color:#c9b989}
 .fc-hint{font-size:11px;color:#b7a06d;text-align:center;margin-top:13px;position:relative;z-index:1;font-weight:500}
@@ -8048,7 +8048,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v260';
+const APP_VERSION = 'v261';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
