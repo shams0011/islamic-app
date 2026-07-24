@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v269-home-everywhere -->
+<!-- VERSION: v270-live-fullscreen -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -112,6 +112,10 @@ html,body{background:var(--bg);font-family:'Hind Siliguri',sans-serif;color:var(
   #clock{font-size:20px;letter-spacing:.3px}
   .np-time-chip{font-size:11.5px;padding:6px 9px;letter-spacing:0;max-width:100%}
 }
+/* live-stream fullscreen button — always-reachable ⛶ on the playing card */
+.ls-fs{position:absolute;top:8px;right:8px;z-index:5;width:36px;height:36px;border-radius:12px;border:1px solid rgba(255,255,255,.25);background:rgba(8,12,10,.72);backdrop-filter:blur(4px);color:#fff;font-size:17px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(0,0,0,.4);transition:transform .15s,background .15s}
+.ls-fs:hover{background:rgba(16,185,129,.35)}
+.ls-fs:active{transform:scale(.9)}
 /* mosque map popup — bigger, clearer text on the dark tiles */
 #mosque-map .leaflet-popup-content{font-size:14.5px;line-height:1.65;font-family:'Hind Siliguri',sans-serif;margin:12px 16px}
 #mosque-map .leaflet-popup-content b{font-size:15px}
@@ -4092,7 +4096,7 @@ function playMediaItem(catId, itemIndex){
 
   document.getElementById('media-player-title').textContent = title;
   document.getElementById('media-player-frame-wrap').innerHTML =
-    `<iframe src="${embedUrl}" title="${title}" style="width:100%;height:100%;border:0;position:absolute;inset:0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
+    `<iframe src="${embedUrl}" title="${title}" style="width:100%;height:100%;border:0;position:absolute;inset:0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe>`;
   document.getElementById('media-player-modal-overlay').style.display = 'flex';
 }
 
@@ -4937,13 +4941,35 @@ function toggleFastDone(){
 
 /* ══ LIVE STREAM FACADE — swap the thumbnail for the real player on tap ══ */
 function loadLiveStream(btn){
+  const holder = btn.parentElement;
   const ifr = document.createElement('iframe');
-  ifr.src = `https://www.youtube.com/embed/${btn.dataset.video}?autoplay=1&playsinline=1&modestbranding=1&rel=0&iv_load_policy=3`;
+  ifr.src = `https://www.youtube.com/embed/${btn.dataset.video}?autoplay=1&playsinline=1&modestbranding=1&rel=0&iv_load_policy=3&fs=1`;
   ifr.title = btn.dataset.title;
   ifr.style.cssText = 'width:100%;height:100%;border:0;position:absolute;inset:0';
-  ifr.allow = 'autoplay; encrypted-media; picture-in-picture';
+  ifr.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
   ifr.allowFullscreen = true;
+  ifr.setAttribute('allowfullscreen', '');
   btn.replaceWith(ifr);
+  // our own ⛶ — the tiny embedded player's fullscreen control is easy to miss,
+  // this one always works (fullscreens the iframe itself, YouTube controls intact)
+  if(holder && !holder.querySelector('.ls-fs')){
+    if(!holder.style.position) holder.style.position = 'relative';
+    const f = document.createElement('button');
+    f.type = 'button';
+    f.className = 'ls-fs';
+    f.textContent = '⛶';
+    f.setAttribute('aria-label', 'ফুল স্ক্রিনে দেখুন');
+    f.title = 'ফুল স্ক্রিন';
+    f.onclick = e => {
+      e.stopPropagation();
+      try{
+        if(document.fullscreenElement){ document.exitFullscreen(); }
+        else if(ifr.requestFullscreen){ ifr.requestFullscreen(); }
+        else if(ifr.webkitRequestFullscreen){ ifr.webkitRequestFullscreen(); }
+      }catch(err){}
+    };
+    holder.appendChild(f);
+  }
 }
 
 // YouTube live streams rotate video IDs every few weeks, so the hardcoded ones
@@ -8182,7 +8208,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v269';
+const APP_VERSION = 'v270';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
