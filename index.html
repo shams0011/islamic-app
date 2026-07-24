@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v257-fullscreen-pair -->
+<!-- VERSION: v258-device-language -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -785,7 +785,27 @@ html.shot-mode #main-content{padding-top:10px}
 </style>
 </head>
 <body>
-<script>if(/[?&]shot=1/.test(location.search)) document.documentElement.classList.add('shot-mode');</script>
+<script>
+if(/[?&]shot=1/.test(location.search)) document.documentElement.classList.add('shot-mode');
+// First-run language: follow the DEVICE language (installs come from many countries).
+// Runs before any app code touches storage, so an empty localStorage really means a
+// fresh install; profiles from the bn-only era keep Bengali instead of flipping.
+try{
+  if(!localStorage.getItem('app_lang')){
+    if(localStorage.length > 0){
+      localStorage.setItem('app_lang', 'bn');
+    }else{
+      const sup = ['bn','en','ar','ur','zh','fr'];
+      let pick = 'en';
+      for(const l of (navigator.languages || [navigator.language || ''])){
+        const c = String(l).toLowerCase().slice(0, 2);
+        if(sup.includes(c)){ pick = c; break; }
+      }
+      localStorage.setItem('app_lang', pick);
+    }
+  }
+}catch(e){}
+</script>
 <a href="#main-content" class="skip-link">মূল কনটেন্টে যান</a>
 <div class="app">
 <div class="app-bg" aria-hidden="true"></div>
@@ -8029,7 +8049,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v257';
+const APP_VERSION = 'v258';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
