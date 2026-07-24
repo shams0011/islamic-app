@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v271-tab-home-pills -->
+<!-- VERSION: v272-single-home -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -5484,6 +5484,7 @@ document.addEventListener('keydown', e => {
 function show(id){
   ['view-books','view-chapters','view-hadiths'].forEach(v=>
     document.getElementById(v).style.display=v===id?'block':'none');
+  if(typeof updateTabHomePills === 'function') updateTabHomePills();
 }
 function goBooks(){ show('view-books'); }
 function goChapters(){ show('view-chapters'); }
@@ -6742,6 +6743,20 @@ function ensureHomeButtons(){
     h.onclick = goHomeFromTool;
     wrap.appendChild(h);
   });
+  updateTabHomePills();
+}
+// exactly ONE home per screen: the tab-root pill hides itself whenever the open
+// view already carries its own home button
+function updateTabHomePills(){
+  document.querySelectorAll('.tab-home-row').forEach(row => {
+    const sec = row.parentElement;
+    let dup = false;
+    sec.querySelectorAll('.home-jump, button[onclick="goHomeFromTool()"]').forEach(b => {
+      if(row.contains(b)) return;
+      if(b.offsetParent !== null) dup = true;
+    });
+    row.style.display = dup ? 'none' : 'flex';
+  });
 }
 // clock-card corner shortcut: straight into the mosque finder (auto-locates)
 function openMosqueFromHome(){
@@ -6814,6 +6829,7 @@ function openTool(toolId){
   if(toolId === 'calendar'){ resetCalendarToToday(); renderCalendar(); }
   if(toolId === 'media'){ goMediaCategoryGrid(); renderMediaCategoryGrid(); }
   if(toolId === 'khatm') renderKhatm();
+  if(typeof updateTabHomePills === 'function') updateTabHomePills();
 }
 function closeToolView(){
   document.getElementById('tools-grid-view').style.display = 'block';
@@ -6823,6 +6839,7 @@ function closeToolView(){
   });
   placeZakatCalc('home'); // give the calculator back to the home screen
   if(typeof stopMosqueGps === 'function') stopMosqueGps(); // don't drain battery after leaving the map
+  if(typeof updateTabHomePills === 'function') updateTabHomePills();
 }
 
 /* ══ KHATM TRACKER — Quran recitation progress (604-page mushaf) ══ */
@@ -8226,7 +8243,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v271';
+const APP_VERSION = 'v272';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -9818,6 +9835,7 @@ function show2(id){
     const el = document.getElementById(v);
     if(el) el.style.display = v === id ? 'block' : 'none';
   });
+  if(typeof updateTabHomePills === 'function') updateTabHomePills();
 }
 function goSurahList(){
   show2('quran-surah-list-view');
