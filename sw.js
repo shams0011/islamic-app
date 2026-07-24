@@ -6,7 +6,7 @@
 //   - Everything else (Anthropic API calls, geolocation/time APIs): always network, never cached
 //     (these need live data and must not be served stale)
 
-const CACHE_VERSION = 'v246';
+const CACHE_VERSION = 'v247';
 const SHELL_CACHE = `islamic-ai-shell-${CACHE_VERSION}`;
 const DATA_CACHE = `islamic-ai-data-${CACHE_VERSION}`;
 
@@ -15,6 +15,7 @@ const SHELL_FILES = [
   './index.html',
   './manifest.json',
   './privacy.html',
+  './audio/alarm-hayya.wav',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/kalima.svg',

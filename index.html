@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v276-home-widgets-i18n -->
+<!-- VERSION: v277-adhan-alarm -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -2929,28 +2929,25 @@ function updateActivePrayerHighlight(){
   checkFastAlarms();
 }
 
-/* ══ PRAYER ALARM SYSTEM ══ */
-let _alarmAudioCtx = null;
-let _alarmIntervalId = null;
+/* ══ PRAYER ALARM SYSTEM ══
+   The alarm voice is the adhan's own call — "হাইয়া আলাস-সালাহ, হাইয়া আলাল-ফালাহ"
+   (recorded recitation, Mishary al-Afasy) played ONCE per alarm. Never synthetic
+   tones, never music, never device TTS. */
+let _alarmEl = null;
+let _alarmIntervalId = null; // kept for backward compatibility; no longer used to repeat
 
 function playAlarmTone(){
   try{
-    if(!_alarmAudioCtx) _alarmAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const ctx = _alarmAudioCtx;
-    const now = ctx.currentTime;
-    [0, 0.5, 1.0].forEach(offset => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, now+offset);
-      gain.gain.setValueAtTime(0, now+offset);
-      gain.gain.linearRampToValueAtTime(0.18, now+offset+0.05);
-      gain.gain.linearRampToValueAtTime(0, now+offset+0.4);
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(now+offset);
-      osc.stop(now+offset+0.45);
-    });
-  }catch(e){ /* audio not available, alarm still shows visually */ }
+    if(!_alarmEl){
+      _alarmEl = new Audio('audio/alarm-hayya.wav');
+      _alarmEl.preload = 'auto';
+    }
+    _alarmEl.currentTime = 0;
+    _alarmEl.play().catch(() => { /* autoplay blocked — vibration + overlay still alert */ });
+  }catch(e){ /* audio unavailable — alarm still shows visually */ }
+}
+function stopAlarmSound(){
+  try{ if(_alarmEl){ _alarmEl.pause(); _alarmEl.currentTime = 0; } }catch(e){}
 }
 
 /* ── Alarm preferences: which alarms fire (prayer waqt / sehri / iftar) ── */
@@ -3019,9 +3016,7 @@ function triggerPrayerAlarm(prayerKey){
   document.getElementById('alarm-prayer-arabic').textContent = prayerArabic(prayerKey);
   document.getElementById('alarm-overlay').style.display = 'flex';
 
-  playAlarmTone();
-  if(_alarmIntervalId) clearInterval(_alarmIntervalId);
-  _alarmIntervalId = setInterval(playAlarmTone, 1500);
+  playAlarmTone(); // the clip already carries each phrase — no repetition loop
 
   if(navigator.vibrate) navigator.vibrate([200,100,200,100,200]);
 
@@ -3041,6 +3036,7 @@ function triggerPrayerAlarm(prayerKey){
 function stopAlarm(){
   document.getElementById('alarm-overlay').style.display = 'none';
   if(_alarmIntervalId){ clearInterval(_alarmIntervalId); _alarmIntervalId = null; }
+  stopAlarmSound();
 }
 
 function requestNotificationPermission(){
@@ -8378,7 +8374,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v276';
+const APP_VERSION = 'v277';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
