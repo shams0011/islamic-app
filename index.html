@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v266-instant-qibla -->
+<!-- VERSION: v267-full-i18n -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -876,8 +876,8 @@ try{
   </div>
   <!-- Clock panel — analog clock + date (left) | Kalima + digital clock (right) -->
   <div class="clock-panel">
-    <button type="button" class="cp-corner cp-corner-l" onclick="openMosqueFromHome()" aria-label="নিকটস্থ মসজিদ খুঁজুন" title="নিকটস্থ মসজিদ"><span class="ic" aria-hidden="true">🕌</span><span class="lb">মসজিদ</span></button>
-    <button type="button" class="cp-corner cp-corner-r" onclick="quickOpenTab('qibla')" aria-label="কিবলার দিক দেখুন" title="কিবলা"><span class="ic" aria-hidden="true">🕋</span><span class="lb">কিবলা</span></button>
+    <button type="button" class="cp-corner cp-corner-l" onclick="openMosqueFromHome()" aria-label="নিকটস্থ মসজিদ খুঁজুন" title="নিকটস্থ মসজিদ"><span class="ic" aria-hidden="true">🕌</span><span class="lb" id="corner-mosque-lb">মসজিদ</span></button>
+    <button type="button" class="cp-corner cp-corner-r" onclick="quickOpenTab('qibla')" aria-label="কিবলার দিক দেখুন" title="কিবলা"><span class="ic" aria-hidden="true">🕋</span><span class="lb" id="corner-qibla-lb">কিবলা</span></button>
     <div class="cp-left">
     <div class="ac-wrap" aria-hidden="true">
       <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -1584,7 +1584,7 @@ try{
   <div id="tool-mosque-view" style="display:none">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
       <button type="button" class="back-btn" onclick="closeToolView()">← টুলসে ফিরুন</button>
-      <button type="button" class="back-btn" onclick="goHomeFromTool()" aria-label="হোম স্ক্রিনে যান">🏠 হোম</button>
+      <button type="button" class="back-btn" onclick="goHomeFromTool()" aria-label="হোম স্ক্রিনে যান">🏠 <span id="mosque-home-lb">হোম</span></button>
     </div>
     <div class="sec-title"><div class="sec-gem"></div><span id="mosque-sec-title">নিকটস্থ মসজিদ</span><div class="sec-gem"></div></div>
     <div id="mosque-permission" style="text-align:center;padding:28px 20px;background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:20px;box-shadow:0 6px 20px rgba(0,0,0,.18)">
@@ -2302,6 +2302,14 @@ function refreshAllProfileDependentUI(){
   if(document.getElementById('tool-hafz-view') && document.getElementById('tool-hafz-view').style.display !== 'none') renderHafzList();
 }
 
+// keys for the newer home-corner / qibla / mosque-finder strings (all 6 languages)
+Object.assign(I18N.bn, {cornerMosque:'মসজিদ', cornerQibla:'কিবলা', dirNames:'উত্তর|উত্তর-পূর্ব|পূর্ব|দক্ষিণ-পূর্ব|দক্ষিণ|দক্ষিণ-পশ্চিম|পশ্চিম|উত্তর-পশ্চিম', qiblaMakkah:'মক্কা', unitKm:'কিমি', unitM:'মিটার', unitMin:'মিনিট', qiblaHoldNorth:'🧭 N (উত্তর) উপরের দিকে ধরুন — 🕋 যেদিকে, কিবলা সেদিকে', qiblaHint:'ফোন সমতল রেখে ধীরে ধীরে ঘুরান — কাবা আইকন উপরে আসলে আপনি কিবলামুখী', mosqueNearest3:'আপনার নিকটতম ৩টি মসজিদ', mosqueLocating:'📍 আপনার অবস্থান নেওয়া হচ্ছে — নিকটতম ৩টি মসজিদ খোঁজা হচ্ছে…', routeBtn:'পথ', homeBtn:'হোম'});
+Object.assign(I18N.en, {cornerMosque:'Mosque', cornerQibla:'Qibla', dirNames:'North|Northeast|East|Southeast|South|Southwest|West|Northwest', qiblaMakkah:'Makkah', unitKm:'km', unitM:'m', unitMin:'min', qiblaHoldNorth:'🧭 Hold N (north) upward — the Qibla is where 🕋 points', qiblaHint:'Hold the phone flat and turn slowly — when the Kaaba icon reaches the top you are facing the Qibla', mosqueNearest3:'Your 3 nearest mosques', mosqueLocating:'📍 Getting your location — finding the 3 nearest mosques…', routeBtn:'Route', homeBtn:'Home'});
+Object.assign(I18N.ar, {cornerMosque:'مسجد', cornerQibla:'القبلة', dirNames:'شمال|شمال شرق|شرق|جنوب شرق|جنوب|جنوب غرب|غرب|شمال غرب', qiblaMakkah:'مكة', unitKm:'كم', unitM:'م', unitMin:'دقيقة', qiblaHoldNorth:'🧭 اجعل N (الشمال) للأعلى — القبلة حيث يشير 🕋', qiblaHint:'أمسك الهاتف أفقياً ودُر ببطء — عندما يصل رمز الكعبة للأعلى فأنت باتجاه القبلة', mosqueNearest3:'أقرب ٣ مساجد إليك', mosqueLocating:'📍 جارٍ تحديد موقعك — البحث عن أقرب ٣ مساجد…', routeBtn:'الطريق', homeBtn:'الرئيسية'});
+Object.assign(I18N.ur, {cornerMosque:'مسجد', cornerQibla:'قبلہ', dirNames:'شمال|شمال مشرق|مشرق|جنوب مشرق|جنوب|جنوب مغرب|مغرب|شمال مغرب', qiblaMakkah:'مکہ', unitKm:'کم', unitM:'میٹر', unitMin:'منٹ', qiblaHoldNorth:'🧭 N (شمال) اوپر رکھیں — قبلہ اسی طرف ہے جدھر 🕋', qiblaHint:'فون کو فلیٹ رکھ کر آہستہ گھمائیں — کعبہ اوپر آجائے تو آپ قبلہ رخ ہیں', mosqueNearest3:'آپ کی قریب ترین ۳ مساجد', mosqueLocating:'📍 آپ کا مقام لیا جا رہا ہے — قریب ترین ۳ مساجد تلاش کی جا رہی ہیں…', routeBtn:'راستہ', homeBtn:'ہوم'});
+Object.assign(I18N.zh, {cornerMosque:'清真寺', cornerQibla:'朝向', dirNames:'北|东北|东|东南|南|西南|西|西北', qiblaMakkah:'麦加', unitKm:'公里', unitM:'米', unitMin:'分钟', qiblaHoldNorth:'🧭 将N(北)朝上 — 🕋 所指即朝向', qiblaHint:'手机放平慢慢转动 — 天房图标朝上即面向朝向', mosqueNearest3:'离您最近的3座清真寺', mosqueLocating:'📍 正在获取位置 — 寻找最近的3座清真寺…', routeBtn:'路线', homeBtn:'主页'});
+Object.assign(I18N.fr, {cornerMosque:'Mosquée', cornerQibla:'Qibla', dirNames:'Nord|Nord-Est|Est|Sud-Est|Sud|Sud-Ouest|Ouest|Nord-Ouest', qiblaMakkah:'La Mecque', unitKm:'km', unitM:'m', unitMin:'min', qiblaHoldNorth:'🧭 Tenez N (nord) vers le haut — la Qibla est vers 🕋', qiblaHint:'Tenez le téléphone à plat et tournez lentement — quand la Kaaba est en haut, vous faites face à la Qibla', mosqueNearest3:'Vos 3 mosquées les plus proches', mosqueLocating:'📍 Localisation en cours — recherche des 3 mosquées les plus proches…', routeBtn:'Itinéraire', homeBtn:'Accueil'});
+
 let currentLang = 'bn';
 
 function getCurrentLang(){
@@ -2543,6 +2551,13 @@ function applyLanguage(){
   if(wbwLabel) wbwLabel.textContent = wordByWordEnabled ? t('wbwHide') : t('wbwShow');
   const audioLabel = document.getElementById('audio-play-label');
   if(audioLabel) audioLabel.textContent = surahAudioPlaying ? t('audioPause') : t('audioPlay');
+  setTextIfExists('corner-mosque-lb', t('cornerMosque'));
+  setTextIfExists('corner-qibla-lb', t('cornerQibla'));
+  setTextIfExists('mosque-home-lb', t('homeBtn'));
+  setTextIfExists('qibla-hint', t('qiblaHint'));
+  // qibla screen regenerates its texts in the new language
+  const qd = document.getElementById('qibla-display');
+  if(qd && qd.style.display === 'flex' && typeof initCompass === 'function'){ try{ initCompass(); }catch(e){} }
 
   // Quran tab
   setTextIfExists('quran-sec-title', t('holyQuran'));
@@ -5692,12 +5707,11 @@ function initCompass(){
   // Kaaba needle at the true bearing — correct anywhere on earth (Saudi included,
   // where the bearing simply points toward Makkah). Live rotation upgrades it
   // the moment orientation events arrive.
-  const dirNames = ['উত্তর','উত্তর-পূর্ব','পূর্ব','দক্ষিণ-পূর্ব','দক্ষিণ','দক্ষিণ-পশ্চিম','পশ্চিম','উত্তর-পশ্চিম'];
-  const dirName = dirNames[Math.round(qDeg/45) % 8];
+  const dirName = t('dirNames').split('|')[Math.round(qDeg/45) % 8];
   const distKm = Math.round(haversineDistanceKm(LAT, LON, 21.4225, 39.8262));
   document.getElementById('qibla-degree').textContent = localizeNum(Math.round(qDeg)) + '°';
   const metaEl = document.getElementById('qibla-meta');
-  if(metaEl) metaEl.innerHTML = `<span style="color:var(--gold2)">${dirName}</span> দিকে&nbsp;•&nbsp;🕋 মক্কা ${localizeNum(distKm.toLocaleString('en-US'))} কিমি`;
+  if(metaEl) metaEl.innerHTML = `<span style="color:var(--gold2)">${dirName}</span>&nbsp;•&nbsp;🕋 ${t('qiblaMakkah')} ${localizeNum(distKm.toLocaleString('en-US'))} ${t('unitKm')}`;
   const dialEl = document.getElementById('compass-dial');
   const needleEl = document.getElementById('qibla-needle');
   if(dialEl) dialEl.style.transform = 'rotate(0deg)';
@@ -5705,7 +5719,7 @@ function initCompass(){
   document.getElementById('qibla-permission').style.display = 'none';
   document.getElementById('qibla-display').style.display = 'flex';
   const badge0 = document.getElementById('qibla-align-badge');
-  if(badge0) badge0.textContent = '🧭 N (উত্তর) উপরের দিকে ধরুন — 🕋 যেদিকে, কিবলা সেদিকে';
+  if(badge0) badge0.textContent = t('qiblaHoldNorth');
   if(_compassActive) return;
   _screenAngle = getScreenAngle();
 
@@ -6407,7 +6421,7 @@ async function findNearbyMosques(){
   const permText = document.getElementById('mosque-permission-text');
   if(btn) btn.disabled = true;
   if(permDiv) permDiv.style.display = '';
-  if(permText) permText.innerHTML = '📍 আপনার অবস্থান নেওয়া হচ্ছে — নিকটতম ৩টি মসজিদ খোঁজা হচ্ছে…';
+  if(permText) permText.innerHTML = t('mosqueLocating');
   if(btn) btn.style.display = 'none';
 
   const showPermRetry = msg => {
@@ -6592,7 +6606,7 @@ function bearingInfo(lat1, lon1, lat2, lon2){
   const y = Math.sin(toR(lon2 - lon1)) * Math.cos(toR(lat2));
   const x = Math.cos(toR(lat1)) * Math.sin(toR(lat2)) - Math.sin(toR(lat1)) * Math.cos(toR(lat2)) * Math.cos(toR(lon2 - lon1));
   const deg = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
-  const names = ['উত্তরে','উত্তর-পূর্বে','পূর্বে','দক্ষিণ-পূর্বে','দক্ষিণে','দক্ষিণ-পশ্চিমে','পশ্চিমে','উত্তর-পশ্চিমে'];
+  const names = t('dirNames').split('|');
   const arrows = ['↑','↗','→','↘','↓','↙','←','↖'];
   const i = Math.round(deg / 45) % 8;
   return {name: names[i], arrow: arrows[i]};
@@ -6614,8 +6628,8 @@ function renderMosqueResults(elements, myLat, myLon){
     return {name, dist, lat: el.lat, lon: el.lon};
   }).sort((a,b) => a.dist - b.dist).slice(0, 3);
 
-  const distLabel = d => d < 1 ? `${localizeNum(Math.round(d*1000))} মিটার` : `${localizeNum(d.toFixed(1))} কিমি`;
-  const header = `<div class="sec-title" style="margin:2px 0 12px"><div class="sec-gem"></div>আপনার নিকটতম ${localizeNum(top3.length)}টি মসজিদ<div class="sec-gem"></div></div>`;
+  const distLabel = d => d < 1 ? `${localizeNum(Math.round(d*1000))} ${t('unitM')}` : `${localizeNum(d.toFixed(1))} ${t('unitKm')}`;
+  const header = `<div class="sec-title" style="margin:2px 0 12px"><div class="sec-gem"></div>${t('mosqueNearest3')}<div class="sec-gem"></div></div>`;
   resultsDiv.innerHTML = header + top3.map((m, i) => {
     const nearest = i === 0;
     const walkMin = Math.max(1, Math.round(m.dist * 12));
@@ -6635,11 +6649,11 @@ function renderMosqueResults(elements, myLat, myLon){
           <div style="font-size:15px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${nearest ? '⭐ ' : ''}${escapeHtml(m.name)}</div>
           <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px">
             <span style="font-size:11.5px;font-weight:800;color:#7ff0dc;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);border-radius:50px;padding:3px 10px">${br.arrow} ${br.name} ${distLabel(m.dist)}</span>
-            <span style="font-size:11.5px;font-weight:700;color:var(--text2);background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:50px;padding:3px 10px">🚶 ~${localizeNum(walkMin)} মিনিট</span>
+            <span style="font-size:11.5px;font-weight:700;color:var(--text2);background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:50px;padding:3px 10px">🚶 ~${localizeNum(walkMin)} ${t('unitMin')}</span>
           </div>
         </div>
         <button type="button" onclick="event.stopPropagation();drawRouteToMosque(${i})" aria-label="ম্যাপে পথ দেখুন"
-          style="flex-shrink:0;display:flex;align-items:center;gap:5px;padding:10px 14px;background:linear-gradient(135deg,var(--emerald3),var(--emerald));border:none;border-radius:13px;color:#022018;font-size:13px;font-weight:800;cursor:pointer;font-family:'Hind Siliguri',sans-serif;box-shadow:0 4px 12px rgba(16,185,129,.3)">🧭 পথ</button>
+          style="flex-shrink:0;display:flex;align-items:center;gap:5px;padding:10px 14px;background:linear-gradient(135deg,var(--emerald3),var(--emerald));border:none;border-radius:13px;color:#022018;font-size:13px;font-weight:800;cursor:pointer;font-family:'Hind Siliguri',sans-serif;box-shadow:0 4px 12px rgba(16,185,129,.3)">🧭 ${t('routeBtn')}</button>
       </div>
     </div>`;
   }).join('');
@@ -8138,7 +8152,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v266';
+const APP_VERSION = 'v267';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
