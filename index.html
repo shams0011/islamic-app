@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v256-siyam-chip-fit -->
+<!-- VERSION: v257-fullscreen-pair -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -761,6 +761,11 @@ html[dir="rtl"] .skip-link:focus{right:0;left:auto}
 html[dir="rtl"] #lang-selector-btn{flex-direction:row-reverse}
 #verse-list .h-arabic{cursor:pointer}
 #rf-play .qplay-ic{width:26px;height:26px;font-size:12px}
+/* phones: the salat + siyam pair fills exactly one full screen — each card takes
+   half the viewport and spreads its content vertically */
+@media(max-width:768px){
+  .next-prayer{min-height:calc(50vh - 21px);min-height:calc(50svh - 21px);display:flex;flex-direction:column;justify-content:space-evenly}
+}
 /* mushaf-mode recitation: tappable ayat + glowing highlight for the playing one */
 .mv-ayah{cursor:pointer;border-radius:9px;transition:background .35s ease,box-shadow .35s ease;-webkit-tap-highlight-color:rgba(212,175,106,.2)}
 .mv-ayah.mv-playing{background:rgba(212,175,106,.22);box-shadow:0 0 0 3px rgba(212,175,106,.22)}
@@ -8024,7 +8029,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v256';
+const APP_VERSION = 'v257';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
