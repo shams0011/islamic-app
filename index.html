@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v268-lang-perfect -->
+<!-- VERSION: v269-home-everywhere -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -1326,6 +1326,7 @@ try{
       <button type="button" id="tr-toggle-btn" class="qtgl" onclick="toggleTranslation()" aria-pressed="false">📃 অনুবাদ</button>
       <button type="button" id="qfont-btn" onclick="cycleQuranFont()" aria-label="আরবি ফন্ট বদলান" title="ফন্ট" style="width:46px;flex-shrink:0;border-radius:13px;border:1px solid rgba(212,175,106,.3);background:rgba(212,175,106,.07);color:var(--gold2);font-size:15px;cursor:pointer">🖋️<span id="qfont-label" style="display:none"></span></button>
       <button type="button" onclick="openReaderSettings()" aria-label="পাঠ সেটিংস" title="সেটিংস" style="width:46px;flex-shrink:0;border-radius:13px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:15px;cursor:pointer">⚙️</button>
+      <button type="button" onclick="goHomeFromTool()" aria-label="হোম স্ক্রিনে যান" title="হোম" style="width:46px;flex-shrink:0;border-radius:13px;border:1px solid rgba(16,185,129,.3);background:rgba(16,185,129,.07);color:var(--emerald2);font-size:15px;cursor:pointer">🏠</button>
     </div>
     <audio id="surah-audio-player" style="display:none"></audio>
 
@@ -1339,6 +1340,7 @@ try{
       <div id="mushaf-page-chip" style="flex:1;min-width:0;text-align:center;padding:9px 8px;border-radius:14px;border:1px solid transparent;background:linear-gradient(160deg,#101a16,#0c1210) padding-box,linear-gradient(120deg,rgba(212,175,106,.5),rgba(16,185,129,.35) 55%,rgba(212,175,106,.45)) border-box;font-size:12.5px;font-weight:800;color:var(--gold2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 4px 14px rgba(0,0,0,.25)">পৃষ্ঠা</div>
       <button type="button" onclick="mushafFlip(1)" aria-label="পরের পৃষ্ঠা" style="width:46px;min-height:44px;border-radius:14px;border:1px solid rgba(212,175,106,.35);background:rgba(212,175,106,.08);color:var(--gold2);font-size:15px;cursor:pointer">⟩</button>
       <button type="button" onclick="closeMushaf()" aria-label="মুসহাফ-মোড বন্ধ" style="width:46px;min-height:44px;border-radius:14px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:14px;cursor:pointer">✕</button>
+      <button type="button" onclick="goHomeFromTool()" aria-label="হোম স্ক্রিনে যান" title="হোম" style="width:46px;min-height:44px;border-radius:14px;border:1px solid rgba(16,185,129,.3);background:rgba(16,185,129,.07);color:var(--emerald2);font-size:14px;cursor:pointer">🏠</button>
     </div>
     <div id="mushaf-page"></div>
   </div>
@@ -2559,6 +2561,7 @@ function applyLanguage(){
   setTextIfExists('qa-hadith-sub', t('qaHadithSub'));
   setTextIfExists('cal-chip-lb', t('islamicCalBtn'));
   setTextIfExists('mosque-home-lb', t('homeBtn'));
+  document.querySelectorAll('.home-jump-lb').forEach(el => { el.textContent = t('homeBtn'); });
   setTextIfExists('qibla-hint', t('qiblaHint'));
   // qibla screen regenerates its texts in the new language
   const qd = document.getElementById('qibla-display');
@@ -4710,6 +4713,7 @@ function showTab(id,btn){
   if(typeof placeTasbihBody === 'function') placeTasbihBody(id === 'tasbih' ? 'tab' : 'home');
   // qibla: the direction shows itself the moment the tab opens — no start button
   if(id === 'qibla' && typeof initCompass === 'function'){ try{ initCompass(); }catch(e){} } // sync: keeps the iOS sensor-permission gesture chain
+  if(typeof ensureHomeButtons === 'function') ensureHomeButtons(); // late-rendered views get their 🏠 too
   if(typeof renderGoalCard === 'function') renderGoalCard(); // fresh minutes/streak when home reappears
   // the quran tab opens the READER (Surah Al-Fatiha by default); the premium
   // card list lives behind the surah dropdown button at the top
@@ -6674,6 +6678,27 @@ function goHomeFromTool(){
   showTab('prayer', document.getElementById('tabbtn-prayer'));
   window.scrollTo({top: 0, behavior: 'smooth'});
 }
+// every back-button row gets a 🏠 companion — idempotent, so it can run on
+// each navigation and pick up views rendered later
+function ensureHomeButtons(){
+  document.querySelectorAll('button.back-btn').forEach(b => {
+    if(b.classList.contains('home-jump')) return;          // it IS a home button
+    if(b.parentElement && b.parentElement.dataset.hw) return; // already wrapped
+    if(b.closest('#tool-mosque-view')) return;             // mosque row built by hand
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px';
+    wrap.dataset.hw = '1';
+    b.parentNode.insertBefore(wrap, b);
+    wrap.appendChild(b);
+    const h = document.createElement('button');
+    h.type = 'button';
+    h.className = 'back-btn home-jump';
+    h.setAttribute('aria-label', 'হোম স্ক্রিনে যান');
+    h.innerHTML = '🏠 <span class="home-jump-lb">' + t('homeBtn') + '</span>';
+    h.onclick = goHomeFromTool;
+    wrap.appendChild(h);
+  });
+}
 // clock-card corner shortcut: straight into the mosque finder (auto-locates)
 function openMosqueFromHome(){
   showTab('tools', document.getElementById('tabbtn-tools'));
@@ -8157,7 +8182,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v268';
+const APP_VERSION = 'v269';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -9875,6 +9900,7 @@ AE.init(); // audio engine: media element, media-session handlers
 initNotificationBanner();
 renderBooks();
 show('view-books');
+ensureHomeButtons(); // 🏠 beside every back button, app-wide
 
 // ── DEEP LINKS — ?tab=quran opens a tab, ?tool=zakat opens a tools-view directly.
 // Used by PWA shortcuts and store-listing screenshots; safe no-op without params.
