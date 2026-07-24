@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v273-deep-i18n -->
+<!-- VERSION: v274-high-latitude -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -2748,14 +2748,27 @@ function fmtHM(hours){
 
 function getPrayerTimes(date){
   const jd=julianDate(date);
-  const fajr=timeForAngle(jd,18,LAT,LON,TZ,true);
-  const sunrise=timeForAngle(jd,0.833,LAT,LON,TZ,true);
+  let fajr=timeForAngle(jd,18,LAT,LON,TZ,true);
+  let sunrise=timeForAngle(jd,0.833,LAT,LON,TZ,true);
   const {eqt}=sunPosition(jd);
   const dhuhr=12-LON/15+TZ-eqt+2/60; // +2min for zawal safety margin
-  const asr=asrTime(jd,LAT,LON,TZ);
-  const sunset=timeForAngle(jd,0.833,LAT,LON,TZ,false);
-  const maghrib=sunset;
-  const isha=timeForAngle(jd,18,LAT,LON,TZ,false); // 18° — Univ. of Islamic Sciences Karachi method (Bangladesh standard)
+  let asr=asrTime(jd,LAT,LON,TZ);
+  let sunset=timeForAngle(jd,0.833,LAT,LON,TZ,false);
+  let maghrib=sunset;
+  let isha=timeForAngle(jd,18,LAT,LON,TZ,false); // 18° — Univ. of Islamic Sciences Karachi method (Bangladesh standard)
+  // ── HIGH-LATITUDE FALLBACKS ── above ~49°N in summer the sun never reaches
+  // 18° below the horizon, so fajr/isha come back null and Europe-based users
+  // saw "--:--" everywhere. Widely-accepted Seventh-of-the-Night rule fills in.
+  const bad = v => v === null || v === undefined || isNaN(v);
+  if(bad(sunrise) || bad(maghrib)){ // polar day/night — approximate the solar day
+    sunrise = dhuhr - 6; maghrib = dhuhr + 6; sunset = maghrib;
+  }
+  if(bad(fajr) || bad(isha)){
+    const night = (sunrise + 24) - maghrib; // maghrib → next sunrise
+    if(bad(fajr)) fajr = sunrise - night/7;
+    if(bad(isha)) isha = maghrib + night/7;
+  }
+  if(bad(asr)) asr = dhuhr + (maghrib - dhuhr)/2; // mid-afternoon approximation
   return {fajr,sunrise,dhuhr,asr,maghrib,isha};
 }
 
@@ -8337,7 +8350,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v273';
+const APP_VERSION = 'v274';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
