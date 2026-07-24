@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v272-single-home -->
+<!-- VERSION: v273-deep-i18n -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -1456,19 +1456,19 @@ try{
 
 <!-- Tasbih -->
 <div id="tab-tasbih" class="section" role="tabpanel" aria-labelledby="tabbtn-tasbih">
-  <div class="sec-title"><div class="sec-gem"></div>ডিজিটাল তাসবিহ<div class="sec-gem"></div></div>
+  <div class="sec-title"><div class="sec-gem"></div><span id="tasbih-sec-lb">ডিজিটাল তাসবিহ</span><div class="sec-gem"></div></div>
   <!-- the tasbih body normally lives on the home screen (#home-tasbih-slot);
        opening this tab moves the same node here so counts carry over -->
   <div id="tasbih-body" style="display:flex;flex-direction:column;align-items:center;padding:10px">
     <div style="width:100%;max-width:430px;margin-bottom:16px;border:1px solid transparent;background:linear-gradient(160deg,#101a16,#0c1210) padding-box,linear-gradient(120deg,rgba(212,175,106,.35),rgba(16,185,129,.3) 55%,rgba(212,175,106,.3)) border-box;border-radius:17px;padding:11px 10px 12px;box-shadow:0 6px 20px rgba(0,0,0,.25)">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
         <div style="position:relative;min-width:0">
-          <label for="tasbih-when-select" style="display:block;font-size:11px;font-weight:700;color:var(--gold2);margin-bottom:5px;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🕰️ কখন করবেন</label>
+          <label for="tasbih-when-select" style="display:block;font-size:11px;font-weight:700;color:var(--gold2);margin-bottom:5px;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">🕰️ <span id="tasbih-when-lb">কখন করবেন</span></label>
           <select id="tasbih-when-select" onchange="setTasbihWhen(this.value)" style="width:100%;min-width:0;appearance:none;-webkit-appearance:none;background:rgba(212,175,106,.06);border:1px solid rgba(212,175,106,.3);border-radius:12px;padding:9px 26px 9px 10px;color:var(--gold2);font-size:12.5px;font-weight:700;font-family:'Hind Siliguri',sans-serif;cursor:pointer;outline:none;text-overflow:ellipsis"></select>
           <span style="position:absolute;right:10px;bottom:12px;pointer-events:none;color:var(--gold2);font-size:10px" aria-hidden="true">▼</span>
         </div>
         <div style="position:relative;min-width:0">
-          <label for="tasbih-zikir-select" style="display:block;font-size:11px;font-weight:700;color:var(--emerald2);margin-bottom:5px;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📿 জিকির বাছাই</label>
+          <label for="tasbih-zikir-select" style="display:block;font-size:11px;font-weight:700;color:var(--emerald2);margin-bottom:5px;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📿 <span id="tasbih-pick-lb">জিকির বাছাই</span></label>
           <select id="tasbih-zikir-select" onchange="selectTasbihZikir(parseInt(this.value))" style="width:100%;min-width:0;appearance:none;-webkit-appearance:none;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.35);border-radius:12px;padding:9px 26px 9px 10px;color:var(--emerald2);font-size:12.5px;font-weight:700;font-family:'Hind Siliguri',sans-serif;cursor:pointer;outline:none;text-overflow:ellipsis"></select>
           <span style="position:absolute;right:10px;bottom:12px;pointer-events:none;color:var(--emerald2);font-size:10px" aria-hidden="true">▼</span>
         </div>
@@ -1479,8 +1479,8 @@ try{
       <div id="tasbih-meaning" style="font-size:12px;color:var(--text2);text-align:center;margin-bottom:8px;padding:0 8px;line-height:1.6">আল্লাহ পবিত্র ও মহান — প্রতি নামাজের পর ৩৩ বার</div>
       <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:center">
         <span id="tasbih-source" style="font-size:10.5px;font-weight:700;color:var(--gold2);background:rgba(212,175,106,.1);border:1px solid rgba(212,175,106,.25);border-radius:50px;padding:3px 11px">📖 মুসলিম ৫৯৬</span>
-        <button type="button" id="tasbih-audio-btn" onclick="tasbihSpeak()" aria-label="জিকিরের আরবি উচ্চারণ শুনুন" style="font-size:12px;font-weight:700;color:var(--emerald2);background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);border-radius:50px;padding:3px 14px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;box-shadow:0 0 10px rgba(16,185,129,.1);transition:all .2s">🔊 শুনুন</button>
-        <button type="button" id="tasbih-pron-btn" onclick="toggleTasbihPron()" aria-label="জিকিরের উচ্চারণ দেখুন বা লুকান" style="font-size:12px;font-weight:700;color:#8fd9c6;background:rgba(16,185,129,.06);border:1px dashed rgba(16,185,129,.3);border-radius:50px;padding:3px 14px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s">🗣️ উচ্চারণ</button>
+        <button type="button" id="tasbih-audio-btn" onclick="tasbihSpeak()" aria-label="জিকিরের আরবি উচ্চারণ শুনুন" style="font-size:12px;font-weight:700;color:var(--emerald2);background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);border-radius:50px;padding:3px 14px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;box-shadow:0 0 10px rgba(16,185,129,.1);transition:all .2s">🔊 <span id="tasbih-listen-lb">শুনুন</span></button>
+        <button type="button" id="tasbih-pron-btn" onclick="toggleTasbihPron()" aria-label="জিকিরের উচ্চারণ দেখুন বা লুকান" style="font-size:12px;font-weight:700;color:#8fd9c6;background:rgba(16,185,129,.06);border:1px dashed rgba(16,185,129,.3);border-radius:50px;padding:3px 14px;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s">🗣️ <span id="tasbih-pron-lb">উচ্চারণ</span></button>
       </div>
     </div>
     <button type="button" id="tasbih-counter-circle" onclick="tasbihTap()" aria-label="তাসবিহ গণনা করুন, বর্তমান গণনা শূন্য থেকে শুরু" style="position:relative;width:clamp(160px,55vw,220px);aspect-ratio:1/1;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(16,185,129,.16),rgba(16,185,129,.04) 70%);border:2px solid rgba(16,185,129,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none;transition:transform .12s,box-shadow .3s;margin-bottom:22px;font-family:'Hind Siliguri',sans-serif;box-shadow:0 0 0 1px rgba(16,185,129,.1),0 8px 28px rgba(16,185,129,.15),inset 0 2px 12px rgba(255,255,255,.04)">
@@ -1602,7 +1602,7 @@ try{
       <div id="mosque-map" style="height:320px;border-radius:14px;overflow:hidden"></div>
       <div style="text-align:center;padding:9px 6px 6px;font-size:12.5px;color:var(--text2);line-height:1.7">
         <span id="mosque-route-info" style="display:none;font-size:14px;font-weight:800;color:#7ff0dc;background:rgba(16,185,129,.13);border:1px solid rgba(16,185,129,.35);border-radius:50px;padding:6px 16px;margin-bottom:7px;box-shadow:0 2px 10px rgba(16,185,129,.15)"></span><br>
-        🟢 সবুজ বিন্দু = আপনি (লাইভ GPS) · 🕌 = মসজিদ · 🧭 পথ বোতামে রাস্তা আঁকা হবে
+        <span id="mosque-legend">🟢 সবুজ বিন্দু = আপনি (লাইভ GPS) · 🕌 = মসজিদ · 🧭 পথ বোতামে রাস্তা আঁকা হবে</span>
       </div>
     </div>
     <div id="mosque-results" style="display:none"></div>
@@ -2316,6 +2316,14 @@ Object.assign(I18N.ur, {qaQuran:'قرآن', qaQuranSub:'۱۱۴ سورتیں • 
 Object.assign(I18N.zh, {qaQuran:'古兰经', qaQuranSub:'114章 • 含释义', qaHadith:'圣训', qaHadithSub:'六大圣训集', islamicCalBtn:'伊斯兰历', cornerMosque:'清真寺', cornerQibla:'朝向', dirNames:'北|东北|东|东南|南|西南|西|西北', qiblaMakkah:'麦加', unitKm:'公里', unitM:'米', unitMin:'分钟', qiblaHoldNorth:'🧭 将N(北)朝上 — 🕋 所指即朝向', qiblaHint:'手机放平慢慢转动 — 天房图标朝上即面向朝向', mosqueNearest3:'离您最近的3座清真寺', mosqueLocating:'📍 正在获取位置 — 寻找最近的3座清真寺…', routeBtn:'路线', homeBtn:'主页'});
 Object.assign(I18N.fr, {qaQuran:'Coran', qaQuranSub:'114 sourates • avec sens', qaHadith:'Hadith', qaHadithSub:'Sihah Sittah', islamicCalBtn:'Calendrier islamique', cornerMosque:'Mosquée', cornerQibla:'Qibla', dirNames:'Nord|Nord-Est|Est|Sud-Est|Sud|Sud-Ouest|Ouest|Nord-Ouest', qiblaMakkah:'La Mecque', unitKm:'km', unitM:'m', unitMin:'min', qiblaHoldNorth:'🧭 Tenez N (nord) vers le haut — la Qibla est vers 🕋', qiblaHint:'Tenez le téléphone à plat et tournez lentement — quand la Kaaba est en haut, vous faites face à la Qibla', mosqueNearest3:'Vos 3 mosquées les plus proches', mosqueLocating:'📍 Localisation en cours — recherche des 3 mosquées les plus proches…', routeBtn:'Itinéraire', homeBtn:'Accueil'});
 
+// tasbih + mosque-finder UI strings (all 6 languages)
+Object.assign(I18N.bn, {tasbihTitle:'ডিজিটাল তাসবিহ', tasbihWhen:'কখন করবেন', tasbihPick:'জিকির বাছাই', tasbihListen:'শুনুন', tasbihPron:'উচ্চারণ', unitTimes:'বার', twAll:'🕰️ সব সময়ের জিকির', twPrayer:'🕌 নামাজের পর', twMorning:'🌅 সকালের জিকির', twEvening:'🌆 সন্ধ্যার জিকির', twAny:'♾️ যেকোনো সময়', twQuran:'📖 কুরআনের দোয়া', mosqueTitle:'নিকটস্থ মসজিদ', mosqueLegend:'🟢 সবুজ বিন্দু = আপনি (লাইভ GPS) · 🕌 = মসজিদ · 🧭 পথ বোতামে রাস্তা আঁকা হবে', mosqueNearestTag:'সবচেয়ে কাছের মসজিদ', directDist:'সরাসরি দূরত্ব', youAreHere:'আপনি এখানে'});
+Object.assign(I18N.en, {tasbihTitle:'Digital Tasbih', tasbihWhen:'When to recite', tasbihPick:'Choose zikr', tasbihListen:'Listen', tasbihPron:'Pronunciation', unitTimes:'times', twAll:'🕰️ All zikr', twPrayer:'🕌 After prayer', twMorning:'🌅 Morning zikr', twEvening:'🌆 Evening zikr', twAny:'♾️ Anytime', twQuran:'📖 Quranic duas', mosqueTitle:'Nearby Mosques', mosqueLegend:'🟢 Green dot = you (live GPS) · 🕌 = mosque · tap 🧭 Route to draw the street path', mosqueNearestTag:'Nearest mosque', directDist:'Straight-line distance', youAreHere:'You are here'});
+Object.assign(I18N.ar, {tasbihTitle:'التسبيح الرقمي', tasbihWhen:'وقت الذكر', tasbihPick:'اختر الذكر', tasbihListen:'استمع', tasbihPron:'النطق', unitTimes:'مرة', twAll:'🕰️ كل الأذكار', twPrayer:'🕌 بعد الصلاة', twMorning:'🌅 أذكار الصباح', twEvening:'🌆 أذكار المساء', twAny:'♾️ في أي وقت', twQuran:'📖 أدعية قرآنية', mosqueTitle:'المساجد القريبة', mosqueLegend:'🟢 النقطة الخضراء = أنت (GPS مباشر) · 🕌 = مسجد · اضغط 🧭 لرسم الطريق', mosqueNearestTag:'أقرب مسجد', directDist:'المسافة المباشرة', youAreHere:'أنت هنا'});
+Object.assign(I18N.ur, {tasbihTitle:'ڈیجیٹل تسبیح', tasbihWhen:'کب پڑھیں', tasbihPick:'ذکر منتخب کریں', tasbihListen:'سنیں', tasbihPron:'تلفظ', unitTimes:'بار', twAll:'🕰️ تمام اذکار', twPrayer:'🕌 نماز کے بعد', twMorning:'🌅 صبح کے اذکار', twEvening:'🌆 شام کے اذکار', twAny:'♾️ کسی بھی وقت', twQuran:'📖 قرآنی دعائیں', mosqueTitle:'قریبی مساجد', mosqueLegend:'🟢 سبز نقطہ = آپ (لائیو GPS) · 🕌 = مسجد · 🧭 راستہ دبائیں تو راستہ بنے گا', mosqueNearestTag:'قریب ترین مسجد', directDist:'براہِ راست فاصلہ', youAreHere:'آپ یہاں ہیں'});
+Object.assign(I18N.zh, {tasbihTitle:'电子念珠', tasbihWhen:'何时诵读', tasbihPick:'选择齐克尔', tasbihListen:'听', tasbihPron:'发音', unitTimes:'次', twAll:'🕰️ 全部', twPrayer:'🕌 礼拜后', twMorning:'🌅 晨间赞念', twEvening:'🌆 晚间赞念', twAny:'♾️ 任何时间', twQuran:'📖 古兰经祈祷', mosqueTitle:'附近的清真寺', mosqueLegend:'🟢 绿点 = 您(实时GPS) · 🕌 = 清真寺 · 点🧭路线可绘制路径', mosqueNearestTag:'最近的清真寺', directDist:'直线距离', youAreHere:'您在这里'});
+Object.assign(I18N.fr, {tasbihTitle:'Tasbih numérique', tasbihWhen:'Quand réciter', tasbihPick:'Choisir le dhikr', tasbihListen:'Écouter', tasbihPron:'Prononciation', unitTimes:'fois', twAll:'🕰️ Tous les dhikr', twPrayer:'🕌 Après la prière', twMorning:'🌅 Dhikr du matin', twEvening:'🌆 Dhikr du soir', twAny:'♾️ À tout moment', twQuran:'📖 Douas coraniques', mosqueTitle:'Mosquées à proximité', mosqueLegend:'🟢 Point vert = vous (GPS en direct) · 🕌 = mosquée · touchez 🧭 pour tracer le chemin', mosqueNearestTag:'Mosquée la plus proche', directDist:'Distance directe', youAreHere:'Vous êtes ici'});
+
 let currentLang = 'bn';
 
 function getCurrentLang(){
@@ -2559,6 +2567,19 @@ function applyLanguage(){
   if(audioLabel) audioLabel.textContent = surahAudioPlaying ? t('audioPause') : t('audioPlay');
   setTextIfExists('corner-mosque-lb', t('cornerMosque'));
   setTextIfExists('corner-qibla-lb', t('cornerQibla'));
+  setTextIfExists('tasbih-sec-lb', t('tasbihTitle'));
+  setTextIfExists('tasbih-when-lb', t('tasbihWhen'));
+  setTextIfExists('tasbih-pick-lb', t('tasbihPick'));
+  setTextIfExists('tasbih-listen-lb', t('tasbihListen'));
+  setTextIfExists('tasbih-pron-lb', t('tasbihPron'));
+  setTextIfExists('mosque-sec-title', t('mosqueTitle'));
+  setTextIfExists('mosque-legend', t('mosqueLegend'));
+  // dynamic bodies re-render in the new language
+  if(typeof renderTasbihPresets === 'function'){ try{ renderTasbihPresets(); selectTasbihZikir(tasbihZikirIdx || 0); }catch(e){} }
+  if(window._mosqueLast && typeof renderMosqueResults === 'function'){
+    const mv = document.getElementById('tool-mosque-view');
+    if(mv && mv.style.display !== 'none'){ try{ renderMosqueResults(window._mosqueLast.elements, window._mosqueLast.lat, window._mosqueLast.lon); }catch(e){} }
+  }
   setTextIfExists('qa-quran-title', t('qaQuran'));
   setTextIfExists('qa-quran-sub', t('qaQuranSub'));
   setTextIfExists('qa-hadith-title', t('qaHadith'));
@@ -5963,6 +5984,74 @@ function toggleTasbihPron(){
 }
 
 // occasion filter for "when should I do which zikir"
+// International (non-Bengali UI) layer for the zikir list: latin name + concise
+// English meaning, index-aligned with TASBIH_ZIKIR. Arabic text stays universal.
+const TASBIH_INTL = [
+  {n:'SubhanAllah', m:'Glory be to Allah — 33× after every prayer'},
+  {n:'Alhamdulillah', m:'All praise is for Allah — it fills the Scale'},
+  {n:'Allahu Akbar', m:'Allah is the Greatest — 34× after prayer (99 in total)'},
+  {n:'La ilaha illallah', m:'None deserves worship but Allah — the best of all dhikr'},
+  {n:'Astaghfirullah', m:'I seek Allah\'s forgiveness — the Prophet ﷺ said it 100× daily'},
+  {n:'Durood Sharif', m:'Blessings upon Muhammad ﷺ — one durood brings ten mercies from Allah'},
+  {n:'SubhanAllahi wa bihamdihi', m:'100× a day erases sins even if like the foam of the sea'},
+  {n:'SubhanAllahil-Azim', m:'Two phrases light on the tongue, heavy on the Scale, beloved to Allah'},
+  {n:'La hawla wa la quwwata', m:'No power except with Allah — a treasure of Paradise'},
+  {n:'Complete Tahlil', m:'100× = reward of freeing 10 slaves, 100 good deeds, protection all day'},
+  {n:'HasbiyAllahu', m:'7× morning & evening — Allah suffices you in both worlds'},
+  {n:'Raditu billahi Rabba', m:'3× morning & evening — Paradise becomes his right'},
+  {n:'Bismillahilladhi la yadurru', m:'3× — nothing in earth or heaven can harm you'},
+  {n:'A\'udhu bikalimatillah', m:'3× in the evening — protection from the harm of creation'},
+  {n:'Allahumma ajirni minan-nar', m:'7× after Fajr & Maghrib — protection from the Fire'},
+  {n:'Sayyidul-Istighfar', m:'The master of istighfar — who dies upon it with faith enters Paradise'},
+  {n:'The Seven Salams', m:'Seven Quranic "Salam" verses — recited for protection and blessing'},
+  {n:'Dua of Yunus (AS)', m:'The call from inside the fish — Allah answers the distressed who say it'},
+  {n:'Rabbana atina', m:'Good in this world and the Hereafter — the Prophet\'s ﷺ most frequent dua'},
+  {n:'Rabbi zidni ilma', m:'My Lord, increase me in knowledge'},
+  {n:'Rabbishrah li sadri', m:'Musa\'s (AS) dua — before difficult tasks and speech'},
+  {n:'HasbunAllahu', m:'Allah is sufficient for us — said by Ibrahim (AS) in times of fear'},
+  {n:'Rabbana la tuzigh', m:'Keep our hearts firm after You have guided us'},
+  {n:'Rabbana zalamna', m:'Adam\'s (AS) dua of repentance — Our Lord, we have wronged ourselves'},
+  {n:'Rabbana hab lana', m:'Grant us joy in our spouses and children, make us leaders of the righteous'},
+  {n:'Rabbi a\'udhu bika', m:'Refuge from the whispers and presence of the devils'},
+  {n:'Rabbij\'alni muqimas-salah', m:'Make me and my descendants establishers of prayer'},
+  {n:'Rabbi inni lima anzalta', m:'Musa\'s (AS) dua — My Lord, I am in need of any good You send me'},
+  {n:'Ayatul Kursi', m:'The greatest verse — protection when recited after prayer and before sleep'},
+  {n:'Ya Hayyu Ya Qayyum', m:'O Ever-Living, O Sustainer — by Your mercy I seek help'},
+  {n:'Afu & Afiyah dua', m:'Asking Allah for pardon and wellbeing in religion, world and Hereafter'},
+  {n:'Dhikr-Shukr dua', m:'O Allah, help me remember You, thank You, and worship You well'},
+  {n:'Complete Istighfar', m:'Seeking forgiveness for every sin — small and great, open and hidden'},
+  {n:'Refuge from anxiety', m:'Refuge from worry, grief, weakness, laziness, cowardice and debt'},
+  {n:'Ya Muqallibal-qulub', m:'O Turner of hearts, keep my heart firm upon Your religion'},
+  {n:'Allahumma innaka Afuwwun', m:'O Allah, You love to pardon — so pardon me (Laylatul-Qadr dua)'},
+  {n:'Kaffaratul-majlis', m:'Expiation of the gathering — erases the slips of the sitting'},
+  {n:'Rabbana taqabbal minna', m:'Ibrahim\'s (AS) dua — Our Lord, accept from us'},
+  {n:'Rabbi hab li minas-salihin', m:'Grant me righteous offspring'},
+  {n:'SubhanAllahi adada khalqihi', m:'Glorification as numerous as His creation — outweighs hours of dhikr'},
+  {n:'The Three Quls', m:'Ikhlas, Falaq, Nas — 3× morning & evening suffices you against everything'},
+  {n:'Bismillahi tawakkaltu', m:'Leaving home in Allah\'s name — guided, defended and protected'},
+  {n:'Afiyah of body & senses', m:'Wellbeing in my body, my hearing and my sight'},
+  {n:'Huda & Taqwa dua', m:'Asking for guidance, piety, chastity and contentment'},
+  {n:'Refuge from four trials', m:'From the trial of the Fire, the grave, wealth and poverty'},
+  {n:'Refuge from grave illness', m:'From leprosy, madness and every evil disease'},
+  {n:'Allahumma bika asbahna', m:'By You we enter morning and evening; to You is the return'},
+  {n:'Asbahna wa asbahal-mulk', m:'Morning dhikr — the dominion belongs to Allah'},
+  {n:'Amsayna wa amsal-mulk', m:'Evening dhikr — the dominion belongs to Allah'},
+  {n:'Inna lillah (in hardship)', m:'To Allah we belong — said at loss; Allah replaces with better'},
+  {n:'MashaAllah la quwwata', m:'What Allah wills — no power except with Allah (protection of blessings)'},
+  {n:'Rabbana afrigh', m:'Pour patience upon us and make our feet firm'},
+  {n:'Rabbanaghfir lana', m:'Forgive us our sins and our excesses, make our feet firm'},
+  {n:'Rabbi najjini', m:'My Lord, rescue me from the wrongdoing people'},
+  {n:'Rabbana alayka tawakkalna', m:'Upon You we rely, to You we turn, to You is the final return'},
+];
+// scholarly source chips: transliterate the common book/surah tokens for non-bn UIs
+const SRC_INTL_MAP = [['মুসলিম','Muslim'],['বুখারী','Bukhari'],['তিরমিযী','Tirmidhi'],['আবু দাউদ','Abu Dawud'],['নাসাঈ','Nasai'],['ইবনু মাজাহ','Ibn Majah'],['সূরা','Surah'],['তাওবা','At-Tawbah'],['আহযাব','Al-Ahzab'],['বাকারা','Al-Baqarah'],['আলে ইমরান','Al Imran'],['ত্বহা','Ta-Ha'],['আম্বিয়া','Al-Anbiya'],['ইয়াসীন','Ya-Sin'],['সাফফাত','As-Saffat'],['যুমার','Az-Zumar'],['কদর','Al-Qadr'],['ইখলাস','Al-Ikhlas'],['ফালাক','Al-Falaq'],['নাস','An-Nas'],['ইউনুস','Yunus'],['ফুরকান','Al-Furqan'],['ইবরাহীম','Ibrahim'],['মুমিনুন','Al-Muminun'],['আরাফ','Al-Araf'],['কাসাস','Al-Qasas'],['হাশর','Al-Hashr'],['মুমতাহিনা','Al-Mumtahanah'],['হুদ','Hud'],['ইউসুফ','Yusuf']];
+const BN_TO_LATIN_DIGIT = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
+function srcIntl(src){
+  let s = src.replace(/[০-৯]/g, d => BN_TO_LATIN_DIGIT[d]);
+  SRC_INTL_MAP.forEach(([bn, en]) => { s = s.split(bn).join(en); });
+  return s;
+}
+
 const TASBIH_WHEN = [
   {key:'all', label:'🕰️ সব সময়ের জিকির'},
   {key:'prayer', label:'🕌 নামাজের পর'},
@@ -5982,21 +6071,24 @@ function setTasbihWhen(key){
 }
 
 function renderTasbihPresets(){
+  const twKey = {all:'twAll', prayer:'twPrayer', morning:'twMorning', evening:'twEvening', any:'twAny', quran:'twQuran'};
   const whenSel = document.getElementById('tasbih-when-select');
-  if(whenSel && whenSel.options.length !== TASBIH_WHEN.length){
+  if(whenSel){
     whenSel.innerHTML = TASBIH_WHEN.map(w =>
-      `<option value="${w.key}" style="background:#0c1210;color:#e8dcc0">${w.label}</option>`
+      `<option value="${w.key}" style="background:#0c1210;color:#e8dcc0">${t(twKey[w.key]) || w.label}</option>`
     ).join('');
+    whenSel.value = tasbihWhen;
   }
-  if(whenSel) whenSel.value = tasbihWhen;
 
   const sel = document.getElementById('tasbih-zikir-select');
   if(!sel) return;
-  // option value = index in TASBIH_ZIKIR, so filtering never breaks selection
+  // option value = index in TASBIH_ZIKIR, so filtering never breaks selection;
+  // non-Bengali UIs get the latin transliteration
+  const zName = (z, i) => currentLang === 'bn' ? z.bn : ((TASBIH_INTL[i] && TASBIH_INTL[i].n) || z.bn);
   sel.innerHTML = TASBIH_ZIKIR.map((z, i) => ({z, i}))
     .filter(({z}) => tasbihWhen === 'all' || z.when.includes(tasbihWhen))
     .map(({z, i}) =>
-      `<option value="${i}" style="background:#0c1210;color:#e8f5f0">${z.bn} — ${localizeNum(z.target)} বার</option>`
+      `<option value="${i}" style="background:#0c1210;color:#e8f5f0">${zName(z, i)} — ${localizeNum(z.target)} ${t('unitTimes')}</option>`
     ).join('');
   sel.value = String(tasbihZikirIdx);
   if(sel.selectedIndex < 0) sel.selectedIndex = 0;
@@ -6011,8 +6103,9 @@ function selectTasbihZikir(i){
   const arEl = document.getElementById('tasbih-label-ar');
   arEl.textContent = z.ar;
   arEl.style.fontSize = z.ar.length > 120 ? '15px' : z.ar.length > 40 ? '18px' : z.ar.length > 24 ? '21px' : '25px';
-  setTextIfExists('tasbih-meaning', z.meaning);
-  setTextIfExists('tasbih-source', '📖 ' + z.src);
+  const intl = currentLang !== 'bn' && TASBIH_INTL[i];
+  setTextIfExists('tasbih-meaning', intl && intl.m ? intl.m : z.meaning);
+  setTextIfExists('tasbih-source', '📖 ' + (currentLang === 'bn' ? z.src : srcIntl(z.src)));
   // listen button only where real recorded recitation exists — no device TTS ever
   const audioBtn = document.getElementById('tasbih-audio-btn');
   if(audioBtn) audioBtn.style.display = (typeof TASBIH_AYAT !== 'undefined' && (TASBIH_AYAT[z.bn] || TASBIH_HISN[z.bn])) ? '' : 'none';
@@ -6540,7 +6633,7 @@ async function initMosqueMap(lat, lon, mosques){
 
   // "you are here" — pulsing emerald dot + accuracy halo, updated live below
   const userIcon = L.divIcon({className: '', html: '<div class="gps-dot"><div class="gps-dot-core"></div></div>', iconSize: [26,26], iconAnchor: [13,13]});
-  mosqueUserMarker = L.marker([lat, lon], {icon: userIcon, zIndexOffset: 1000}).addTo(mosqueMap).bindPopup('📍 আপনি এখানে');
+  mosqueUserMarker = L.marker([lat, lon], {icon: userIcon, zIndexOffset: 1000}).addTo(mosqueMap).bindPopup('📍 ' + t('youAreHere'));
   mosqueAccCircle = L.circle([lat, lon], {radius: 50, color: '#34d399', weight: 1, opacity: .35, fillColor: '#34d399', fillOpacity: .07}).addTo(mosqueMap);
 
   const bounds = [[lat, lon]];
@@ -6550,7 +6643,7 @@ async function initMosqueMap(lat, lon, mosques){
     const icon = L.divIcon({className: '', html: `<div class="mosque-pin${nearest ? ' nearest' : ''}">🕌<span class="mosque-pin-n">${localizeNum(i+1)}</span></div>`, iconSize: [30,30], iconAnchor: [15,26], popupAnchor: [0,-24]});
     const walkMin = Math.max(1, Math.round(m.dist * 12));
     const mk = L.marker([m.lat, m.lon], {icon}).addTo(mosqueMap)
-      .bindPopup(`<b>${nearest ? '⭐ ' : ''}${escapeHtml(m.name)}</b>${nearest ? '<br><span style="color:#eed9a6">সবচেয়ে কাছের মসজিদ</span>' : ''}<br>📏 ${localizeNum(m.dist.toFixed(1))} কিমি · 🚶 ~${localizeNum(walkMin)} মিনিট হাঁটা`);
+      .bindPopup(`<b>${nearest ? '⭐ ' : ''}${escapeHtml(m.name)}</b>${nearest ? '<br><span style="color:#eed9a6">' + t('mosqueNearestTag') + '</span>' : ''}<br>📏 ${localizeNum(m.dist.toFixed(1))} ${t('unitKm')} · 🚶 ~${localizeNum(walkMin)} ${t('unitMin')}`);
     mosqueMarkers[i] = mk;
     bounds.push([m.lat, m.lon]);
   });
@@ -6629,7 +6722,7 @@ async function drawRouteToMosque(i){
   const infoEl = document.getElementById('mosque-route-info');
   if(infoEl){
     infoEl.style.display = 'inline-block';
-    infoEl.textContent = `🧭 ${straight ? 'সরাসরি দূরত্ব' : 'পথ'}: ${localizeNum(km.toFixed(1))} কিমি · 🚶 ~${localizeNum(walkMin)} মিনিট`;
+    infoEl.textContent = `🧭 ${straight ? t('directDist') : t('routeBtn')}: ${localizeNum(km.toFixed(1))} ${t('unitKm')} · 🚶 ~${localizeNum(walkMin)} ${t('unitMin')}`;
   }
   const wrap = document.getElementById('mosque-map-wrap');
   if(wrap) wrap.scrollIntoView({behavior: 'smooth', block: 'center'});
@@ -6649,6 +6742,7 @@ function bearingInfo(lat1, lon1, lat2, lon2){
 }
 
 function renderMosqueResults(elements, myLat, myLon){
+  window._mosqueLast = {elements, lat: myLat, lon: myLon}; // language switches re-render from this
   const resultsDiv = document.getElementById('mosque-results');
   resultsDiv.style.display = 'block';
 
@@ -8243,7 +8337,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v272';
+const APP_VERSION = 'v273';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
