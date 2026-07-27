@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v287-audio-focus -->
+<!-- VERSION: v288-audio-polish -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -2368,6 +2368,14 @@ Object.assign(I18N.ur, {alarmSettingsTitle:'⏰ الارم کی ترتیبات',
 Object.assign(I18N.zh, {alarmSettingsTitle:'⏰ 闹钟设置', alarmWaqt:'🕌 礼拜时间闹钟', alarmSehri:'🌙 封斋闹钟(结束前30分钟)', alarmIftar:'🌅 开斋闹钟', alarmHint:'💡 闹钟需应用保持打开(或在后台)并允许通知。', stOn:'开', stOff:'关', tasbihPronHide:'隐藏发音'});
 Object.assign(I18N.fr, {alarmSettingsTitle:"⏰ Réglages d'alarme", alarmWaqt:'🕌 Alarme de prière', alarmSehri:'🌙 Alarme du sehri (30 min avant la fin)', alarmIftar:"🌅 Alarme de l'iftar", alarmHint:"💡 Gardez l'app ouverte (ou en arrière-plan) et autorisez les notifications.", stOn:'Activé', stOff:'Désactivé', tasbihPronHide:'Masquer la prononciation'});
 
+// অডিও-ফোকাস টোস্ট (v287.1)
+Object.assign(I18N.bn, { afPrev: '🔇 আগের অডিও থামানো হলো' });
+Object.assign(I18N.en, { afPrev: '🔇 Previous audio stopped' });
+Object.assign(I18N.ar, { afPrev: '🔇 تم إيقاف الصوت السابق' });
+Object.assign(I18N.ur, { afPrev: '🔇 پچھلی آواز روک دی گئی' });
+Object.assign(I18N.zh, { afPrev: '🔇 已停止上一个音频' });
+Object.assign(I18N.fr, { afPrev: '🔇 Audio précédent arrêté' });
+
 let currentLang = 'bn';
 
 function getCurrentLang(){
@@ -3012,16 +3020,45 @@ function updateActivePrayerHighlight(){
    tasbih/dua player, adhan alarm, and every YouTube embed (via postMessage,
    embeds carry enablejsapi=1). cur = the element that is ABOUT to play, or 'yt'. */
 window.AF = {
+  // ~330ms মোলায়েম ফেড-আউট, তারপর থামাও ও ভলিউম ফিরিয়ে দাও (হুট-কাট নয়)
+  _fade(a, after){
+    try{
+      if(a._afFading){ if(after) after(); return; }
+      a._afFading = true;
+      const v0 = a.volume, N = 6; let i = 0;
+      const t = setInterval(() => {
+        i++;
+        try{ a.volume = Math.max(0, v0 * (1 - i / N)); }catch(e){}
+        if(i >= N){
+          clearInterval(t);
+          if(after) after(); else { try{ a.pause(); }catch(e){} }
+          try{ a.volume = v0; }catch(e){}
+          a._afFading = false;
+        }
+      }, 55);
+    }catch(e){ if(after) after(); else { try{ a.pause(); }catch(_){} } }
+  },
+  _toastT: 0,
   claim(cur){
-    try{ if(typeof AE !== 'undefined' && AE.el && AE.el !== cur && AE.active) AE.stop(); }catch(e){}
-    try{ if(window._tasbihSpeaking && typeof stopTasbihAudio === 'function' && document.getElementById('surah-audio-player') !== cur) stopTasbihAudio(); }catch(e){}
-    document.querySelectorAll('audio').forEach(a => { if(a !== cur && !a.paused){ try{ a.pause(); }catch(e){} } });
-    try{ if(_alarmEl && _alarmEl !== cur && !_alarmEl.paused) stopAlarmSound(); }catch(e){}
+    let stopped = 0;
+    try{ if(typeof AE !== 'undefined' && AE.el && AE.el !== cur && AE.active){ stopped++; this._fade(AE.el, () => { try{ AE.stop(); }catch(e){} }); } }catch(e){}
+    try{ if(window._tasbihSpeaking && typeof stopTasbihAudio === 'function' && document.getElementById('surah-audio-player') !== cur){ stopped++; stopTasbihAudio(); } }catch(e){}
+    document.querySelectorAll('audio').forEach(a => { if(a !== cur && !a.paused && !a._afFading){ stopped++; this._fade(a); } });
+    try{ if(_alarmEl && _alarmEl !== cur && !_alarmEl.paused){ stopped++; this._fade(_alarmEl, () => stopAlarmSound()); } }catch(e){}
     if(cur !== 'yt') document.querySelectorAll('iframe[src*="youtube"]').forEach(f => {
       try{ f.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*'); }catch(e){}
     });
-    // hadith-player buttons show ▶ again after a forced pause
-    ['en','bn'].forEach(x => { const a = document.getElementById('hdp-audio-' + x), b = document.getElementById('hdp-btn-' + x); if(a && a.paused && b && b.textContent === '⏸'){ b.textContent = '▶'; const c = b.closest('.hda-col'); if(c) c.classList.remove('on'); } });
+    // hadith-player buttons show ▶ again after a forced pause (fade ends async → small delay)
+    setTimeout(() => {
+      ['en','bn'].forEach(x => { const a = document.getElementById('hdp-audio-' + x), b = document.getElementById('hdp-btn-' + x); if(a && a.paused && b && b.textContent === '⏸'){ b.textContent = '▶'; const c = b.closest('.hda-col'); if(c) c.classList.remove('on'); } });
+    }, 420);
+    // ছোট্ট জানান-টোস্ট — অ্যালার্মের সময় নয়, আর ঘনঘন নয় (১.৫ সেকেন্ড থ্রটল)
+    try{
+      if(stopped && cur !== _alarmEl && Date.now() - this._toastT > 1500 && typeof showToast === 'function'){
+        this._toastT = Date.now();
+        showToast((typeof t === 'function' && t('afPrev') !== 'afPrev' ? t('afPrev') : '🔇 আগের অডিও থামানো হলো'));
+      }
+    }catch(e){}
   }
 };
 // ইউটিউবে প্লে চাপলে iframe কীবোর্ড-ফোকাস পায় → নেটিভ অডিও থামাও
@@ -8712,7 +8749,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v287';
+const APP_VERSION = 'v288';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
