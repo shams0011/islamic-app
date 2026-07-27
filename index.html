@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v286-travel-assistant -->
+<!-- VERSION: v287-audio-focus -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -3006,6 +3006,30 @@ function updateActivePrayerHighlight(){
   checkFastAlarms();
 }
 
+/* ══ AUDIO FOCUS — একসাথে একটাই সাউন্ড-উৎস ══
+   Any new playback claims focus and silences every other source:
+   Quran engine (AE / #surah-audio-player), hadith chapter audio (hdp-audio-*),
+   tasbih/dua player, adhan alarm, and every YouTube embed (via postMessage,
+   embeds carry enablejsapi=1). cur = the element that is ABOUT to play, or 'yt'. */
+window.AF = {
+  claim(cur){
+    try{ if(typeof AE !== 'undefined' && AE.el && AE.el !== cur && AE.active) AE.stop(); }catch(e){}
+    try{ if(window._tasbihSpeaking && typeof stopTasbihAudio === 'function' && document.getElementById('surah-audio-player') !== cur) stopTasbihAudio(); }catch(e){}
+    document.querySelectorAll('audio').forEach(a => { if(a !== cur && !a.paused){ try{ a.pause(); }catch(e){} } });
+    try{ if(_alarmEl && _alarmEl !== cur && !_alarmEl.paused) stopAlarmSound(); }catch(e){}
+    if(cur !== 'yt') document.querySelectorAll('iframe[src*="youtube"]').forEach(f => {
+      try{ f.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*'); }catch(e){}
+    });
+    // hadith-player buttons show ▶ again after a forced pause
+    ['en','bn'].forEach(x => { const a = document.getElementById('hdp-audio-' + x), b = document.getElementById('hdp-btn-' + x); if(a && a.paused && b && b.textContent === '⏸'){ b.textContent = '▶'; const c = b.closest('.hda-col'); if(c) c.classList.remove('on'); } });
+  }
+};
+// ইউটিউবে প্লে চাপলে iframe কীবোর্ড-ফোকাস পায় → নেটিভ অডিও থামাও
+window.addEventListener('blur', () => setTimeout(() => {
+  const el = document.activeElement;
+  if(el && el.tagName === 'IFRAME' && /youtube/i.test(el.src || '')) AF.claim('yt');
+}, 0));
+
 /* ══ PRAYER ALARM SYSTEM ══
    The alarm voice is the adhan's own call — "হাইয়া আলাস-সালাহ, হাইয়া আলাল-ফালাহ"
    (recorded recitation, Mishary al-Afasy) played ONCE per alarm. Never synthetic
@@ -3020,6 +3044,7 @@ function playAlarmTone(){
       _alarmEl.preload = 'auto';
     }
     _alarmEl.currentTime = 0;
+    AF.claim(_alarmEl);
     _alarmEl.play().catch(() => { /* autoplay blocked — vibration + overlay still alert */ });
   }catch(e){ /* audio unavailable — alarm still shows visually */ }
 }
@@ -4385,7 +4410,7 @@ function playMediaItem(catId, itemIndex){
 
   let embedUrl = '';
   if(item.type === 'youtube' && item.videoId){
-    embedUrl = `https://www.youtube.com/embed/${item.videoId}?autoplay=1&modestbranding=1&rel=0`;
+    embedUrl = `https://www.youtube.com/embed/${item.videoId}?autoplay=1&modestbranding=1&rel=0&enablejsapi=1`;
   } else if(item.type === 'youtube_channel' && item.channelId){
     embedUrl = `https://www.youtube.com/embed/live_stream?channel=${item.channelId}&autoplay=1&modestbranding=1&rel=0`;
   }
@@ -5262,7 +5287,7 @@ function toggleFastDone(){
 function loadLiveStream(btn){
   const holder = btn.parentElement;
   const ifr = document.createElement('iframe');
-  ifr.src = `https://www.youtube.com/embed/${btn.dataset.video}?autoplay=1&playsinline=1&modestbranding=1&rel=0&iv_load_policy=3&fs=1`;
+  ifr.src = `https://www.youtube.com/embed/${btn.dataset.video}?autoplay=1&playsinline=1&modestbranding=1&rel=0&iv_load_policy=3&fs=1&enablejsapi=1`;
   ifr.title = btn.dataset.title;
   ifr.style.cssText = 'width:100%;height:100%;border:0;position:absolute;inset:0';
   ifr.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
@@ -5453,6 +5478,7 @@ function hdpToggle(id){
       if(o && !o.paused){ o.pause(); if(ob) ob.textContent = '▶'; }
       const oc = colOf(x); if(oc) oc.classList.remove('on');
     });
+    AF.claim(a);
     a.play().then(() => {
       if(b) b.textContent = '⏸';
       const c = colOf(id); if(c) c.classList.add('on');
@@ -6547,6 +6573,7 @@ function tasbihSpeak(){
   const hisn = TASBIH_HISN[z.bn];
   const player = document.getElementById('surah-audio-player');
   if(!player || (!ayat && !hisn)) return;
+  AF.claim(player);
 
   const done = () => stopTasbihAudio();
   const start = () => {
@@ -8685,7 +8712,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v286';
+const APP_VERSION = 'v287';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -9553,6 +9580,7 @@ const AE = {
     const cur = this.queue[this.idx];
     if(this.active && cur && cur.s === s && cur.a === a){
       this._applyWordSeek();
+      AF.claim(this.el);
       this.el.play().catch(()=>{});
     }else{
       this.playSurah(s, a); // _karaokeTick applies the pending word-seek once metadata+segments arrive
@@ -9615,6 +9643,7 @@ const AE = {
     clearTimeout(this._gapT);
     this.active = true;
     if(window._tasbihSpeaking && typeof stopTasbihAudio === 'function') stopTasbihAudio();
+    AF.claim(this.el);
     this.el.src = await this.src(it.s, it.a);
     try{ this.el.currentTime = 0; }catch(e){} // same-src retap must restart from the beginning
     this.el.playbackRate = this.cfg().speed;
@@ -9622,7 +9651,7 @@ const AE = {
     this._sync(it);
     this._preloadNext();
   },
-  resume(){ if(this.active) this.el.play().catch(()=>{}); },
+  resume(){ if(this.active){ AF.claim(this.el); this.el.play().catch(()=>{}); } },
   pause(){ this.el.pause(); },
   stop(){
     clearTimeout(this._gapT);
