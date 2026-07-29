@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v289-tahajjud-fix -->
+<!-- VERSION: v290-tester-fixes -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -153,6 +153,14 @@ html[dir="rtl"] .clock-panel{direction:rtl}
 .np-col-next .np-label{background:rgba(212,175,106,.11);border-color:rgba(212,175,106,.3);color:var(--gold2);align-self:flex-end}
 .np-live-dot{display:inline-block;width:7px;height:7px;background:var(--emerald2);border-radius:50%;box-shadow:0 0 9px var(--emerald2);animation:blink 2s ease-in-out infinite;margin-right:6px;vertical-align:1px}
 .np-name{font-size:25px;font-weight:800;line-height:1.2;color:#fff;background:linear-gradient(135deg,#fff 30%,var(--emerald2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.2px;text-shadow:0 0 18px rgba(16,185,129,.22)}
+/* সিয়াম কার্ডে রোজার নাম — ছোট, এক লাইনে (আইয়ামে বীজ ইত্যাদি যেন না ভাঙে) */
+.fasting-card .np-name{font-size:16px;white-space:nowrap;letter-spacing:-0.3px}
+/* ইফতারের দোয়া — হিন্টের ঠিক নিচে ইনলাইন বক্স, গ্লোবাল টোস্ট নয় */
+#fc-dua-box{display:none;margin:10px 4px 2px;padding:12px 14px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:14px;text-align:center;animation:fcDuaIn .25s ease}
+#fc-dua-box.show{display:block}
+#fc-dua-box .fd-ar{font-family:'Scheherazade New',serif;font-size:19px;color:var(--emerald2);direction:rtl;line-height:1.9;display:block;margin-bottom:6px}
+#fc-dua-box .fd-bn{font-size:12.5px;color:var(--text2);line-height:1.7}
+@keyframes fcDuaIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 .np-name-next{background:linear-gradient(135deg,#fff 25%,var(--gold2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 24px rgba(212,175,106,.25)}
 .np-name-row{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
 .np-col-next .np-name-row{justify-content:flex-end}
@@ -1047,6 +1055,7 @@ try{
     </div>
   </div>
   <div class="fc-hint" id="fc-hint" style="margin-top:14px">👆 ইফতারের দোয়া দেখতে ট্যাপ করুন</div>
+  <div id="fc-dua-box" role="note" aria-live="polite"></div>
 </div>
 
 <div id="ramadan-banner" role="region" aria-label="রমজান ড্যাশবোর্ড" style="display:none;margin:14px 16px 0;padding:18px 20px;background:linear-gradient(135deg,rgba(16,185,129,.14),rgba(212,175,106,.09));border:1px solid rgba(212,175,106,.28);border-radius:22px;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.05)">
@@ -2375,6 +2384,13 @@ Object.assign(I18N.ar, { afPrev: '🔇 تم إيقاف الصوت السابق' 
 Object.assign(I18N.ur, { afPrev: '🔇 پچھلی آواز روک دی گئی' });
 Object.assign(I18N.zh, { afPrev: '🔇 已停止上一个音频' });
 Object.assign(I18N.fr, { afPrev: '🔇 Audio précédent arrêté' });
+// কিবলা: কম্পাস-সেন্সরহীন ফোনের গাইড (v290)
+Object.assign(I18N.bn, { qiblaNoSensor: 'এই ফোনে কম্পাস-সেন্সর সাড়া দিচ্ছে না — উত্তরমুখী দাঁড়ান, তারপর দেখানো ডিগ্রি অনুযায়ী ঘুরুন; কাঁটাটাই সঠিক দিক' });
+Object.assign(I18N.en, { qiblaNoSensor: 'Compass sensor not responding — face North, then turn by the shown degrees; the needle is the true direction' });
+Object.assign(I18N.ar, { qiblaNoSensor: 'حساس البوصلة لا يستجيب — واجه الشمال ثم استدر بمقدار الدرجات الموضحة؛ الإبرة هي الاتجاه الصحيح' });
+Object.assign(I18N.ur, { qiblaNoSensor: 'کمپاس سینسر جواب نہیں دے رہا — شمال کی طرف رخ کریں، پھر دکھائی گئی ڈگری کے مطابق گھومیں؛ سوئی ہی درست سمت ہے' });
+Object.assign(I18N.zh, { qiblaNoSensor: '指南针传感器无响应 — 面向北方，再按所示度数转身；指针即正确方向' });
+Object.assign(I18N.fr, { qiblaNoSensor: 'Capteur boussole indisponible — face au nord, tournez selon les degrés affichés ; l aiguille indique la bonne direction' });
 
 let currentLang = 'bn';
 
@@ -5292,7 +5308,19 @@ function updateFastingCard(now, pt, curHour){
 }
 
 function showIftarDua(){
-  showToast(t('iftarDua'), 7000);
+  // দোয়াটা হিন্টের ঠিক নিচেই খোলে-বন্ধ হয় (স্ক্রিনের অন্য কোথাও ভেসে ওঠে না)
+  const box = document.getElementById('fc-dua-box');
+  if(!box){ showToast(t('iftarDua'), 7000); return; } // নিরাপত্তা-ফলব্যাক
+  if(box.classList.contains('show')){ box.classList.remove('show'); clearTimeout(window._fcDuaT); return; }
+  const raw = t('iftarDua');
+  const dash = raw.indexOf('—');
+  box.innerHTML = dash > -1
+    ? '<span class="fd-ar" lang="ar">' + raw.slice(0, dash).trim() + '</span><span class="fd-bn">' + raw.slice(dash + 1).trim() + '</span>'
+    : '<span class="fd-bn">' + raw + '</span>';
+  box.classList.add('show');
+  try{ box.scrollIntoView({block:'nearest', behavior:'smooth'}); }catch(e){}
+  clearTimeout(window._fcDuaT);
+  window._fcDuaT = setTimeout(() => box.classList.remove('show'), 15000);
 }
 
 /* ── Fasting tracker — mark today fasted, keep a running total (per profile) ── */
@@ -5828,9 +5856,7 @@ async function hadithAI(kind, i){
       <div style="font-size:13px;color:var(--text2);line-height:1.85;white-space:pre-wrap">${escapeHtml(meta.body)}</div>
       <div style="font-size:10.5px;color:var(--text3);margin-top:10px;border-top:1px solid rgba(255,255,255,.06);padding-top:8px">⚠️ AI-উত্তর সহায়ক মাত্র — গুরুত্বপূর্ণ বিষয়ে বিজ্ঞ আলেমের শরণাপন্ন হোন।</div>`);
   }catch(e){
-    render(`${heading}<div style="text-align:center;padding:18px;color:#e0a0a0;font-size:12.5px">${e.message === 'no-proxy'
-      ? '⚙️ AI সেবা এখনো চালু হয়নি।'
-      : 'AI সংযোগে সমস্যা (' + escapeHtml(e.message) + ') — ইন্টারনেট বা AI-ক্রেডিট পরীক্ষা করে আবার চেষ্টা করুন।'}</div>`);
+    render(`${heading}<div style="text-align:center;padding:18px;color:#e0a0a0;font-size:12.5px">${escapeHtml(aiErrMsg(e))}</div>`);
   }
 }
 
@@ -5888,6 +5914,14 @@ function esc(s){ return (s||'').replace(/'/g,"&#39;"); }
    'https://islamic-ai-proxy.YOUR-SUBDOMAIN.workers.dev'. Empty = AI features show a
    friendly "not configured" message instead of failing with a fake network error. */
 const AI_PROXY_URL = 'https://islamic-ai-proxy.samsuzzaman.workers.dev';
+// এক জায়গায় সব AI-এরর → ব্যবহারকারী-বান্ধব বাংলা বার্তা
+function aiErrMsg(e){
+  const s = String((e && e.message) || '');
+  if(/credit balance/i.test(s)) return '🔋 AI সেবা এই মুহূর্তে রিচার্জের অপেক্ষায় আছে — শীঘ্রই চালু হবে ইনশাআল্লাহ। অ্যাপের বাকি সব ফিচার স্বাভাবিকভাবে চলছে।';
+  if(/no-proxy/.test(s)) return '⚙️ AI সেবাটি এখনো চালু করা হয়নি — শীঘ্রই আসছে ইনশাআল্লাহ।';
+  if(/overloaded|rate.?limit|429/i.test(s)) return '⏳ AI এই মুহূর্তে ব্যস্ত — এক মিনিট পরে আবার চেষ্টা করুন।';
+  return '📶 AI সংযোগে সমস্যা হয়েছে — ইন্টারনেট দেখে আবার চেষ্টা করুন।';
+}
 const AI_MODULES = [
   {
     id:'hadith', icon:'📖', title:'AI হাদিস সার্চ', sub:'সিহাহ সিত্তাহ থেকে হাদিস খুঁজুন',
@@ -6085,7 +6119,7 @@ async function sendAiChat(preset){
   }catch(e){
     document.getElementById('ai-typing')?.remove();
     aiHist[m.id].pop(); // remove the unanswered user turn so history stays valid for retry
-    addAiMsg('ai','সংযোগ সমস্যা হয়েছে, একটু পরে আবার চেষ্টা করুন।');
+    addAiMsg('ai', aiErrMsg(e));
   }
   btn.disabled=false;
 }
@@ -6236,8 +6270,15 @@ function initCompass(){
     _compassActive = true;
     // Prefer absolute orientation when available; fall back to relative only if absolute never fires
     let usingAbsolute = false;
-    window.addEventListener('deviceorientationabsolute', e => { usingAbsolute = true; handleOrientation(e); }, true);
-    window.addEventListener('deviceorientation', e => { if(!usingAbsolute) handleOrientation(e); }, true);
+    window.addEventListener('deviceorientationabsolute', e => { usingAbsolute = true; window._qGotSensor = true; handleOrientation(e); }, true);
+    window.addEventListener('deviceorientation', e => { if(!usingAbsolute){ window._qGotSensor = true; handleOrientation(e); } }, true);
+    // সেন্সর ৪ সেকেন্ডে সাড়া না দিলে — স্ট্যাটিক উত্তরটাই যে সঠিক, সেটা বুঝিয়ে দাও
+    window._qGotSensor = false;
+    setTimeout(() => {
+      if(window._qGotSensor) return;
+      const b = document.getElementById('qibla-align-badge');
+      if(b && !b.classList.contains('ok')){ b.textContent = '📵 ' + t('qiblaNoSensor'); b.style.fontSize = '12px'; }
+    }, 4000);
   }
 
   if(typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'){
@@ -8751,7 +8792,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v289';
+const APP_VERSION = 'v290';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -9103,9 +9144,7 @@ async function quranAI(cmd){
       <div style="font-size:13px;color:var(--text2);line-height:1.85;white-space:pre-wrap">${escapeHtml(meta.body)}</div>
       <div style="font-size:10.5px;color:var(--text3);margin-top:10px;border-top:1px solid rgba(255,255,255,.06);padding-top:8px">⚠️ AI-উত্তর সহায়ক মাত্র — গুরুত্বপূর্ণ বিষয়ে বিজ্ঞ আলেমের শরণাপন্ন হোন।</div>`);
   }catch(e){
-    render(`${heading}<div style="text-align:center;padding:18px;color:#e0a0a0;font-size:12.5px">${e.message === 'no-proxy'
-      ? '⚙️ AI সেবা এখনো চালু হয়নি।'
-      : 'AI সংযোগে সমস্যা (' + escapeHtml(e.message) + ') — ইন্টারনেট বা AI-ক্রেডিট পরীক্ষা করে আবার চেষ্টা করুন।'}</div>`);
+    render(`${heading}<div style="text-align:center;padding:18px;color:#e0a0a0;font-size:12.5px">${escapeHtml(aiErrMsg(e))}</div>`);
   }
 }
 
