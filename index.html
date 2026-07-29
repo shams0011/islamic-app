@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v288-audio-polish -->
+<!-- VERSION: v289-tahajjud-fix -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -2896,8 +2896,10 @@ function updatePrayerDisplay(){
   const spTimes = document.querySelectorAll('.sp-row:not(#makruh-card .sp-row) .sp-time');
   if(spTimes[0]) spTimes[0].textContent = fmtHM(pt.sunrise);
   if(spTimes[1]) spTimes[1].textContent = fmtHM(pt.maghrib);
-  // Tahajjud: midpoint between Isha and Fajr (next day)
-  let tahajjud = (pt.isha + (pt.fajr+24))/2;
+  // Tahajjud: last third of the night — SAME formula as getPrayerSegments so the
+  // special-times card and the waqt timeline never disagree (was: isha–fajr midpoint)
+  const spNightEnd = pt.fajr + 24;
+  let tahajjud = Math.min(Math.max(spNightEnd - (spNightEnd - pt.maghrib)/3, pt.isha + 0.25), spNightEnd - 0.25);
   if(spTimes[2]) spTimes[2].textContent = fmtHM(tahajjud);
   if(spTimes[3]) spTimes[3].textContent = fmtHM(pt.fajr - 10/60); // sehri ends 10 min before fajr
   updateMakruhTimes();
@@ -8749,7 +8751,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v288';
+const APP_VERSION = 'v289';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
