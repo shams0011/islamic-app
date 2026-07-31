@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v293-native-alarm-sync -->
+<!-- VERSION: v294-firstrun-alarm-sync -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -3116,6 +3116,16 @@ function syncNativeAlarms(){
       + '&iftar=' + (s.iftar ? 1 : 0) + '&lat=' + LAT + '&lon=' + LON + '&tz=' + TZ;
   }catch(e){}
 }
+// নতুন ইনস্টলে টগল না ছুঁলেও নেটিভ ইঞ্জিন যেন সঠিক লোকেশন+ডিফল্ট (নামাজ-অ্যালার্ম ON)
+// পেয়ে যায়: প্রতি সেশনে প্রথম ট্যাপে একবার অটো-সিংক। ৬ সেকেন্ড দেরিতে লিসনার বসে
+// যাতে IP-লোকেশন resolve হওয়ার পরের LAT/LON-টাই যায়; custom-scheme নেভিগেশনের
+// জন্য ইউজার-জেসচার লাগে বলে ক্লিকেই করতে হয়।
+setTimeout(() => {
+  document.addEventListener('click', function _afOnce(){
+    document.removeEventListener('click', _afOnce, true);
+    try{ if(localStorage.getItem('is_twa') === '1') setTimeout(syncNativeAlarms, 700); }catch(e){}
+  }, true);
+}, 6000);
 function toggleAlarmSetting(key){
   const s = loadAlarmSettings();
   s[key] = !s[key];
@@ -8817,7 +8827,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v293';
+const APP_VERSION = 'v294';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
