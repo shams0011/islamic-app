@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v291-new-logo -->
+<!-- VERSION: v292-country-lang -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -833,6 +833,9 @@ try{
         if(sup.includes(c)){ pick = c; break; }
       }
       localStorage.setItem('app_lang', pick);
+      // PROVISIONAL: দেশ শনাক্ত হওয়া মাত্র দেশ-অনুযায়ী ভাষা এটাকে ছাপিয়ে যাবে
+      // (applyCountryLang); ব্যবহারকারী নিজে ভাষা বাছলে ফ্ল্যাগ মুছে যায় — তখন আর নয়
+      localStorage.setItem('app_lang_prov', '1');
     }
   }
 }catch(e){}
@@ -2358,6 +2361,13 @@ Object.assign(I18N.ar, { afPrev: '🔇 تم إيقاف الصوت السابق' 
 Object.assign(I18N.ur, { afPrev: '🔇 پچھلی آواز روک دی گئی' });
 Object.assign(I18N.zh, { afPrev: '🔇 已停止上一个音频' });
 Object.assign(I18N.fr, { afPrev: '🔇 Audio précédent arrêté' });
+// দেশ-অনুযায়ী প্রথম-রান ভাষার টোস্ট (v292)
+Object.assign(I18N.bn, { ctryLangSet: '🌍 আপনার দেশ অনুযায়ী ভাষা নির্বাচিত হয়েছে — উপরের 🌐 বোতাম থেকে বদলাতে পারবেন' });
+Object.assign(I18N.en, { ctryLangSet: '🌍 Language set based on your country — change it anytime from the 🌐 button above' });
+Object.assign(I18N.ar, { ctryLangSet: '🌍 تم اختيار اللغة حسب بلدك — يمكنك تغييرها من زر 🌐 بالأعلى' });
+Object.assign(I18N.ur, { ctryLangSet: '🌍 آپ کے ملک کے مطابق زبان منتخب ہوئی — اوپر 🌐 بٹن سے بدل سکتے ہیں' });
+Object.assign(I18N.zh, { ctryLangSet: '🌍 已根据您所在国家选择语言 — 可随时通过上方 🌐 按钮更改' });
+Object.assign(I18N.fr, { ctryLangSet: '🌍 Langue choisie selon votre pays — modifiable via le bouton 🌐 en haut' });
 // কিবলা: কম্পাস-সেন্সরহীন ফোনের গাইড (v290)
 Object.assign(I18N.bn, { qiblaNoSensor: 'এই ফোনে কম্পাস-সেন্সর সাড়া দিচ্ছে না — উত্তরমুখী দাঁড়ান, তারপর দেখানো ডিগ্রি অনুযায়ী ঘুরুন; কাঁটাটাই সঠিক দিক' });
 Object.assign(I18N.en, { qiblaNoSensor: 'Compass sensor not responding — face North, then turn by the shown degrees; the needle is the true direction' });
@@ -2391,6 +2401,7 @@ function closeLangSelector(){
 }
 
 function setLanguage(code){
+  try{ localStorage.removeItem('app_lang_prov'); }catch(e){} // যেকোনো নির্বাচনই চূড়ান্ত
   currentLang = code;
   try{ localStorage.setItem('app_lang', code); }catch(e){}
   applyLanguage();
@@ -3429,12 +3440,33 @@ function tvResetPref(){
   tvRenderControls();
   showToast('🔄 ' + t('tvPrefReset') + ' ✓');
 }
+/* ── দেশ-অনুযায়ী প্রথম-রান ভাষা ──
+   ডিভাইসের ভাষা যা-ই হোক, প্রথম ইনস্টলে দেশই ভাষা ঠিক করে: BD→বাংলা, আরব
+   বিশ্ব→আরবি, PK→উর্দু, চীন→চাইনিজ, ফরাসিভাষী→ফরাসি, বাকি সব→English।
+   শুধু app_lang_prov ফ্ল্যাগ থাকা অবস্থায় একবারই চলে; ব্যবহারকারীর নিজের
+   পছন্দ (setLanguage) সবসময় চূড়ান্ত। */
+const CTRY_LANG = { BD:'bn', PK:'ur', CN:'zh', TW:'zh', HK:'zh', MO:'zh',
+  FR:'fr', BE:'fr', SN:'fr', CI:'fr', ML:'fr', BF:'fr', NE:'fr', TG:'fr', BJ:'fr',
+  GN:'fr', CM:'fr', GA:'fr', CG:'fr', CD:'fr', TD:'fr', MG:'fr' };
+['SA','AE','EG','KW','QA','BH','OM','JO','SY','IQ','YE','LB','PS','LY','SD','TN','DZ','MA','MR','SO','DJ','KM'].forEach(c => { CTRY_LANG[c] = 'ar'; });
+function applyCountryLang(cc){
+  try{
+    if(localStorage.getItem('app_lang_prov') !== '1') return;
+    localStorage.removeItem('app_lang_prov'); // একবারই — সফল শনাক্তকরণের পর আর নয়
+    const lang = CTRY_LANG[String(cc).toUpperCase()] || 'en';
+    if(lang !== currentLang && typeof setLanguage === 'function'){
+      setLanguage(lang);
+      setTimeout(() => { try{ showToast(t('ctryLangSet'), 4500); }catch(e){} }, 600);
+    }
+  }catch(e){}
+}
 function setGeoCountry(cc){
   if(!cc) return;
   const up = String(cc).toUpperCase();
   const changed = window._geoCC !== up;
   window._geoCC = up;
   try{ localStorage.setItem('geo_cc', up); }catch(e){}
+  applyCountryLang(up); // প্রথম-রানে দেশ-অনুযায়ী ভাষা
   if(changed && typeof handleCountryChange === 'function') handleCountryChange(up);
   applyRemoteHijri(); // country may change which adjustment applies
 }
@@ -8766,7 +8798,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v291';
+const APP_VERSION = 'v292';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
