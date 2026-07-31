@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v294-firstrun-alarm-sync -->
+<!-- VERSION: v295-user-guide -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -1529,6 +1529,11 @@ try{
   <div id="tools-grid-view">
     <div class="sec-title"><div class="sec-gem"></div>টুলস<div class="sec-gem"></div></div>
     <div class="ai-grid">
+      <div class="ai-card" onclick="openTool('guide')" role="button" tabindex="0" aria-label="ব্যবহার-নির্দেশিকা" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTool('guide')}">
+        <div class="ai-card-icon" aria-hidden="true">📖</div>
+        <div class="ai-card-title" id="tool-title-guide">ব্যবহার-নির্দেশিকা</div>
+        <div class="ai-card-desc" id="tool-desc-guide">প্রতিটা ফিচার কীভাবে ব্যবহার করবেন</div>
+      </div>
       <div class="ai-card" onclick="openTool('zakat')" role="button" tabindex="0" aria-label="যাকাত ক্যালকুলেটর" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTool('zakat')}">
         <div class="ai-card-icon" aria-hidden="true">💰</div>
         <div class="ai-card-title" id="tool-title-zakat">যাকাত ক্যালকুলেটর</div>
@@ -1586,6 +1591,12 @@ try{
   </div>
 
   <!-- Zakat Calculator -->
+  <div id="tool-guide-view" style="display:none">
+    <button type="button" class="back-btn" onclick="closeToolView()">← টুলসে ফিরুন</button>
+    <div class="sec-title"><div class="sec-gem"></div><span id="guide-sec-title">📖 ব্যবহার-নির্দেশিকা</span><div class="sec-gem"></div></div>
+    <input type="search" id="gd-search" oninput="renderGuide(this.value)" placeholder="খুঁজুন — যেমন: অ্যালার্ম, কিবলা..." style="width:100%;padding:12px 16px;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:14px;color:var(--text);font-size:14px;font-family:'Hind Siliguri',sans-serif;margin-bottom:12px">
+    <div id="gd-list"></div>
+  </div>
   <div id="tool-zakat-view" style="display:none">
     <button type="button" class="back-btn" onclick="closeToolView()">← টুলসে ফিরুন</button>
     <div class="sec-title"><div class="sec-gem"></div><span id="zakat-sec-title">যাকাত ক্যালকুলেটর</span><div class="sec-gem"></div></div>
@@ -7397,13 +7408,14 @@ function placeTasbihBody(where){
   if(body && slot && body.parentElement !== slot) slot.appendChild(body);
 }
 
-const TOOL_VIEW_IDS = ['zakat','mosque','hafz','streak','hajj','asma','calendar','media','khatm'];
+const TOOL_VIEW_IDS = ['guide','zakat','mosque','hafz','streak','hajj','asma','calendar','media','khatm'];
 function openTool(toolId){
   document.getElementById('tools-grid-view').style.display = 'none';
   TOOL_VIEW_IDS.forEach(id => {
     const el = document.getElementById('tool-' + id + '-view');
     if(el) el.style.display = id === toolId ? 'block' : 'none';
   });
+  if(toolId === 'guide') renderGuide();
   if(toolId === 'zakat'){ placeZakatCalc('tool'); renderZakatForm(); }
   if(toolId === 'mosque') mosqueAutoFind();
   if(toolId === 'hafz') renderHafzList();
@@ -8827,7 +8839,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v294';
+const APP_VERSION = 'v295';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -10581,6 +10593,132 @@ ensureHomeButtons(); // 🏠 beside every back button, app-wide
     }, 0);
   }catch(e){}
 })();
+</script>
+<style>
+/* ══ ব্যবহার-নির্দেশিকা ══ */
+.gd-item{background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:14px;margin-bottom:10px;overflow:hidden}
+.gd-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 15px;cursor:pointer;font-size:14px;color:var(--text);font-weight:600}
+.gd-head .gd-ic{margin-right:2px}
+.gd-chev{color:var(--text3);transition:transform .25s ease;flex-shrink:0}
+.gd-item.open .gd-chev{transform:rotate(180deg)}
+.gd-body{display:none;padding:0 15px 13px;border-top:1px solid rgba(255,255,255,.06)}
+.gd-item.open .gd-body{display:block}
+.gd-step{display:flex;gap:9px;font-size:12.5px;line-height:1.75;color:var(--text2);margin-top:9px}
+.gd-step .gd-n{flex-shrink:0;width:19px;height:19px;border-radius:50%;background:rgba(16,185,129,.14);color:var(--emerald2);font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:700;margin-top:2px}
+.gd-tip{margin-top:11px;padding:9px 11px;background:rgba(217,194,122,.07);border:1px solid rgba(217,194,122,.22);border-radius:10px;font-size:11.5px;line-height:1.7;color:var(--gold2)}
+.gd-go{margin-top:11px;display:inline-block;padding:8px 18px;background:linear-gradient(135deg,var(--emerald3),var(--emerald));border:none;border-radius:11px;color:#04241c;font-weight:700;font-size:12.5px;cursor:pointer;font-family:'Hind Siliguri',sans-serif}
+.gd-faq-t{color:var(--gold2)!important}
+/* ══ প্রথম-রান স্বাগত-ট্যুর ══ */
+#ib-tour{position:fixed;inset:0;z-index:9990;background:rgba(4,10,16,.92);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:22px}
+#ib-tour.show{display:flex}
+.ibt-card{width:100%;max-width:340px;background:linear-gradient(180deg,#0e1c28,#0a141e);border:1px solid rgba(16,185,129,.25);border-radius:24px;padding:22px 20px 18px;text-align:center;animation:ibtIn .35s ease}
+@keyframes ibtIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+.ibt-skip{text-align:right;font-size:12px;color:var(--text3);cursor:pointer;margin-bottom:4px}
+.ibt-ic{width:66px;height:66px;margin:6px auto 12px;border-radius:19px;background:rgba(16,185,129,.12);display:flex;align-items:center;justify-content:center;font-size:32px}
+.ibt-t{font-size:16.5px;font-weight:700;color:var(--gold2);margin-bottom:7px}
+.ibt-d{font-size:12.5px;line-height:1.8;color:var(--text2);min-height:60px}
+.ibt-dots{display:flex;justify-content:center;gap:6px;margin:15px 0 13px}
+.ibt-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.14);transition:all .25s}
+.ibt-dot.on{width:18px;border-radius:3px;background:var(--emerald2)}
+.ibt-next{width:100%;padding:12px;background:linear-gradient(135deg,var(--emerald3),var(--emerald));border:none;border-radius:13px;color:#04241c;font-weight:700;font-size:14.5px;cursor:pointer;font-family:'Hind Siliguri',sans-serif}
+</style>
+<div id="ib-tour" role="dialog" aria-modal="true" aria-label="স্বাগত-ট্যুর">
+  <div class="ibt-card">
+    <div class="ibt-skip" id="ibt-skip" onclick="ibTourDone()">এড়িয়ে যান ✕</div>
+    <div class="ibt-ic" id="ibt-ic">🌙</div>
+    <div class="ibt-t" id="ibt-t"></div>
+    <div class="ibt-d" id="ibt-d"></div>
+    <div class="ibt-dots" id="ibt-dots"></div>
+    <button type="button" class="ibt-next" id="ibt-next" onclick="ibTourNext()"></button>
+  </div>
+</div>
+<script>
+/* ══ GUIDE ENGINE — ১২ টপিক + FAQ, লাইভ-সার্চ, ডিপ-লিংক ══ */
+function _gdL(o){ return (o[currentLang] || o.en || o.bn); }
+const GUIDE_ACTS = [
+ function(){ showTab('home'); }, function(){ showTab('prayer'); },
+ function(){ showTab('prayer'); }, function(){ showTab('quran'); },
+ function(){ showTab('quran'); },
+ function(){ if(typeof openMushafPage==='function'){ showTab('quran'); openMushafPage(1); } else showTab('quran'); },
+ function(){ showTab('quran'); }, function(){ showTab('prayer'); },
+ function(){ showTab('qibla'); }, function(){ openTool('mosque'); },
+ function(){ showTab('hadith'); }, function(){ openTool('calendar'); }
+];
+const GUIDE_DATA = [
+ {ic:'🚀', bn:{t:'শুরু করা ও ভাষা বদল', s:['নিচের ট্যাব-বার থেকে যেকোনো অংশে যান — হোম, নামাজ, কুরআন, হাদিস','উপরে ডানে 🌐 বোতামে ট্যাপ করে ৬টা ভাষার যেকোনোটা বাছুন','প্রথমবার দেশ অনুযায়ী ভাষা নিজে থেকেই নির্বাচিত হয়'], tip:'ইন্টারনেট ছাড়াও অ্যাপের প্রায় সবকিছু চলে — একবার দেখা কনটেন্ট অফলাইনে থেকে যায়'}, en:{t:'Getting started and language', s:['Use the bottom tab bar — Home, Prayer, Quran, Hadith','Tap the 🌐 button (top right) to pick any of 6 languages','On first run the language follows your country automatically'], tip:'Almost everything works offline — content you have seen stays available'}},
+ {ic:'🕌', bn:{t:'নামাজের সময় ও ওয়াক্ত-টাইমলাইন', s:['নামাজ-ট্যাবে আজকের ৫ ওয়াক্ত + সূর্যোদয়, তাহাজ্জুদ, সেহরি-শেষ','চলমান ওয়াক্ত সবুজে জ্বলে, পরের ওয়াক্তের কাউন্টডাউন উপরে','মাকরুহ সময়গুলোও আলাদা কার্ডে দেখানো হয়'], tip:'ভ্রমণে গেলে সময় নিজে থেকেই নতুন জায়গার হয়ে যায়'}, en:{t:'Prayer times and waqt timeline', s:['The Prayer tab shows all 5 waqts plus sunrise, tahajjud, sehri end','The running waqt glows green; the next countdown shows on top','Makruh windows appear in their own card'], tip:'When you travel, times follow your new location automatically'}},
+ {ic:'🔔', bn:{t:'আজান-অ্যালার্ম চালু ও নির্ভরযোগ্য করা', s:['নামাজের অ্যালার্ম প্রথম থেকেই চালু — সময় হলেই আসল আজানের ডাক','প্রোফাইল → অ্যালার্ম থেকে নামাজ/সেহরি/ইফতার আলাদা অন-অফ করুন','নোটিফিকেশনের অনুমতি চাইলে অবশ্যই Allow দিন','ফোনের Settings → Battery-তে Ibadat-কে Unrestricted রাখুন'], tip:'Play Store-সংস্করণে অ্যালার্ম ঘুমন্ত/বন্ধ ফোনেও বাজে — অ্যাপ খুলে যেকোনো জায়গায় একবার ট্যাপ দিলেই ব্যবস্থাটা সক্রিয় হয়'}, en:{t:'Adhan alarms — reliable setup', s:['Prayer alarms are ON by default — the real adhan rings on time','Profile → Alarm: toggle prayer, sehri and iftar separately','Tap Allow when notification permission is requested','Set Ibadat to Unrestricted in Settings → Battery'], tip:'On the Play Store version alarms ring even while the phone sleeps — open the app and tap once anywhere to activate'}},
+ {ic:'📖', bn:{t:'কুরআন পড়া', s:['কুরআন-ট্যাব → সূরা বাছুন; তাজবীদ-রং ছাপা মুশাফের মতো','যেকোনো আয়াতে ট্যাপে বাংলা অর্থ; শব্দে-শব্দে অর্থও আছে','বুকমার্ক, নোট, হাইলাইট — আয়াতের পাশের বোতামে','সার্চে আয়াত-নম্বর (২:২৫৫) লিখেও যাওয়া যায়'], tip:'উপরের Aa বোতামে ৩টা আরবি ফন্ট ও হরফের আকার বদলানো যায়'}, en:{t:'Reading the Quran', s:['Quran tab → pick a surah; tajweed colors match a printed mushaf','Tap any ayah for translation; word-by-word meanings available','Bookmark, note and highlight from the ayah buttons','Jump by reference (2:255) from search'], tip:'The Aa button switches between 3 Arabic fonts and text sizes'}},
+ {ic:'🎧', bn:{t:'তিলাওয়াত-অডিও', s:['নিচের ফুটারে ▶ চাপলেই সূরার তিলাওয়াত শুরু','যেকোনো শব্দে ট্যাপ করুন — ঠিক সেই শব্দ থেকে চলবে','শব্দ ধরে ধরে হাইলাইট হয়, পর্দা নিজে স্ক্রল করে','⚙️ থেকে ক্বারি, গতি, রিপিট ঠিক করুন'], tip:'নতুন কিছু চালালে আগের অডিও নিজে থেকেই মোলায়েমভাবে থেমে যায়'}, en:{t:'Recitation audio', s:['Tap ▶ in the bottom footer to start recitation','Tap any word to play from exactly that word','Words highlight as recited; the page scrolls itself','⚙️ sets reciter, speed and repeat'], tip:'Starting new audio gently fades out the previous one'}},
+ {ic:'📜', bn:{t:'মুশাফ-মোড (পৃষ্ঠা-ভিত্তিক)', s:['কুরআন-ট্যাবের 📜 বোতামে ছাপা মুশাফের পৃষ্ঠা (১–৬০৪)','ডানে-বামে সোয়াইপে পৃষ্ঠা উল্টান','এখানেও ▶ ও শব্দে-ট্যাপ তিলাওয়াত চলে — পৃষ্ঠা নিজে উল্টে যায়'], tip:'হাফেজদের রিভিশনের জন্য এই মোডটাই সবচেয়ে আরামের'}, en:{t:'Mushaf mode (page view)', s:['The 📜 button opens printed-mushaf pages (1-604)','Swipe left-right to turn pages','▶ and tap-a-word recitation work here too — pages auto-turn'], tip:'Ideal for hifz revision'}},
+ {ic:'🧠', bn:{t:'হিফজ-মোড (মুখস্থ অনুশীলন)', s:['সূরা খুলে 🧠 বোতাম — মুখস্থ-অনুশীলন শুরু','আয়াত-রেঞ্জ বেছে রিপিট দিন, বা লুকিয়ে-মনে-করা খেলুন','দৈনিক লক্ষ্য ও স্ট্রিক হোম-কার্ডে জমে'], tip:'ছোট রেঞ্জে (৩-৫ আয়াত) বেশি রিপিটই মুখস্থের আসল কৌশল'}, en:{t:'Hifz (memorization) mode', s:['Open a surah and tap 🧠 to practice','Repeat an ayah range, or use hide-and-recall','Daily goals and streaks build on the home card'], tip:'Small ranges (3-5 ayahs) with many repeats work best'}},
+ {ic:'🌙', bn:{t:'সিয়াম, সেহরি-ইফতার', s:['নামাজ-ট্যাবের সিয়াম-কার্ডে আজকের রোজা ও সময়','সেহরি-শেষ ও ইফতারের লাইভ কাউন্টডাউন','কার্ডে ট্যাপ করলে ইফতারের দোয়া (আরবি+বাংলা)','ডান-উপরের ✓ বোতামে আজকের রোজা লিপিবদ্ধ করুন'], tip:'সোম-বৃহস্পতি, আইয়ামে বীজসহ নফল রোজার দিন নিজে থেকেই দেখায়'}, en:{t:'Fasting, sehri and iftar', s:['The Siyam card shows today\u2019s fast and its window','Live countdowns to sehri end and iftar','Tap the card for the iftar dua (Arabic + meaning)','Mark today\u2019s fast with the ✓ button'], tip:'Nafl days (Mon-Thu, Ayyam al-Beed…) are detected automatically'}},
+ {ic:'🕋', bn:{t:'কিবলা কম্পাস', s:['কিবলা-ট্যাব খুললেই দিক ও ডিগ্রি সাথে সাথে','ফোন ঘোরালে কাঁটা লাইভ ঘোরে; ঠিক দিকে এলে বড় সবুজ ✓','মক্কার দূরত্বও দেখানো হয়'], tip:'সেন্সরহীন ফোনে ব্যাজের নির্দেশনা মেনে উত্তরমুখী দাঁড়িয়ে দেখানো ডিগ্রি ঘুরুন'}, en:{t:'Qibla compass', s:['The Qibla tab shows direction and degrees instantly','Rotate the phone — the needle follows; a green ✓ glows when aligned','Distance to Makkah is shown too'], tip:'No compass sensor? Face North and turn by the shown degrees'}},
+ {ic:'📍', bn:{t:'নিকটস্থ মসজিদ', s:['টুলস → নিকটস্থ মসজিদ — লোকেশন-অনুমতি দিলেই কাছের ৩টা','প্রতিটার দূরত্ব ও দিক-তীর দেখায়','ট্যাপ করলেই ম্যাপে পথ এঁকে দেয়'], tip:'হোম-ঘড়ির বাম-কোণার 🕌 আইকনেও এক-ট্যাপে এখানে আসা যায়'}, en:{t:'Nearby mosques', s:['Tools → Nearby mosque — allow location for the closest 3','Each shows distance and a bearing arrow','Tap one to draw the route on the map'], tip:'The 🕌 corner icon on the home clock jumps here too'}},
+ {ic:'🤲', bn:{t:'হাদিস, দোয়া ও তাসবিহ', s:['হাদিস-ট্যাবে সিহাহ সিত্তাহর ৬ কিতাব, অধ্যায়-অডিওসহ','দোয়া-অংশে হিসনুল মুসলিম; তাসবিহতে ৫৫+ যিকির','প্রতিটা যিকিরের অর্থ, ফজিলত ও সূত্র দেওয়া'], tip:'আয়াত/হাদিস শেয়ার-বোতামে ছবি-কার্ড বানিয়ে শেয়ার করা যায়'}, en:{t:'Hadith, duas and tasbih', s:['Hadith tab: the six authentic books with chapter audio','Hisnul Muslim duas; 55+ dhikr in the tasbih counter','Every dhikr has meaning, virtue and source'], tip:'Use the share button to send any ayah/hadith as an image card'}},
+ {ic:'🗓️', bn:{t:'হিজরি ক্যালেন্ডার ও ভ্রমণ', s:['টুলস → ইসলামিক ক্যালেন্ডার — হিজরি মাস ও গুরুত্বপূর্ণ দিন','চাঁদ-দেখা ভিন্ন হলে ±১ দিন নিজে ঠিক করা যায়','বিদেশ গেলে ট্রাভেল-অ্যাসিস্ট্যান্ট জিজ্ঞেস করে কোন দেশের তারিখ চলবে'], tip:'তারিখের নিচের ছোট লেখাটা বলে দেয় তারিখ কোন সূত্র থেকে আসছে'}, en:{t:'Hijri calendar and travel', s:['Tools → Islamic calendar — hijri months and key dates','Adjust ±1 day for local moon sighting if needed','Abroad, the travel assistant asks which country\u2019s date to follow'], tip:'The small line under the date shows which source is active'}}
+];
+const GUIDE_FAQ = {ic:'❓', bn:{t:'সাধারণ সমস্যা ও সমাধান', qa:[['অ্যালার্ম বাজছে না?','নোটিফিকেশন-অনুমতি Allow করুন, ব্যাটারি Unrestricted দিন, তারপর অ্যাপ খুলে একবার যেকোনো জায়গায় ট্যাপ দিন'],['নামাজের সময় ভুল দেখাচ্ছে?','ইন্টারনেট চালু করে অ্যাপটা আবার খুলুন — লোকেশন নতুন করে ধরা হবে'],['অডিও চলছে না?','ইন্টারনেট দেখুন; প্রতিটা সূরার অডিও একবার নামলে পরে অফলাইনেও চলে'],['হোম-স্ক্রিনের আইকন পুরনো?','Play Store থেকে আপডেট দিন; না বদলালে ফোন রিস্টার্ট করুন'],['ভাষা ভুল এসেছে?','উপরের 🌐 বোতাম থেকে পছন্দের ভাষা বাছুন — ওটাই চিরস্থায়ী']]}, en:{t:'Common problems and fixes', qa:[['Alarm not ringing?','Allow notifications, set battery to Unrestricted, then open the app and tap once anywhere'],['Prayer times look wrong?','Turn on internet and reopen the app — location refreshes'],['Audio not playing?','Check internet; each surah downloads once, then works offline'],['Home-screen icon looks old?','Update from Play Store; restart the phone if needed'],['Wrong language?','Pick your language from the 🌐 button — it sticks permanently']]}};
+function gdToggle(el){ el.closest('.gd-item').classList.toggle('open'); }
+function gdGo(i){ try{ closeToolView(); }catch(e){} try{ GUIDE_ACTS[i](); }catch(e){} }
+function renderGuide(q){
+  const list = document.getElementById('gd-list');
+  if(!list) return;
+  q = (q || '').trim().toLowerCase();
+  let html = '';
+  GUIDE_DATA.forEach((g, i) => {
+    const L = _gdL(g);
+    if(q && !(L.t + ' ' + L.s.join(' ')).toLowerCase().includes(q)) return;
+    html += '<div class="gd-item"><div class="gd-head" onclick="gdToggle(this)" role="button" tabindex="0" onkeydown="if(event.key===&quot;Enter&quot;){gdToggle(this)}"><span><span class="gd-ic">' + g.ic + '</span> ' + L.t + '</span><span class="gd-chev">▾</span></div><div class="gd-body">'
+      + L.s.map((st, n) => '<div class="gd-step"><span class="gd-n">' + localizeNum(n + 1) + '</span><span>' + st + '</span></div>').join('')
+      + (L.tip ? '<div class="gd-tip">💡 ' + L.tip + '</div>' : '')
+      + '<button type="button" class="gd-go" onclick="gdGo(' + i + ')">' + (currentLang === 'bn' ? 'চালু করুন →' : 'Open →') + '</button>'
+      + '</div></div>';
+  });
+  const F = _gdL(GUIDE_FAQ);
+  if(!q || (F.t + ' ' + F.qa.flat().join(' ')).toLowerCase().includes(q)){
+    html += '<div class="gd-item"><div class="gd-head" onclick="gdToggle(this)" role="button" tabindex="0"><span class="gd-faq-t"><span class="gd-ic">' + GUIDE_FAQ.ic + '</span> ' + F.t + '</span><span class="gd-chev">▾</span></div><div class="gd-body">'
+      + F.qa.map(p => '<div class="gd-step"><span class="gd-n">?</span><span><b style="color:var(--gold2)">' + p[0] + '</b><br>' + p[1] + '</span></div>').join('')
+      + '</div></div>';
+  }
+  list.innerHTML = html || '<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">😕</div>';
+}
+/* ══ প্রথম-রান স্বাগত-ট্যুর — ৬ ভাষা, একবারই ══ */
+const IB_TOUR = [
+ {ic:'🌙', t:{bn:'ইবাদত-এ স্বাগতম!', en:'Welcome to Ibadat!', ar:'مرحبا بك في عبادة!', ur:'عبادت میں خوش آمدید!', zh:'欢迎使用 Ibadat!', fr:'Bienvenue sur Ibadat !'}, d:{bn:'কুরআন, নামাজের সময়, কিবলা, হাদিস, দোয়া — আপনার প্রতিদিনের দ্বীন-সঙ্গী। সম্পূর্ণ ফ্রি, বিজ্ঞাপনমুক্ত।', en:'Quran, prayer times, qibla, hadith, duas — your daily deen companion. Free and ad-free.', ar:'القرآن ومواقيت الصلاة والقبلة والحديث والأدعية — رفيقك اليومي. مجاني بلا إعلانات.', ur:'قرآن، نماز کے اوقات، قبلہ، حدیث، دعائیں — آپ کا روزانہ دین ساتھی۔ مفت، اشتہار کے بغیر۔', zh:'古兰经、礼拜时间、朝向、圣训、祈祷——您的每日信仰伴侣。免费无广告。', fr:'Coran, horaires de prière, qibla, hadith, douas — votre compagnon quotidien. Gratuit, sans pub.'}},
+ {ic:'🔔', t:{bn:'আজান-অ্যালার্ম — ঘুমন্ত ফোনেও', en:'Adhan alarms — even asleep', ar:'منبه الأذان — حتى أثناء النوم', ur:'اذان الارم — سوتے فون پر بھی', zh:'唤礼闹钟——手机休眠也响', fr:'Alarmes adhan — même en veille'}, d:{bn:'নামাজের সময় হলেই আসল আজানের ডাক বাজবে — অ্যাপ বন্ধ থাকলেও। নোটিফিকেশনের অনুমতি চাইলে Allow দিন।', en:'The real adhan rings right on time — even with the app closed. Tap Allow when asked for notifications.', ar:'يرن نداء الأذان الحقيقي في وقته حتى مع إغلاق التطبيق. اضغط سماح عند طلب الإشعارات.', ur:'نماز کے وقت اصلی اذان بجے گی — ایپ بند ہو تب بھی۔ اطلاع کی اجازت پر Allow دبائیں۔', zh:'礼拜时间一到即播放真实唤礼声——即使应用已关闭。请允许通知权限。', fr:'Le vrai adhan sonne à l heure — même app fermée. Autorisez les notifications.'}},
+ {ic:'📖', t:{bn:'কুরআন — যেন ছাপা মুশাফ', en:'Quran — like a printed mushaf', ar:'القرآن — كمصحف مطبوع', ur:'قرآن — چھپے مصحف جیسا', zh:'古兰经——如印刷本', fr:'Coran — comme un mushaf imprimé'}, d:{bn:'তাজবীদ-রং, বাংলা অর্থ, শব্দে ট্যাপ করলেই সেই শব্দ থেকে তিলাওয়াত। মুশাফ-মোডে পৃষ্ঠা উল্টিয়ে পড়ুন।', en:'Tajweed colors, translations, tap any word to hear it recited. Mushaf mode turns real pages.', ar:'ألوان التجويد والترجمة، والنقر على أي كلمة يتلوها. وضع المصحف يقلب صفحات حقيقية.', ur:'تجوید رنگ، ترجمہ، کسی لفظ پر ٹیپ کریں تو وہیں سے تلاوت۔ مصحف موڈ میں صفحے پلٹیں۔', zh:'塔吉威德配色、翻译，点任意单词即从该词诵读。穆斯哈夫模式可翻页。', fr:'Couleurs tajwid, traductions, touchez un mot pour l écouter. Le mode mushaf tourne les pages.'}},
+ {ic:'🕋', t:{bn:'কিবলা, মসজিদ ও আরও', en:'Qibla, mosques and more', ar:'القبلة والمساجد والمزيد', ur:'قبلہ، مساجد اور مزید', zh:'朝向、清真寺及更多', fr:'Qibla, mosquées et plus'}, d:{bn:'এক-ট্যাপ কিবলা কম্পাস, নিকটস্থ মসজিদ, হাদিস-দোয়া-তাসবিহ, হিজরি ক্যালেন্ডার। বিস্তারিত জানতে টুলসে 📖 ব্যবহার-নির্দেশিকা দেখুন।', en:'One-tap qibla compass, nearby mosques, hadith-duas-tasbih, hijri calendar. See the 📖 guide in Tools for details.', ar:'بوصلة القبلة بلمسة، والمساجد القريبة، والحديث والأدعية والتقويم الهجري. راجع الدليل 📖 في الأدوات.', ur:'ایک ٹیپ قبلہ کمپاس، قریبی مساجد، حدیث-دعا-تسبیح، ہجری کیلنڈر۔ تفصیل کیلئے ٹولز میں 📖 گائیڈ دیکھیں۔', zh:'一键朝向罗盘、附近清真寺、圣训-祈祷-念珠、回历。详见工具中的 📖 指南。', fr:'Boussole qibla, mosquées proches, hadith-douas-tasbih, calendrier hégirien. Voir le guide 📖 dans Outils.'}}
+];
+const IB_TOUR_BTN = {next:{bn:'পরবর্তী', en:'Next', ar:'التالي', ur:'اگلا', zh:'下一步', fr:'Suivant'}, start:{bn:'শুরু করুন 🚀', en:'Get started 🚀', ar:'ابدأ 🚀', ur:'شروع کریں 🚀', zh:'开始使用 🚀', fr:'Commencer 🚀'}, skip:{bn:'এড়িয়ে যান ✕', en:'Skip ✕', ar:'تخطي ✕', ur:'چھوڑیں ✕', zh:'跳过 ✕', fr:'Passer ✕'}};
+let _ibtIdx = 0;
+function _ibtPick(o){ return o[currentLang] || o.en; }
+function ibTourRender(){
+  const s = IB_TOUR[_ibtIdx];
+  document.getElementById('ibt-ic').textContent = s.ic;
+  document.getElementById('ibt-t').textContent = _ibtPick(s.t);
+  document.getElementById('ibt-d').textContent = _ibtPick(s.d);
+  document.getElementById('ibt-skip').textContent = _ibtPick(IB_TOUR_BTN.skip);
+  document.getElementById('ibt-next').textContent = _ibtPick(_ibtIdx === IB_TOUR.length - 1 ? IB_TOUR_BTN.start : IB_TOUR_BTN.next);
+  document.getElementById('ibt-dots').innerHTML = IB_TOUR.map((_, i) => '<span class="ibt-dot' + (i === _ibtIdx ? ' on' : '') + '"></span>').join('');
+}
+function ibTourNext(){
+  if(_ibtIdx < IB_TOUR.length - 1){ _ibtIdx++; ibTourRender(); return; }
+  ibTourDone();
+  try{ if('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); }catch(e){}
+}
+function ibTourDone(){
+  try{ localStorage.setItem('ib_tour_v1', '1'); }catch(e){}
+  const el = document.getElementById('ib-tour');
+  if(el) el.classList.remove('show');
+}
+setTimeout(() => {
+  try{
+    if(localStorage.getItem('ib_tour_v1')) return;
+    _ibtIdx = 0; ibTourRender();
+    document.getElementById('ib-tour').classList.add('show');
+  }catch(e){}
+}, 1200);
 </script>
 </body>
 </html>
