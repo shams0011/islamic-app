@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v292-country-lang -->
+<!-- VERSION: v293-native-alarm-sync -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -837,6 +837,13 @@ try{
       // (applyCountryLang); ব্যবহারকারী নিজে ভাষা বাছলে ফ্ল্যাগ মুছে যায় — তখন আর নয়
       localStorage.setItem('app_lang_prov', '1');
     }
+  }
+}catch(e){}
+// TWA (Play-অ্যাপ) শনাক্ত: কোল্ড-স্টার্টের রেফারার একবার দেখলেই স্থায়ীভাবে মনে রাখি —
+// নেটিভ অ্যালার্ম-সিংক শুধু তখনই চলে
+try{
+  if((document.referrer || '').indexOf('android-app://io.github.shams0011.islamicai') === 0){
+    localStorage.setItem('is_twa', '1');
   }
 }catch(e){}
 </script>
@@ -3098,10 +3105,22 @@ function loadAlarmSettings(){
   catch(e){ return {prayer:true, sehri:false, iftar:false}; }
 }
 function saveAlarmSettings(s){ try{ localStorage.setItem(profileKey('alarm_settings'), JSON.stringify(s)); }catch(e){} }
+// Play-অ্যাপে (TWA) চললে অ্যালার্ম-সেটিং + লোকেশন নেটিভ ইঞ্জিনে পাঠাই — নেটিভ দিক
+// setAlarmClock দিয়ে ঘুমন্ত/বন্ধ ফোনেও নিখুঁত সময়ে আজান বাজায়। ব্রাউজার/PWA-তে
+// স্কিমটা নেই, তাই is_twa ছাড়া কখনোই চালানো হয় না (ERR_UNKNOWN_URL_SCHEME এড়াতে)।
+function syncNativeAlarms(){
+  try{
+    if(localStorage.getItem('is_twa') !== '1') return;
+    const s = loadAlarmSettings();
+    location.href = 'ibadat://alarm?prayer=' + (s.prayer ? 1 : 0) + '&sehri=' + (s.sehri ? 1 : 0)
+      + '&iftar=' + (s.iftar ? 1 : 0) + '&lat=' + LAT + '&lon=' + LON + '&tz=' + TZ;
+  }catch(e){}
+}
 function toggleAlarmSetting(key){
   const s = loadAlarmSettings();
   s[key] = !s[key];
   saveAlarmSettings(s);
+  syncNativeAlarms();
   renderAlarmSettings();
   if(s[key]) requestNotificationPermission(); // enabling an alarm should also secure permission
 }
@@ -8798,7 +8817,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v292';
+const APP_VERSION = 'v293';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
