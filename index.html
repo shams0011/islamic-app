@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v295-user-guide -->
+<!-- VERSION: v296-tour-polish -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -8839,7 +8839,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v295';
+const APP_VERSION = 'v296';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -10614,9 +10614,10 @@ ensureHomeButtons(); // 🏠 beside every back button, app-wide
 .ibt-card{width:100%;max-width:340px;background:linear-gradient(180deg,#0e1c28,#0a141e);border:1px solid rgba(16,185,129,.25);border-radius:24px;padding:22px 20px 18px;text-align:center;animation:ibtIn .35s ease}
 @keyframes ibtIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
 .ibt-skip{text-align:right;font-size:12px;color:var(--text3);cursor:pointer;margin-bottom:4px}
-.ibt-ic{width:66px;height:66px;margin:6px auto 12px;border-radius:19px;background:rgba(16,185,129,.12);display:flex;align-items:center;justify-content:center;font-size:32px}
-.ibt-t{font-size:16.5px;font-weight:700;color:var(--gold2);margin-bottom:7px}
-.ibt-d{font-size:12.5px;line-height:1.8;color:var(--text2);min-height:60px}
+.ibt-ic{width:78px;height:78px;margin:6px auto 14px;border-radius:22px;background:rgba(16,185,129,.12);display:flex;align-items:center;justify-content:center;font-size:38px;overflow:hidden}
+.ibt-ic img{width:100%;height:100%;object-fit:cover;border-radius:22px}
+.ibt-t{font-size:20px;font-weight:800;color:var(--gold2);margin-bottom:9px;letter-spacing:.2px}
+.ibt-d{font-size:14.5px;line-height:1.9;color:#d8e6e0;min-height:84px;font-weight:500}
 .ibt-dots{display:flex;justify-content:center;gap:6px;margin:15px 0 13px}
 .ibt-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.14);transition:all .25s}
 .ibt-dot.on{width:18px;border-radius:3px;background:var(--emerald2)}
@@ -10685,7 +10686,8 @@ function renderGuide(q){
 }
 /* ══ প্রথম-রান স্বাগত-ট্যুর — ৬ ভাষা, একবারই ══ */
 const IB_TOUR = [
- {ic:'🌙', t:{bn:'ইবাদত-এ স্বাগতম!', en:'Welcome to Ibadat!', ar:'مرحبا بك في عبادة!', ur:'عبادت میں خوش آمدید!', zh:'欢迎使用 Ibadat!', fr:'Bienvenue sur Ibadat !'}, d:{bn:'কুরআন, নামাজের সময়, কিবলা, হাদিস, দোয়া — আপনার প্রতিদিনের দ্বীন-সঙ্গী। সম্পূর্ণ ফ্রি, বিজ্ঞাপনমুক্ত।', en:'Quran, prayer times, qibla, hadith, duas — your daily deen companion. Free and ad-free.', ar:'القرآن ومواقيت الصلاة والقبلة والحديث والأدعية — رفيقك اليومي. مجاني بلا إعلانات.', ur:'قرآن، نماز کے اوقات، قبلہ، حدیث، دعائیں — آپ کا روزانہ دین ساتھی۔ مفت، اشتہار کے بغیر۔', zh:'古兰经、礼拜时间、朝向、圣训、祈祷——您的每日信仰伴侣。免费无广告。', fr:'Coran, horaires de prière, qibla, hadith, douas — votre compagnon quotidien. Gratuit, sans pub.'}},
+ {ic:'logo', t:{bn:'ইবাদত-এ স্বাগতম!', en:'Welcome to Ibadat!', ar:'مرحبا بك في عبادة!', ur:'عبادت میں خوش آمدید!', zh:'欢迎使用 Ibadat!', fr:'Bienvenue sur Ibadat !'}, d:{bn:'কুরআন, নামাজের সময়, কিবলা, হাদিস, দোয়া — আপনার প্রতিদিনের দ্বীন-সঙ্গী। সম্পূর্ণ ফ্রি, বিজ্ঞাপনমুক্ত।', en:'Quran, prayer times, qibla, hadith, duas — your daily deen companion. Free and ad-free.', ar:'القرآن ومواقيت الصلاة والقبلة والحديث والأدعية — رفيقك اليومي. مجاني بلا إعلانات.', ur:'قرآن، نماز کے اوقات، قبلہ، حدیث، دعائیں — آپ کا روزانہ دین ساتھی۔ مفت، اشتہار کے بغیر۔', zh:'古兰经、礼拜时间、朝向、圣训、祈祷——您的每日信仰伴侣。免费无广告。', fr:'Coran, horaires de prière, qibla, hadith, douas — votre compagnon quotidien. Gratuit, sans pub.'}},
+ {ic:'🕌', t:{bn:'নামাজ ও সেহরি-ইফতারের সঠিক সময়', en:'Accurate prayer, sehri & iftar times', ar:'مواقيت الصلاة والسحور والإفطار بدقة', ur:'نماز اور سحری-افطار کے درست اوقات', zh:'准确的礼拜与斋戒时间', fr:'Horaires précis : prière, sehri, iftar'}, d:{bn:'আপনার লোকেশন অনুযায়ী ৫ ওয়াক্তের সময়, সূর্যোদয়-তাহাজ্জুদসহ বিশেষ সময়, আর সেহরি-শেষ ও ইফতারের লাইভ কাউন্টডাউন — বিশ্বের যেকোনো প্রান্তে নির্ভুল।', en:'All 5 waqts from your exact location, special times like sunrise and tahajjud, plus live sehri-end and iftar countdowns — accurate anywhere on earth.', ar:'مواقيت الصلوات الخمس حسب موقعك، والأوقات الخاصة كالشروق والتهجد، وعدّاد مباشر للسحور والإفطار — دقيقة في أي مكان.', ur:'آپ کے مقام کے مطابق پانچوں وقت، طلوع اور تہجد جیسے خاص اوقات، اور سحری-افطار کا لائیو کاؤنٹ ڈاؤن — ہر جگہ درست۔', zh:'依您位置计算五番礼拜时间、日出与夜祷等特殊时刻，以及封斋结束与开斋倒计时——全球精准。', fr:'Les 5 prières selon votre position, moments spéciaux (lever, tahajjud), comptes à rebours sehri et iftar — précis partout.'}},
  {ic:'🔔', t:{bn:'আজান-অ্যালার্ম — ঘুমন্ত ফোনেও', en:'Adhan alarms — even asleep', ar:'منبه الأذان — حتى أثناء النوم', ur:'اذان الارم — سوتے فون پر بھی', zh:'唤礼闹钟——手机休眠也响', fr:'Alarmes adhan — même en veille'}, d:{bn:'নামাজের সময় হলেই আসল আজানের ডাক বাজবে — অ্যাপ বন্ধ থাকলেও। নোটিফিকেশনের অনুমতি চাইলে Allow দিন।', en:'The real adhan rings right on time — even with the app closed. Tap Allow when asked for notifications.', ar:'يرن نداء الأذان الحقيقي في وقته حتى مع إغلاق التطبيق. اضغط سماح عند طلب الإشعارات.', ur:'نماز کے وقت اصلی اذان بجے گی — ایپ بند ہو تب بھی۔ اطلاع کی اجازت پر Allow دبائیں۔', zh:'礼拜时间一到即播放真实唤礼声——即使应用已关闭。请允许通知权限。', fr:'Le vrai adhan sonne à l heure — même app fermée. Autorisez les notifications.'}},
  {ic:'📖', t:{bn:'কুরআন — যেন ছাপা মুশাফ', en:'Quran — like a printed mushaf', ar:'القرآن — كمصحف مطبوع', ur:'قرآن — چھپے مصحف جیسا', zh:'古兰经——如印刷本', fr:'Coran — comme un mushaf imprimé'}, d:{bn:'তাজবীদ-রং, বাংলা অর্থ, শব্দে ট্যাপ করলেই সেই শব্দ থেকে তিলাওয়াত। মুশাফ-মোডে পৃষ্ঠা উল্টিয়ে পড়ুন।', en:'Tajweed colors, translations, tap any word to hear it recited. Mushaf mode turns real pages.', ar:'ألوان التجويد والترجمة، والنقر على أي كلمة يتلوها. وضع المصحف يقلب صفحات حقيقية.', ur:'تجوید رنگ، ترجمہ، کسی لفظ پر ٹیپ کریں تو وہیں سے تلاوت۔ مصحف موڈ میں صفحے پلٹیں۔', zh:'塔吉威德配色、翻译，点任意单词即从该词诵读。穆斯哈夫模式可翻页。', fr:'Couleurs tajwid, traductions, touchez un mot pour l écouter. Le mode mushaf tourne les pages.'}},
  {ic:'🕋', t:{bn:'কিবলা, মসজিদ ও আরও', en:'Qibla, mosques and more', ar:'القبلة والمساجد والمزيد', ur:'قبلہ، مساجد اور مزید', zh:'朝向、清真寺及更多', fr:'Qibla, mosquées et plus'}, d:{bn:'এক-ট্যাপ কিবলা কম্পাস, নিকটস্থ মসজিদ, হাদিস-দোয়া-তাসবিহ, হিজরি ক্যালেন্ডার। বিস্তারিত জানতে টুলসে 📖 ব্যবহার-নির্দেশিকা দেখুন।', en:'One-tap qibla compass, nearby mosques, hadith-duas-tasbih, hijri calendar. See the 📖 guide in Tools for details.', ar:'بوصلة القبلة بلمسة، والمساجد القريبة، والحديث والأدعية والتقويم الهجري. راجع الدليل 📖 في الأدوات.', ur:'ایک ٹیپ قبلہ کمپاس، قریبی مساجد، حدیث-دعا-تسبیح، ہجری کیلنڈر۔ تفصیل کیلئے ٹولز میں 📖 گائیڈ دیکھیں۔', zh:'一键朝向罗盘、附近清真寺、圣训-祈祷-念珠、回历。详见工具中的 📖 指南。', fr:'Boussole qibla, mosquées proches, hadith-douas-tasbih, calendrier hégirien. Voir le guide 📖 dans Outils.'}}
@@ -10695,7 +10697,8 @@ let _ibtIdx = 0;
 function _ibtPick(o){ return o[currentLang] || o.en; }
 function ibTourRender(){
   const s = IB_TOUR[_ibtIdx];
-  document.getElementById('ibt-ic').textContent = s.ic;
+  const _icEl = document.getElementById('ibt-ic');
+  if(s.ic === 'logo'){ _icEl.innerHTML = '<img src="icons/icon-192.png" alt="">'; } else { _icEl.textContent = s.ic; }
   document.getElementById('ibt-t').textContent = _ibtPick(s.t);
   document.getElementById('ibt-d').textContent = _ibtPick(s.d);
   document.getElementById('ibt-skip').textContent = _ibtPick(IB_TOUR_BTN.skip);
