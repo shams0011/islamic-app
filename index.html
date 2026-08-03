@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v304-home-polish -->
+<!-- VERSION: v305-qa-subwrap -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -475,7 +475,8 @@ input:focus,textarea:focus,select:focus{border-color:rgba(16,185,129,.45)!import
   .qa-ic{width:50px;height:50px}
   .qa-ic svg{width:24px;height:24px}
   .qa-title{font-size:18.5px}
-  .qa-sub{font-size:12.5px}
+  /* সাব-লেখা কখনো কাটা পড়বে না — প্রয়োজনে দুই লাইনে ভাঙবে */
+  .qa-sub{font-size:12px;white-space:normal;overflow:visible;text-overflow:clip;line-height:1.3}
 }
 /* islamic calendar — premium cells + nav */
 .cal-nav{width:36px;height:36px;border-radius:50%;border:1px solid rgba(212,175,106,.35);background:rgba(212,175,106,.08);color:var(--gold2);font-size:17px;font-weight:800;cursor:pointer;flex-shrink:0;transition:all .15s;line-height:1}
@@ -8862,7 +8863,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v304';
+const APP_VERSION = 'v305';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
