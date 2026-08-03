@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v305-qa-subwrap -->
+<!-- VERSION: v306-fetch-retry -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -5496,14 +5496,31 @@ function openBook(id, name){
   loadChapters();
 }
 
+/* ক্ষণিক নেটওয়ার্ক-ব্যর্থতা সামলাতে: ব্যর্থ হলে ৭০০ms পরে নিজে আরেকবার চেষ্টা */
+async function fetchRetry(url, tries){
+  tries = tries || 2;
+  for(let i = 0; i < tries; i++){
+    try{
+      const r = await fetch(url);
+      if(r.ok) return r;
+      if(i === tries - 1) throw new Error('error ' + r.status);
+    }catch(e){
+      if(i === tries - 1) throw e;
+    }
+    await new Promise(rs => setTimeout(rs, 700));
+  }
+}
+function netFailHTML(retryJs){
+  return `<div style="color:#e07070;padding:16px 16px 4px;text-align:center;font-size:14px">📡 ইন্টারনেট সংযোগে সমস্যা — ডেটা আনা যায়নি</div>
+    <div style="text-align:center;padding:10px 0 14px"><button type="button" onclick="${retryJs}" style="padding:10px 24px;border-radius:50px;border:1px solid rgba(16,185,129,.4);background:rgba(16,185,129,.12);color:var(--emerald2);font-weight:700;font-size:13.5px;cursor:pointer;font-family:'Hind Siliguri',sans-serif">🔄 আবার চেষ্টা করুন</button></div>`;
+}
 async function loadChapters(){
   const el=document.getElementById('chapter-list');
   el.innerHTML=loading('অধ্যায় লোড হচ্ছে...');
   try{
     let data = bookIndexCache[selBook];
     if(!data){
-      const r = await fetch(`${selBook}/index.json`);
-      if(!r.ok) throw new Error('error '+r.status);
+      const r = await fetchRetry(`${selBook}/index.json`);
       data = await r.json();
       bookIndexCache[selBook] = data;
     }
@@ -5514,7 +5531,7 @@ async function loadChapters(){
         <div style="color:var(--text3);font-size:18px" aria-hidden="true">›</div>
       </div>`).join('');
   }catch(e){
-    el.innerHTML=`<div style="color:#e07070;padding:16px;text-align:center;font-size:14px">লোড ব্যর্থ: ${e.message}</div>`;
+    el.innerHTML = netFailHTML('loadChapters()');
   }
 }
 
@@ -5528,8 +5545,7 @@ async function openChapter(no, name){
     const cacheKey = selBook+':'+no;
     let chapterData = chapterCache[cacheKey];
     if(!chapterData){
-      const r = await fetch(`${selBook}/ch${no}.json`);
-      if(!r.ok) throw new Error('error '+r.status);
+      const r = await fetchRetry(`${selBook}/ch${no}.json`);
       chapterData = await r.json();
       chapterCache[cacheKey] = chapterData;
     }
@@ -5542,7 +5558,7 @@ async function openChapter(no, name){
       : '';
     hdAudioSetup(); // chapter audio bar (where a recording exists)
   }catch(e){
-    document.getElementById('hadith-list').innerHTML=`<div style="color:#e07070;padding:16px;text-align:center;font-size:14px">লোড ব্যর্থ: ${e.message}</div>`;
+    document.getElementById('hadith-list').innerHTML = netFailHTML('openChapter(selChapter, selChapterName)');
   }
 }
 
@@ -8863,7 +8879,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v305';
+const APP_VERSION = 'v306';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
