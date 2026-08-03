@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v306-fetch-retry -->
+<!-- VERSION: v307-prayer-card-land -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -1261,7 +1261,7 @@ try{
     <span class="tabbar-card-icon" aria-hidden="true">📚</span>
     <span class="tabbar-card-label">হাদিস</span>
   </button>
-  <button class="tabbar-card active" id="tabbtn-prayer" role="tab" aria-selected="true" aria-controls="tab-prayer" onclick="showTab('prayer',this)">
+  <button class="tabbar-card active" id="tabbtn-prayer" role="tab" aria-selected="true" aria-controls="tab-prayer" onclick="quickOpenTab('prayer')">
     <span class="tabbar-card-icon" aria-hidden="true">🕌</span>
     <span class="tabbar-card-label">নামাজ</span>
   </button>
@@ -8879,7 +8879,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v306';
+const APP_VERSION = 'v307';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
