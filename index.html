@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v302-tab-focus -->
+<!-- VERSION: v303-dedup-veil -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -844,6 +844,17 @@ try{
 try{
   if((document.referrer || '').indexOf('android-app://io.github.shams0011.islamicai') === 0){
     localStorage.setItem('is_twa', '1');
+  }
+}catch(e){}
+// রিস্টোর-ভেইল: শেষ অবস্থান হোম না হলে পেইন্টের আগেই কনটেন্ট ঢেকে দিই — রিলোডে
+// হোম-পেজ এক ঝলকও দেখা যায় না; পুনরুদ্ধার শেষে tail-স্ক্রিপ্ট পর্দা সরায়
+try{
+  const _nvst = JSON.parse(localStorage.getItem('nav_state') || 'null');
+  if(_nvst && _nvst.tab && _nvst.tab !== 'prayer'){
+    const _nv = document.createElement('style'); _nv.id = 'nav-veil';
+    _nv.textContent = '.wrap{visibility:hidden}';
+    document.head.appendChild(_nv);
+    setTimeout(() => { const e = document.getElementById('nav-veil'); if(e) e.remove(); }, 3000); // নিরাপত্তা-জাল
   }
 }catch(e){}
 </script>
@@ -8841,7 +8852,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v302';
+const APP_VERSION = 'v303';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -10769,10 +10780,10 @@ function navSave(o){ try{ localStorage.setItem('nav_state', JSON.stringify(o)); 
     const _oc = openChapter; openChapter = function(no, name){ navSave({tab: 'hadith', book: selBook, bookName: selBookName, chapter: no, chapterName: name}); return _oc.apply(this, arguments); };
     const _gb = goBooks; goBooks = function(){ navSave({tab: 'hadith'}); return _gb.apply(this, arguments); };
     const _gc = goChapters; goChapters = function(){ navSave({tab: 'hadith', book: selBook, bookName: selBookName}); return _gc.apply(this, arguments); };
-    const _od = openDuaCategory; openDuaCategory = function(i){ navSave({tab: 'dua', duaCat: i}); return _od.apply(this, arguments); };
-    const _gd = goDuaCategories; goDuaCategories = function(){ navSave({tab: 'dua'}); return _gd.apply(this, arguments); };
-    const _oa = openAiChat; openAiChat = function(id){ navSave({tab: 'aihub', ai: id}); return _oa.apply(this, arguments); };
-    const _ca = closeAiChat; closeAiChat = function(){ navSave({tab: 'aihub'}); return _ca.apply(this, arguments); };
+    const _od = openDuaCategory; openDuaCategory = function(i){ navSave({tab: 'dua', duaCat: i}); const r = _od.apply(this, arguments); if(typeof updateTabHomePills === 'function') updateTabHomePills(); return r; };
+    const _gd = goDuaCategories; goDuaCategories = function(){ navSave({tab: 'dua'}); const r = _gd.apply(this, arguments); if(typeof updateTabHomePills === 'function') updateTabHomePills(); return r; };
+    const _oa = openAiChat; openAiChat = function(id){ navSave({tab: 'aihub', ai: id}); const r = _oa.apply(this, arguments); if(typeof updateTabHomePills === 'function') updateTabHomePills(); return r; };
+    const _ca = closeAiChat; closeAiChat = function(){ navSave({tab: 'aihub'}); const r = _ca.apply(this, arguments); if(typeof updateTabHomePills === 'function') updateTabHomePills(); return r; };
   }catch(e){}
   setTimeout(() => {
     try{
@@ -10787,7 +10798,8 @@ function navSave(o){ try{ localStorage.setItem('nav_state', JSON.stringify(o)); 
       else if(st.ai){ showTab('aihub'); openAiChat(st.ai); }
       else quickOpenTab(st.tab);
     }catch(e){}
-  }, 900);
+    setTimeout(() => { const e = document.getElementById('nav-veil'); if(e) e.remove(); }, 200);
+  }, 250);
 })();
 function _hncFmt(hrs){
   let sec = Math.max(0, Math.round(hrs * 3600));
