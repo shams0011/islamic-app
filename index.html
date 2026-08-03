@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v298-chip-premium -->
+<!-- VERSION: v299-focus-mode -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -8841,7 +8841,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v298';
+const APP_VERSION = 'v299';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -10629,6 +10629,8 @@ ensureHomeButtons(); // 🏠 beside every back button, app-wide
 #home-now-chip .hnc-t{color:var(--gold2);font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:.6px;margin-left:2px}
 #home-now-chip.mk{background:linear-gradient(180deg,rgba(226,75,74,.16),rgba(226,75,74,.05));border-color:rgba(226,75,74,.45);color:#ffd9d9;box-shadow:0 3px 16px rgba(226,75,74,.18),inset 0 1px 0 rgba(255,255,255,.07)}
 #home-now-chip.mk .hnc-t{color:#ffb3b3}
+/* ══ ফোকাস-মোড: ভেতরের ফিচারে ঢুকলে বাইরের সব লুকানো ══ */
+.fm-hide{display:none!important}
 .cp-right .kalima-art{margin-top:-6px}
 </style>
 <div id="ib-tour" role="dialog" aria-modal="true" aria-label="স্বাগত-ট্যুর">
@@ -10702,6 +10704,48 @@ const IB_TOUR = [
 ];
 const IB_TOUR_BTN = {next:{bn:'পরবর্তী', en:'Next', ar:'التالي', ur:'اگلا', zh:'下一步', fr:'Suivant'}, start:{bn:'শুরু করুন 🚀', en:'Get started 🚀', ar:'ابدأ 🚀', ur:'شروع کریں 🚀', zh:'开始使用 🚀', fr:'Commencer 🚀'}, skip:{bn:'এড়িয়ে যান ✕', en:'Skip ✕', ar:'تخطي ✕', ur:'چھوڑیں ✕', zh:'跳过 ✕', fr:'Passer ✕'}};
 /* ══ হোম "এখন চলছে" চিপ — মাকরুহ > চলতি ফরজ/নফল সেগমেন্ট, লাইভ কাউন্টডাউন ══ */
+/* ══ ফোকাস-মোড ইঞ্জিন ══
+   enterFocusMode(el): el থেকে .wrap পর্যন্ত প্রতিটা স্তরের ভাইবোনদের লুকিয়ে দেয় —
+   ফলে ফিচারটাই পেজের মাথা, উপরে স্ক্রল করেও হোম বেরোয় না। ফিক্সড-পজিশন উপাদান
+   (রিডার-ফুটার, টোস্ট, অ্যালার্ম-ওভারলে, ট্যুর) কখনোই লুকানো হয় না।
+   exitFocusMode(): সব ফিরিয়ে + আগের স্ক্রল-অবস্থানে। */
+let _fmScroll = 0;
+function enterFocusMode(el){
+  if(!el) return;
+  const wasActive = document.body.classList.contains('focus-mode');
+  if(wasActive){ document.querySelectorAll('.fm-hide').forEach(e => e.classList.remove('fm-hide')); }
+  else _fmScroll = window.scrollY || 0;
+  const stop = document.querySelector('.wrap') || document.body;
+  let node = el;
+  while(node && node !== stop && node !== document.body){
+    const parent = node.parentElement;
+    if(!parent) break;
+    for(const sib of parent.children){
+      if(sib === node) continue;
+      try{ if(getComputedStyle(sib).position === 'fixed') continue; }catch(e){}
+      sib.classList.add('fm-hide');
+    }
+    node = parent;
+  }
+  document.body.classList.add('focus-mode');
+  window.scrollTo(0, 0);
+}
+function exitFocusMode(skipScroll){
+  if(!document.body.classList.contains('focus-mode')) return;
+  document.querySelectorAll('.fm-hide').forEach(e => e.classList.remove('fm-hide'));
+  document.body.classList.remove('focus-mode');
+  if(!skipScroll) window.scrollTo(0, _fmScroll);
+}
+/* হুক: কুরআন (show2), হাদিস (show), টুল (openTool/closeToolView), ট্যাব-বদল (showTab) */
+(function(){
+  try{
+    const _t = showTab; showTab = function(){ exitFocusMode(true); return _t.apply(this, arguments); };
+    const _s2 = show2; show2 = function(id){ const r = _s2.apply(this, arguments); if(id === 'quran-surah-list-view') exitFocusMode(); else enterFocusMode(document.getElementById(id)); return r; };
+    const _s = show; show = function(id){ const r = _s.apply(this, arguments); if(id === 'view-books') exitFocusMode(); else enterFocusMode(document.getElementById(id)); return r; };
+    const _ot = openTool; openTool = function(id){ const r = _ot.apply(this, arguments); enterFocusMode(document.getElementById('tool-' + id + '-view')); return r; };
+    const _ct = closeToolView; closeToolView = function(){ const r = _ct.apply(this, arguments); exitFocusMode(); return r; };
+  }catch(e){}
+})();
 function _hncFmt(hrs){
   let sec = Math.max(0, Math.round(hrs * 3600));
   const h = Math.floor(sec / 3600); sec -= h * 3600;
