@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v297-home-now-chip -->
+<!-- VERSION: v298-chip-premium -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -8841,7 +8841,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v297';
+const APP_VERSION = 'v298';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -10625,8 +10625,10 @@ ensureHomeButtons(); // 🏠 beside every back button, app-wide
 .ibt-dot.on{width:18px;border-radius:3px;background:var(--emerald2)}
 .ibt-next{width:100%;padding:12px;background:linear-gradient(135deg,var(--emerald3),var(--emerald));border:none;border-radius:13px;color:#04241c;font-weight:700;font-size:14.5px;cursor:pointer;font-family:'Hind Siliguri',sans-serif}
 /* ══ হোম "এখন চলছে" চিপ — কালিমার নিচে, ঘড়ির উপরে ══ */
-#home-now-chip{display:none;width:fit-content;margin:0 auto 7px;padding:5px 15px;background:rgba(16,185,129,.09);border:1px solid rgba(16,185,129,.28);border-radius:50px;font-size:12.5px;font-weight:700;color:var(--emerald2);text-align:center;position:relative;z-index:1;font-variant-numeric:tabular-nums;letter-spacing:.2px}
-#home-now-chip.mk{background:rgba(226,75,74,.1);border-color:rgba(226,75,74,.35);color:#f0a5a5}
+#home-now-chip{display:none;width:fit-content;max-width:96%;margin:0 auto 9px;padding:9px 22px;background:linear-gradient(180deg,rgba(16,185,129,.16),rgba(16,185,129,.05));border:1.5px solid rgba(16,185,129,.45);border-radius:50px;font-size:15px;font-weight:800;color:#eafff7;text-align:center;position:relative;z-index:1;letter-spacing:.2px;box-shadow:0 3px 16px rgba(16,185,129,.2),inset 0 1px 0 rgba(255,255,255,.09);white-space:nowrap}
+#home-now-chip .hnc-t{color:var(--gold2);font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:.6px;margin-left:2px}
+#home-now-chip.mk{background:linear-gradient(180deg,rgba(226,75,74,.16),rgba(226,75,74,.05));border-color:rgba(226,75,74,.45);color:#ffd9d9;box-shadow:0 3px 16px rgba(226,75,74,.18),inset 0 1px 0 rgba(255,255,255,.07)}
+#home-now-chip.mk .hnc-t{color:#ffb3b3}
 .cp-right .kalima-art{margin-top:-6px}
 </style>
 <div id="ib-tour" role="dialog" aria-modal="true" aria-label="স্বাগত-ট্যুর">
@@ -10719,7 +10721,7 @@ function updateHomeNowChip(now){
       const w = mw[k];
       if(nowH >= w.start && nowH < w.end){
         el.className = 'mk'; el.style.display = 'block';
-        el.textContent = '⛔ ' + t('forbiddenNow') + ' · ' + _hncFmt(w.end - nowH);
+        el.innerHTML = '⛔ ' + t('forbiddenNow') + ' · <span class="hnc-t">' + _hncFmt(w.end - nowH) + '</span>';
         return;
       }
     }
@@ -10732,7 +10734,7 @@ function updateHomeNowChip(now){
     const name = cur ? (cur.type === 'fard' && cur.key ? prayerName(cur.key) : (cur.nameK ? t(cur.nameK) : '')) : '';
     if(!cur || !name){ el.style.display = 'none'; return; }
     el.className = ''; el.style.display = 'block';
-    el.textContent = (cur.type === 'fard' ? '\ud83d\udd4c ' + name + ' ' + t('runningNow') : '\ud83c\udf05 ' + name) + ' · ' + _hncFmt(end - nowH);
+    el.innerHTML = (cur.type === 'fard' ? '\ud83d\udd4c ' + name + ' ' + t('runningNow') : '\ud83c\udf05 ' + name) + ' · <span class="hnc-t">' + _hncFmt(end - nowH) + '</span>';
   }catch(e){ el.style.display = 'none'; }
 }
 let _ibtIdx = 0;
