@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v300-swap-navmemory -->
+<!-- VERSION: v301-navmemory-full -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -8841,7 +8841,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v300';
+const APP_VERSION = 'v301';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -10756,6 +10756,14 @@ function navSave(o){ try{ localStorage.setItem('nav_state', JSON.stringify(o)); 
     const _ot2 = openTool; openTool = function(id){ navSave({tab: 'tools', tool: id}); return _ot2.apply(this, arguments); };
     const _ct2 = closeToolView; closeToolView = function(){ navSave({tab: 'tools'}); return _ct2.apply(this, arguments); };
     const _gs = goSurahList; goSurahList = function(){ navSave({tab: 'quran'}); return _gs.apply(this, arguments); };
+    const _ob = openBook; openBook = function(id, name){ navSave({tab: 'hadith', book: id, bookName: name}); return _ob.apply(this, arguments); };
+    const _oc = openChapter; openChapter = function(no, name){ navSave({tab: 'hadith', book: selBook, bookName: selBookName, chapter: no, chapterName: name}); return _oc.apply(this, arguments); };
+    const _gb = goBooks; goBooks = function(){ navSave({tab: 'hadith'}); return _gb.apply(this, arguments); };
+    const _gc = goChapters; goChapters = function(){ navSave({tab: 'hadith', book: selBook, bookName: selBookName}); return _gc.apply(this, arguments); };
+    const _od = openDuaCategory; openDuaCategory = function(i){ navSave({tab: 'dua', duaCat: i}); return _od.apply(this, arguments); };
+    const _gd = goDuaCategories; goDuaCategories = function(){ navSave({tab: 'dua'}); return _gd.apply(this, arguments); };
+    const _oa = openAiChat; openAiChat = function(id){ navSave({tab: 'aihub', ai: id}); return _oa.apply(this, arguments); };
+    const _ca = closeAiChat; closeAiChat = function(){ navSave({tab: 'aihub'}); return _ca.apply(this, arguments); };
   }catch(e){}
   setTimeout(() => {
     try{
@@ -10765,7 +10773,10 @@ function navSave(o){ try{ localStorage.setItem('nav_state', JSON.stringify(o)); 
       if(st.surah){ showTab('quran'); openSurah(st.surah); }
       else if(st.mushaf){ showTab('quran'); openMushafPage(st.mushaf); }
       else if(st.tool){ showTab('tools'); openTool(st.tool); }
-      else showTab(st.tab);
+      else if(st.book){ showTab('hadith'); openBook(st.book, st.bookName || ''); if(st.chapter) openChapter(st.chapter, st.chapterName || ''); }
+      else if(st.duaCat !== undefined && st.duaCat !== null){ showTab('dua'); openDuaCategory(st.duaCat); }
+      else if(st.ai){ showTab('aihub'); openAiChat(st.ai); }
+      else quickOpenTab(st.tab);
     }catch(e){}
   }, 900);
 })();
