@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী</title>
-<!-- VERSION: v299-focus-mode -->
+<!-- VERSION: v300-swap-navmemory -->
 <meta name="description" content="নামাজের সময়, কুরআন (অডিও ও শব্দে-শব্দে অর্থসহ), সিহাহ সিত্তাহ হাদিস, দোয়া, কিবলা কম্পাস, ডিজিটাল তাসবিহ, যাকাত ক্যালকুলেটর ও ইসলামিক AI সহায়ক — সব এক অ্যাপে।">
 <meta name="theme-color" content="#0a0d12">
 <meta property="og:title" content="Ibadat (ইবাদত) — ইসলামিক দ্বীন সঙ্গী">
@@ -1329,7 +1329,7 @@ try{
         <select id="qsd-ayah" onchange="qsdAyah(parseInt(this.value))" aria-label="আয়াতে যান" style="width:100%;height:100%;appearance:none;-webkit-appearance:none;background:linear-gradient(160deg,rgba(16,185,129,.12),rgba(16,185,129,.03));border:1px solid rgba(16,185,129,.4);border-radius:15px;padding:9px 24px 9px 12px;color:var(--emerald2);font-size:12.5px;font-weight:800;font-family:'Hind Siliguri',sans-serif;cursor:pointer;outline:none;box-shadow:0 4px 16px rgba(0,0,0,.25),0 0 14px rgba(16,185,129,.06)"></select>
         <span style="position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--emerald2);font-size:9px;background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.35);border-radius:50px;padding:3px 7px" aria-hidden="true">▼</span>
       </div>
-      <button type="button" onclick="openMushafFromReader()" aria-label="মুসহাফ-মোড (পৃষ্ঠা-ভিত্তিক)" title="মুসহাফ-মোড" style="width:46px;flex-shrink:0;border-radius:15px;border:1px solid rgba(212,175,106,.4);background:radial-gradient(circle at 35% 30%,rgba(212,175,106,.2),rgba(212,175,106,.05));color:var(--gold2);font-size:16px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25)">📜</button>
+      <button type="button" onclick="goHomeFromTool()" aria-label="হোম স্ক্রিনে যান" title="হোম" style="width:46px;flex-shrink:0;border-radius:15px;border:1px solid rgba(16,185,129,.45);background:radial-gradient(circle at 35% 30%,rgba(16,185,129,.22),rgba(16,185,129,.05));color:var(--emerald2);font-size:16px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25)">🏠</button>
     </div>
     <div class="sec-title" id="surah-title" style="display:none"><div class="sec-gem"></div>সূরা<div class="sec-gem"></div></div>
     <div id="reader-header"></div>
@@ -1340,7 +1340,7 @@ try{
       <button type="button" id="tr-toggle-btn" class="qtgl" onclick="toggleTranslation()" aria-pressed="false">📃 অনুবাদ</button>
       <button type="button" id="qfont-btn" onclick="cycleQuranFont()" aria-label="আরবি ফন্ট বদলান" title="ফন্ট" style="width:46px;flex-shrink:0;border-radius:13px;border:1px solid rgba(212,175,106,.3);background:rgba(212,175,106,.07);color:var(--gold2);font-size:15px;cursor:pointer">🖋️<span id="qfont-label" style="display:none"></span></button>
       <button type="button" onclick="openReaderSettings()" aria-label="পাঠ সেটিংস" title="সেটিংস" style="width:46px;flex-shrink:0;border-radius:13px;border:1px solid var(--border2);background:rgba(255,255,255,.03);color:var(--text2);font-size:15px;cursor:pointer">⚙️</button>
-      <button type="button" onclick="goHomeFromTool()" aria-label="হোম স্ক্রিনে যান" title="হোম" style="width:46px;flex-shrink:0;border-radius:13px;border:1px solid rgba(16,185,129,.3);background:rgba(16,185,129,.07);color:var(--emerald2);font-size:15px;cursor:pointer">🏠</button>
+      <button type="button" onclick="openMushafFromReader()" aria-label="মুসহাফ-মোড (পৃষ্ঠা-ভিত্তিক)" title="মুসহাফ-মোড" style="width:46px;flex-shrink:0;border-radius:13px;border:1px solid rgba(212,175,106,.35);background:rgba(212,175,106,.08);color:var(--gold2);font-size:15px;cursor:pointer">📜</button>
     </div>
     <audio id="surah-audio-player" style="display:none"></audio>
 
@@ -8841,7 +8841,7 @@ function bmExportNotes(){
 }
 
 /* ══ P0.8 — READING ANALYTICS ENGINE ══ */
-const APP_VERSION = 'v299';
+const APP_VERSION = 'v300';
 const QA = {
   _sum(days){
     const d = RS.load().stats.daily, now = new Date();
@@ -10745,6 +10745,29 @@ function exitFocusMode(skipScroll){
     const _ot = openTool; openTool = function(id){ const r = _ot.apply(this, arguments); enterFocusMode(document.getElementById('tool-' + id + '-view')); return r; };
     const _ct = closeToolView; closeToolView = function(){ const r = _ct.apply(this, arguments); exitFocusMode(); return r; };
   }catch(e){}
+})();
+/* ══ রিফ্রেশ-স্মৃতি: শেষ অবস্থান মনে রাখা ও ফেরা ══ */
+function navSave(o){ try{ localStorage.setItem('nav_state', JSON.stringify(o)); }catch(e){} }
+(function(){
+  try{
+    const _t2 = showTab; showTab = function(id, btn){ navSave({tab: id}); return _t2.call(this, id, btn); };
+    const _os = openSurah; openSurah = function(no){ navSave({tab: 'quran', surah: no}); return _os.apply(this, arguments); };
+    const _om = openMushafPage; openMushafPage = function(pg){ navSave({tab: 'quran', mushaf: pg}); return _om.apply(this, arguments); };
+    const _ot2 = openTool; openTool = function(id){ navSave({tab: 'tools', tool: id}); return _ot2.apply(this, arguments); };
+    const _ct2 = closeToolView; closeToolView = function(){ navSave({tab: 'tools'}); return _ct2.apply(this, arguments); };
+    const _gs = goSurahList; goSurahList = function(){ navSave({tab: 'quran'}); return _gs.apply(this, arguments); };
+  }catch(e){}
+  setTimeout(() => {
+    try{
+      const st = JSON.parse(localStorage.getItem('nav_state') || 'null');
+      if(!st || !st.tab) return;
+      if(st.tab === 'prayer' && !st.surah && !st.mushaf && !st.tool) return; // হোমই ডিফল্ট
+      if(st.surah){ showTab('quran'); openSurah(st.surah); }
+      else if(st.mushaf){ showTab('quran'); openMushafPage(st.mushaf); }
+      else if(st.tool){ showTab('tools'); openTool(st.tool); }
+      else showTab(st.tab);
+    }catch(e){}
+  }, 900);
 })();
 function _hncFmt(hrs){
   let sec = Math.max(0, Math.round(hrs * 3600));
