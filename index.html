@@ -10739,7 +10739,7 @@ function exitFocusMode(skipScroll){
 /* হুক: কুরআন (show2), হাদিস (show), টুল (openTool/closeToolView), ট্যাব-বদল (showTab) */
 (function(){
   try{
-    const _t = showTab; showTab = function(){ exitFocusMode(true); return _t.apply(this, arguments); };
+    const _t = showTab; showTab = function(id, btn){ exitFocusMode(true); if(!btn) btn = document.querySelector('.tabbar-card[onclick*="' + String.fromCharCode(39) + id + String.fromCharCode(39) + '"]') || document.querySelector('.tabbar-card'); return _t.call(this, id, btn); };
     const _s2 = show2; show2 = function(id){ const r = _s2.apply(this, arguments); if(id === 'quran-surah-list-view') exitFocusMode(); else enterFocusMode(document.getElementById(id)); return r; };
     const _s = show; show = function(id){ const r = _s.apply(this, arguments); if(id === 'view-books') exitFocusMode(); else enterFocusMode(document.getElementById(id)); return r; };
     const _ot = openTool; openTool = function(id){ const r = _ot.apply(this, arguments); enterFocusMode(document.getElementById('tool-' + id + '-view')); return r; };
